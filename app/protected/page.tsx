@@ -9,6 +9,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+interface GameSession {
+  id: string;
+  game_code: string;
+  game_type: string;
+  status: string;
+  total_questions: number;
+  groups: {
+    id: string;
+    name: string;
+  } | null;
+}
 
 export default async function ProtectedPage() {
   const supabase = await createClient();
@@ -21,6 +34,17 @@ export default async function ProtectedPage() {
     redirect("/auth/login");
   }
 
+  // Get user's active game sessions
+  const { data: sessions } = await supabase
+    .from("game_sessions")
+    .select("*, groups(id, name)")
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .order("started_at", { ascending: false })
+    .limit(3);
+
+  const activeSessions = sessions || [];
+
   return (
     <div className="flex-1 w-full flex flex-col gap-12">
       <div className="w-full">
@@ -29,6 +53,42 @@ export default async function ProtectedPage() {
           Create groups and host exciting games or join others
         </p>
       </div>
+
+      {/* Active Games Section */}
+      {activeSessions.length > 0 && (
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">Your Active Games</h2>
+          <div className="grid gap-4 md:grid-cols-3 mb-8">
+            {activeSessions.map((session: GameSession) => (
+              <Card key={session.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-base">{session.groups?.name || "Unknown Group"}</CardTitle>
+                      <CardDescription className="text-sm">
+                        {session.game_type === "guess_name" ? "Guess the Name" : "Guess the Face"}
+                      </CardDescription>
+                    </div>
+                    <Badge variant="default" className="text-xs">Active</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground mb-1">Game Code</p>
+                    <Badge variant="outline" className="text-xl px-4 py-1 font-mono">
+                      {session.game_code}
+                    </Badge>
+                  </div>
+                  
+                  <Link href={`/protected/game/play/${session.id}`}>
+                    <Button className="w-full" size="sm">Open Game</Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>

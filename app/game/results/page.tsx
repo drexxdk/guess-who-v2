@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export default function GameResultsPage() {
+function GameResults() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -82,5 +83,17 @@ export default function GameResultsPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function GameResultsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
+        <div className="text-white text-xl">Loading results...</div>
+      </div>
+    }>
+      <GameResults />
+    </Suspense>
   );
 }
