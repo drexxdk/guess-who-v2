@@ -18,7 +18,17 @@ function GameResults() {
   
   const score = parseInt(searchParams.get("score") || "0");
   const total = parseInt(searchParams.get("total") || "0");
+  const gameCode = searchParams.get("code") || sessionStorage.getItem('lastGameCode') || '';
+  const playerName = searchParams.get("name") || sessionStorage.getItem('lastPlayerName') || '';
   const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
+
+  const handlePlayAgain = () => {
+    if (gameCode && playerName) {
+      router.push(`/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}`);
+    } else {
+      router.push("/game/join");
+    }
+  };
 
   const getGrade = () => {
     if (percentage >= 90) return { emoji: "🌟", text: "Amazing!", color: "text-yellow-500" };
@@ -65,7 +75,7 @@ function GameResults() {
 
           <div className="space-y-2">
             <Button 
-              onClick={() => router.push("/game/join")}
+              onClick={handlePlayAgain}
               className="w-full"
               size="lg"
             >

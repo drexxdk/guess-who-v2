@@ -106,6 +106,13 @@ export default function GameHostPage({ params }: { params: Promise<{ groupId: st
 
     if (!user) return;
 
+    // Mark any existing active sessions for this group as completed
+    await supabase
+      .from("game_sessions")
+      .update({ status: "completed" })
+      .eq("group_id", groupId)
+      .eq("status", "active");
+
     const code = generateGameCode();
     
     // Create game session

@@ -84,7 +84,22 @@ function GamePlayContent() {
   }, []);
 
   const loadGame = useCallback(async () => {
+    // Reset all game state at the start
+    setLoading(true);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    setTimeLeft(30);
+    setGameStarted(false);
+    
     const supabase = createClient();
+
+    // Store game code and player name for "Play Again" feature
+    if (gameCode && playerName) {
+      sessionStorage.setItem('lastGameCode', gameCode);
+      sessionStorage.setItem('lastPlayerName', playerName);
+    }
 
     // Find game session by code
     const { data: session } = await supabase
@@ -102,9 +117,14 @@ function GamePlayContent() {
 
     setGameSession(session);
 
-    // Track that this player joined
+    // Delete any previous answers by this player in this session to give them a fresh start
     if (playerName) {
-      const supabase = createClient();
+      await supabase
+        .from("game_answers")
+        .delete()
+        .eq("session_id", session.id)
+        .eq("player_name", playerName);
+
       // Create a lightweight tracking entry
       await supabase.from("game_answers").insert({
         session_id: session.id,
@@ -148,7 +168,7 @@ function GamePlayContent() {
       })
       .eq("id", gameSession.id);
 
-    router.push(`/game/results?session=${gameSession.id}&score=${score}&total=${questions.length}`);
+    router.push(`/game/results?session=${gameSession.id}&score=${score}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || '')}`);
   }, [gameSession, score, questions.length, router]);
 
   const handleAnswer = useCallback(async (answerId: string | null) => {
@@ -189,10 +209,10 @@ function GamePlayContent() {
   }, [answered, gameSession, questions, currentQuestion, score, timeLeft, playerName, finishGame]);
 
   useEffect(() => {
-    if (gameCode) {
+    if (gameCode && playerName) {
       loadGame();
     }
-  }, [gameCode, loadGame]);
+  }, [gameCode, playerName, loadGame]);
 
   useEffect(() => {
     if (gameStarted && timeLeft > 0 && !answered) {

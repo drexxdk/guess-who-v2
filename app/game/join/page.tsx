@@ -20,11 +20,17 @@ export default function JoinGamePage() {
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (loading) return;
+    
     setLoading(true);
 
     // For now, redirect to a game page
     // In production, you'd verify the game code exists
     router.push(`/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}`);
+    
+    // Reset loading after a short delay to handle fast back navigation
+    setTimeout(() => setLoading(false), 1000);
   };
 
   return (
