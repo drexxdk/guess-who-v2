@@ -1,15 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 
@@ -37,7 +32,7 @@ interface GameSession {
   status: string;
 }
 
-function GamePlayContent() {
+export default function GamePlayPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const gameCode = searchParams.get("code");
@@ -53,35 +48,40 @@ function GamePlayContent() {
   const [answered, setAnswered] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
 
-  const generateQuestions = useCallback((allPeople: Person[], gameType: GameType, count: number) => {
-    if (allPeople.length < 2) {
-      alert('Not enough people in this group to play!');
-      return;
-    }
+  const generateQuestions = useCallback(
+    (allPeople: Person[], gameType: GameType, count: number) => {
+      if (allPeople.length < 2) {
+        alert("Not enough people in this group to play!");
+        return;
+      }
 
-    const shuffled = [...allPeople].sort(() => Math.random() - 0.5);
-    const questionList: Question[] = [];
+      const shuffled = [...allPeople].sort(() => Math.random() - 0.5);
+      const questionList: Question[] = [];
 
-    for (let i = 0; i < Math.min(count, shuffled.length); i++) {
-      const correctPerson = shuffled[i];
-      
-      // Get as many wrong options as available (up to 3)
-      const wrongOptions = allPeople
-        .filter(p => p.id !== correctPerson.id)
-        .sort(() => Math.random() - 0.5)
-        .slice(0, Math.min(3, allPeople.length - 1));
-      
-      const options = [...wrongOptions, correctPerson].sort(() => Math.random() - 0.5);
+      for (let i = 0; i < Math.min(count, shuffled.length); i++) {
+        const correctPerson = shuffled[i];
 
-      questionList.push({
-        person: correctPerson,
-        options,
-      });
-    }
+        // Get as many wrong options as available (up to 3)
+        const wrongOptions = allPeople
+          .filter((p) => p.id !== correctPerson.id)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, Math.min(3, allPeople.length - 1));
 
-    setQuestions(questionList);
-    setTimeLeft(30); // Reset timer for first question
-  }, []);
+        const options = [...wrongOptions, correctPerson].sort(
+          () => Math.random() - 0.5,
+        );
+
+        questionList.push({
+          person: correctPerson,
+          options,
+        });
+      }
+
+      setQuestions(questionList);
+      setTimeLeft(30); // Reset timer for first question
+    },
+    [],
+  );
 
   const loadGame = useCallback(async () => {
     // Reset all game state at the start
@@ -92,13 +92,13 @@ function GamePlayContent() {
     setSelectedAnswer(null);
     setTimeLeft(30);
     setGameStarted(false);
-    
+
     const supabase = createClient();
 
     // Store game code and player name for "Play Again" feature
     if (gameCode && playerName) {
-      sessionStorage.setItem('lastGameCode', gameCode);
-      sessionStorage.setItem('lastPlayerName', playerName);
+      sessionStorage.setItem("lastGameCode", gameCode);
+      sessionStorage.setItem("lastPlayerName", playerName);
     }
 
     // Find game session by code
@@ -156,57 +156,71 @@ function GamePlayContent() {
 
   const finishGame = useCallback(async () => {
     if (!gameSession) return;
-    
+
     const supabase = createClient();
-    
+
     // Update game session with final score
     await supabase
       .from("game_sessions")
-      .update({ 
+      .update({
         score,
         status: "completed",
       })
       .eq("id", gameSession.id);
 
-    router.push(`/game/results?session=${gameSession.id}&score=${score}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || '')}`);
+    router.push(
+      `/game/results?session=${gameSession.id}&score=${score}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || "")}`,
+    );
   }, [gameSession, score, questions.length, router]);
 
-  const handleAnswer = useCallback(async (answerId: string | null) => {
-    if (answered || !gameSession) return;
+  const handleAnswer = useCallback(
+    async (answerId: string | null) => {
+      if (answered || !gameSession) return;
 
-    setAnswered(true);
-    setSelectedAnswer(answerId);
+      setAnswered(true);
+      setSelectedAnswer(answerId);
 
-    const isCorrect = answerId === questions[currentQuestion].person.id;
-    
-    if (isCorrect) {
-      setScore(score + 1);
-    }
+      const isCorrect = answerId === questions[currentQuestion].person.id;
 
-    // Save answer to database
-    const supabase = createClient();
-    await supabase.from("game_answers").insert({
-      session_id: gameSession.id,
-      student_id: questions[currentQuestion].person.id,
-      selected_student_id: answerId,
-      is_correct: isCorrect,
-      response_time_ms: (30 - timeLeft) * 1000,
-      player_name: playerName,
-    });
-
-    // Move to next question after delay
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedAnswer(null);
-        setAnswered(false);
-        setTimeLeft(30);
-      } else {
-        // Game finished
-        finishGame();
+      if (isCorrect) {
+        setScore(score + 1);
       }
-    }, 2000);
-  }, [answered, gameSession, questions, currentQuestion, score, timeLeft, playerName, finishGame]);
+
+      // Save answer to database
+      const supabase = createClient();
+      await supabase.from("game_answers").insert({
+        session_id: gameSession.id,
+        student_id: questions[currentQuestion].person.id,
+        selected_student_id: answerId,
+        is_correct: isCorrect,
+        response_time_ms: (30 - timeLeft) * 1000,
+        player_name: playerName,
+      });
+
+      // Move to next question after delay
+      setTimeout(() => {
+        if (currentQuestion < questions.length - 1) {
+          setCurrentQuestion(currentQuestion + 1);
+          setSelectedAnswer(null);
+          setAnswered(false);
+          setTimeLeft(30);
+        } else {
+          // Game finished
+          finishGame();
+        }
+      }, 2000);
+    },
+    [
+      answered,
+      gameSession,
+      questions,
+      currentQuestion,
+      score,
+      timeLeft,
+      playerName,
+      finishGame,
+    ],
+  );
 
   useEffect(() => {
     if (gameCode && playerName) {
@@ -248,7 +262,7 @@ function GamePlayContent() {
   }
 
   const question = questions[currentQuestion];
-  
+
   if (!question) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
@@ -260,123 +274,125 @@ function GamePlayContent() {
       </div>
     );
   }
-  
+
   const gameType = gameSession?.game_type as GameType;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-pink-500 p-4">
-      <div className="container mx-auto max-w-4xl">
-        {/* Header */}
-        <div className="mb-6 flex justify-between items-center">
-          <div className="text-white">
-            <p className="text-sm opacity-80">{playerName}</p>
-            <p className="text-2xl font-bold">Score: {score}/{questions.length}</p>
-          </div>
-          <div className="text-white text-right">
-            <p className="text-sm opacity-80">Question {currentQuestion + 1}/{questions.length}</p>
-            <Badge variant={timeLeft < 10 ? "destructive" : "default"} className="text-2xl px-4 py-2">
-              {timeLeft}s
-            </Badge>
-          </div>
+    <div className="container mx-auto max-w-4xl">
+      {/* Header */}
+      <div className="mb-6 flex justify-between items-center">
+        <div className="text-white">
+          <p className="text-sm opacity-80">{playerName}</p>
+          <p className="text-2xl font-bold">
+            Score: {score}/{questions.length}
+          </p>
         </div>
+        <div className="text-white text-right">
+          <p className="text-sm opacity-80">
+            Question {currentQuestion + 1}/{questions.length}
+          </p>
+          <Badge
+            variant={timeLeft < 10 ? "destructive" : "default"}
+            className="text-2xl px-4 py-2"
+          >
+            {timeLeft}s
+          </Badge>
+        </div>
+      </div>
 
-        {/* Question Card */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-center text-2xl">
-              {gameType === "guess_name" ? "Who is this?" : "Where is " + question.person.first_name + "?"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {gameType === "guess_name" && (
-              <div className="flex justify-center mb-6">
-                <div className="relative w-64 h-64 rounded-lg overflow-hidden border-4 border-gray-200">
+      {/* Question Card */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-center text-2xl">
+            {gameType === "guess_name"
+              ? "Who is this?"
+              : "Where is " + question.person.first_name + "?"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {gameType === "guess_name" && (
+            <div className="flex justify-center mb-6">
+              <div className="relative w-64 h-64 rounded-lg overflow-hidden border-4 border-gray-200">
+                <Image
+                  src={question.person.image_url || "/placeholder.png"}
+                  alt="Person"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Options Grid */}
+      <div className="grid grid-cols-2 gap-4">
+        {question.options.map((option) => {
+          const isSelected = selectedAnswer === option.id;
+          const isCorrect = option.id === question.person.id;
+
+          let buttonClass = "h-auto min-h-[120px] text-lg font-semibold";
+
+          if (answered) {
+            if (isCorrect) {
+              buttonClass += " bg-green-500 hover:bg-green-500 text-white";
+            } else if (isSelected) {
+              buttonClass += " bg-red-500 hover:bg-red-500 text-white";
+            }
+          }
+
+          return (
+            <Button
+              key={option.id}
+              onClick={() => handleAnswer(option.id)}
+              disabled={answered}
+              className={buttonClass}
+              variant={answered ? "default" : "outline"}
+            >
+              {gameType === "guess_name" ? (
+                <span>
+                  {option.first_name} {option.last_name}
+                </span>
+              ) : (
+                <div className="relative w-full h-32">
                   <Image
-                    src={question.person.image_url || "/placeholder.png"}
-                    alt="Person"
+                    src={option.image_url || "/placeholder.png"}
+                    alt={`${option.first_name} ${option.last_name}`}
                     fill
-                    className="object-cover"
+                    className="object-cover rounded"
                   />
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </Button>
+          );
+        })}
+      </div>
 
-        {/* Options Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          {question.options.map((option) => {
-            const isSelected = selectedAnswer === option.id;
-            const isCorrect = option.id === question.person.id;
-            
-            let buttonClass = "h-auto min-h-[120px] text-lg font-semibold";
-            
-            if (answered) {
-              if (isCorrect) {
-                buttonClass += " bg-green-500 hover:bg-green-500 text-white";
-              } else if (isSelected) {
-                buttonClass += " bg-red-500 hover:bg-red-500 text-white";
-              }
+      {answered && (
+        <div className="mt-6 text-center">
+          <Card
+            className={
+              selectedAnswer === question.person.id
+                ? "bg-green-100"
+                : "bg-red-100"
             }
-
-            return (
-              <Button
-                key={option.id}
-                onClick={() => handleAnswer(option.id)}
-                disabled={answered}
-                className={buttonClass}
-                variant={answered ? "default" : "outline"}
-              >
-                {gameType === "guess_name" ? (
-                  <span>{option.first_name} {option.last_name}</span>
-                ) : (
-                  <div className="relative w-full h-32">
-                    <Image
-                      src={option.image_url || "/placeholder.png"}
-                      alt={`${option.first_name} ${option.last_name}`}
-                      fill
-                      className="object-cover rounded"
-                    />
-                  </div>
-                )}
-              </Button>
-            );
-          })}
-        </div>
-
-        {answered && (
-          <div className="mt-6 text-center">
-            <Card className={selectedAnswer === question.person.id ? "bg-green-100" : "bg-red-100"}>
-              <CardContent className="p-4">
-                <p className="text-xl font-bold">
-                  {selectedAnswer === question.person.id ? "✓ Correct!" : "✗ Wrong!"}
+          >
+            <CardContent className="p-4">
+              <p className="text-xl font-bold">
+                {selectedAnswer === question.person.id
+                  ? "✓ Correct!"
+                  : "✗ Wrong!"}
+              </p>
+              {selectedAnswer !== question.person.id && (
+                <p className="text-sm mt-2">
+                  Correct answer: {question.person.first_name}{" "}
+                  {question.person.last_name}
                 </p>
-                {selectedAnswer !== question.person.id && (
-                  <p className="text-sm mt-2">
-                    Correct answer: {question.person.first_name} {question.person.last_name}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
-  );
-}
-
-export default function GamePlayPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
-        <Card>
-          <CardContent className="p-8">
-            <p className="text-lg">Loading...</p>
-          </CardContent>
-        </Card>
-      </div>
-    }>
-      <GamePlayContent />
-    </Suspense>
   );
 }
