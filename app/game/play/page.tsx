@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -37,7 +37,7 @@ interface GameSession {
   status: string;
 }
 
-export default function GamePlayPage() {
+function GamePlayContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const gameCode = searchParams.get("code");
@@ -45,7 +45,6 @@ export default function GamePlayPage() {
 
   const [loading, setLoading] = useState(true);
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
-  const [allPeople, setAllPeople] = useState<Person[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -53,6 +52,36 @@ export default function GamePlayPage() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [answered, setAnswered] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+
+  const generateQuestions = useCallback((allPeople: Person[], gameType: GameType, count: number) => {
+    if (allPeople.length < 2) {
+      alert('Not enough people in this group to play!');
+      return;
+    }
+
+    const shuffled = [...allPeople].sort(() => Math.random() - 0.5);
+    const questionList: Question[] = [];
+
+    for (let i = 0; i < Math.min(count, shuffled.length); i++) {
+      const correctPerson = shuffled[i];
+      
+      // Get as many wrong options as available (up to 3)
+      const wrongOptions = allPeople
+        .filter(p => p.id !== correctPerson.id)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, Math.min(3, allPeople.length - 1));
+      
+      const options = [...wrongOptions, correctPerson].sort(() => Math.random() - 0.5);
+
+      questionList.push({
+        person: correctPerson,
+        options,
+      });
+    }
+
+    setQuestions(questionList);
+    setTimeLeft(30); // Reset timer for first question
+  }, []);
 
   const loadGame = useCallback(async () => {
     const supabase = createClient();
@@ -73,46 +102,57 @@ export default function GamePlayPage() {
 
     setGameSession(session);
 
+    // Track that this player joined
+    if (playerName) {
+      const supabase = createClient();
+      // Create a lightweight tracking entry
+      await supabase.from("game_answers").insert({
+        session_id: session.id,
+        player_name: playerName,
+        is_correct: false,
+        response_time_ms: 0,
+      });
+    }
+
     // Load people from the group
-    const { data: peopleData } = await supabase
+    const { data: peopleData, error: peopleError } = await supabase
       .from("people")
       .select("*")
       .eq("group_id", session.group_id);
 
-    if (peopleData && peopleData.length > 0) {
-      setAllPeople(peopleData);
-      generateQuestions(peopleData, session.game_type, session.total_questions);
+    console.log("People data:", peopleData, "Error:", peopleError);
+
+    if (!peopleData || peopleData.length === 0) {
+      alert("This group has no people! Add people to the group first.");
+      router.push("/game/join");
+      return;
     }
+
+    generateQuestions(peopleData, session.game_type, session.total_questions);
 
     setLoading(false);
     setGameStarted(true);
-  }, [gameCode, router]);
+  }, [gameCode, router, playerName, generateQuestions]);
 
-  const generateQuestions = useCallback((allPeople: Person[], gameType: GameType, count: number) => {
-    const shuffled = [...allPeople].sort(() => Math.random() - 0.5);
-    const questionList: Question[] = [];
+  const finishGame = useCallback(async () => {
+    if (!gameSession) return;
+    
+    const supabase = createClient();
+    
+    // Update game session with final score
+    await supabase
+      .from("game_sessions")
+      .update({ 
+        score,
+        status: "completed",
+      })
+      .eq("id", gameSession.id);
 
-    for (let i = 0; i < Math.min(count, shuffled.length); i++) {
-      const correctPerson = shuffled[i];
-      const wrongOptions = allPeople
-        .filter(p => p.id !== correctPerson.id)
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 3);
-      
-      const options = [...wrongOptions, correctPerson].sort(() => Math.random() - 0.5);
-
-      questionList.push({
-        person: correctPerson,
-        options,
-      });
-    }
-
-    setQuestions(questionList);
-    setTimeLeft(30); // Reset timer for first question
-  }, []);
+    router.push(`/game/results?session=${gameSession.id}&score=${score}&total=${questions.length}`);
+  }, [gameSession, score, questions.length, router]);
 
   const handleAnswer = useCallback(async (answerId: string | null) => {
-    if (answered) return;
+    if (answered || !gameSession) return;
 
     setAnswered(true);
     setSelectedAnswer(answerId);
@@ -131,6 +171,7 @@ export default function GamePlayPage() {
       selected_student_id: answerId,
       is_correct: isCorrect,
       response_time_ms: (30 - timeLeft) * 1000,
+      player_name: playerName,
     });
 
     // Move to next question after delay
@@ -145,7 +186,7 @@ export default function GamePlayPage() {
         finishGame();
       }
     }, 2000);
-  }, [answered, gameSession, questions, currentQuestion, score, timeLeft]);
+  }, [answered, gameSession, questions, currentQuestion, score, timeLeft, playerName, finishGame]);
 
   useEffect(() => {
     if (gameCode) {
@@ -161,21 +202,6 @@ export default function GamePlayPage() {
       handleAnswer(null);
     }
   }, [timeLeft, answered, gameStarted, handleAnswer]);
-
-  const finishGame = async () => {
-    const supabase = createClient();
-    
-    // Update game session with final score
-    await supabase
-      .from("game_sessions")
-      .update({ 
-        score,
-        status: "completed",
-      })
-      .eq("id", gameSession.id);
-
-    router.push(`/game/results?session=${gameSession.id}&score=${score}&total=${questions.length}`);
-  };
 
   if (loading) {
     return (
@@ -202,7 +228,20 @@ export default function GamePlayPage() {
   }
 
   const question = questions[currentQuestion];
-  const gameType = gameSession.game_type as GameType;
+  
+  if (!question) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
+        <Card>
+          <CardContent className="p-8">
+            <p className="text-lg">Loading question...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
+  const gameType = gameSession?.game_type as GameType;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-500 to-pink-500 p-4">
@@ -303,5 +342,21 @@ export default function GamePlayPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function GamePlayPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
+        <Card>
+          <CardContent className="p-8">
+            <p className="text-lg">Loading...</p>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <GamePlayContent />
+    </Suspense>
   );
 }

@@ -75,19 +75,44 @@ export default function GameControlPage({ params }: { params: Promise<{ sessionI
     setGameSession(session);
     setGameCode(session.game_code || "N/A");
 
-    // Get all answers for this session
+    // Get all unique players who have joined (even if they haven't answered yet)
     const { data: answers } = await supabase
       .from("game_answers")
       .select("*")
       .eq("session_id", sessionId);
 
-    // Calculate player stats (for demo purposes, using mock data)
-    // In production, you'd track individual players
-    const mockPlayers: Player[] = [
-      { id: "1", name: "Waiting for players...", score: 0, answered: false },
-    ];
+    // Track unique players by player_name
+    const playerStats = new Map<string, { name: string; score: number; totalAnswered: number }>();
+    
+    if (answers && answers.length > 0) {
+      answers.forEach((answer: any) => {
+        const playerName = answer.player_name || 'Anonymous';
+        
+        if (!playerStats.has(playerName)) {
+          playerStats.set(playerName, { name: playerName, score: 0, totalAnswered: 0 });
+        }
+        
+        // Only count actual answers (not join records)
+        if (answer.student_id) {
+          const stats = playerStats.get(playerName)!;
+          stats.totalAnswered++;
+          if (answer.is_correct) {
+            stats.score++;
+          }
+        }
+      });
+    }
 
-    setPlayers(mockPlayers);
+    const activePlayers: Player[] = Array.from(playerStats.entries()).map(([id, stats]) => ({
+      id,
+      name: stats.name,
+      score: stats.score,
+      answered: stats.totalAnswered === session.total_questions,
+    }));
+
+    setPlayers(activePlayers.length > 0 ? activePlayers : [
+      { id: "1", name: "Waiting for players...", score: 0, answered: false }
+    ]);
     setLoading(false);
   };
 
