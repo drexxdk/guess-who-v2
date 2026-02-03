@@ -12,9 +12,7 @@ export default function ProtectedLayout({
       <header className="bg-black p-2 flex justify-center sticky top-0">
         <div className="flex justify-between gap-2 items-center max-w-screen-lg w-full">
           <Link href={"/"}>Guess Who</Link>
-          <Suspense>
-            <AuthButton />
-          </Suspense>
+          <AuthButton />
         </div>
       </header>
       <div className="flex-grow flex flex-col">
