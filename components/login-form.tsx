@@ -50,6 +50,7 @@ export function LoginForm({
   const handleGoogleLogin = async () => {
     const supabase = createClient();
     setError(null);
+    setIsLoading(true);
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -61,6 +62,7 @@ export function LoginForm({
       if (error) throw error;
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
+      setIsLoading(false);
     }
   };
 
