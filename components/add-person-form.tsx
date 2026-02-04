@@ -65,17 +65,17 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
       img.onload = () => {
         setImageDimensions({ width: img.width, height: img.height });
         const minDimension = Math.min(img.width, img.height);
-        const initialSize = Math.min(200, minDimension);
-        setCropX(Math.max(0, (img.width - initialSize) / 2));
-        setCropY(Math.max(0, (img.height - initialSize) / 2));
-        setCropSize(initialSize);
+        // Use the full dimension (largest square that fits)
+        setCropX(Math.max(0, (img.width - minDimension) / 2));
+        setCropY(Math.max(0, (img.height - minDimension) / 2));
+        setCropSize(minDimension);
       };
       img.src = imageData;
     };
     reader.readAsDataURL(file);
   };
 
-  const applyCrop = () => {
+  const applyCrop = async () => {
     const img = new window.Image();
     img.onload = () => {
       const canvas = document.createElement("canvas");
@@ -94,19 +94,23 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
           cropSize,
           cropSize,
         );
-        const croppedImage = canvas.toDataURL("image/png");
+        const croppedImage = canvas.toDataURL("image/jpeg", 0.85);
         setPreview(croppedImage);
-        setShowCropper(false);
 
-        // Convert cropped canvas to File
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const croppedFile = new File([blob], "cropped-image.png", {
-              type: "image/png",
-            });
-            setSelectedFile(croppedFile);
-          }
-        }, "image/png");
+        // Convert cropped canvas to File - use JPEG with compression to keep file size down
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const croppedFile = new File([blob], "cropped-image.jpg", {
+                type: "image/jpeg",
+              });
+              setSelectedFile(croppedFile);
+              setShowCropper(false);
+            }
+          },
+          "image/jpeg",
+          0.85,
+        );
       }
     };
     img.src = originalImage;
@@ -397,7 +401,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
       setOriginalImage("");
       setShowCropper(false);
 
-      router.refresh();
+      // Let real-time subscription handle the update
     } catch (err: unknown) {
       console.error(err);
       const errorMessage = err instanceof Error ? err.message : String(err);
@@ -418,6 +422,9 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
             onChange={(e) =>
               setFormData({ ...formData, first_name: e.target.value })
             }
+            autoComplete="one-time-code"
+            data-1p-ignore
+            data-lpignore="true"
             required
           />
         </div>
@@ -429,6 +436,9 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
             onChange={(e) =>
               setFormData({ ...formData, last_name: e.target.value })
             }
+            autoComplete="one-time-code"
+            data-1p-ignore
+            data-lpignore="true"
             required
           />
         </div>
@@ -595,10 +605,15 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
             </div>
 
             <div className="flex gap-2 mt-3">
-              <Button onClick={applyCrop} className="flex-1">
+              <Button type="button" onClick={applyCrop} className="flex-1">
                 ✓ Use This Crop
               </Button>
-              <Button onClick={cancelCrop} variant="outline" className="flex-1">
+              <Button
+                type="button"
+                onClick={cancelCrop}
+                variant="outline"
+                className="flex-1"
+              >
                 ✕ Change Image
               </Button>
             </div>

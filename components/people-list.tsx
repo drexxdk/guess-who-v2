@@ -67,7 +67,8 @@ export function PeopleList({ people }: { people: Person[] }) {
         .eq("id", personId);
 
       if (error) throw error;
-      router.refresh();
+
+      // Let real-time subscription handle the removal
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       alert(errorMessage);

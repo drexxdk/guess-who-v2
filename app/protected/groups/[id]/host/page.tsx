@@ -121,8 +121,13 @@ export default function GameHostPage({
   };
 
   const startGame = async () => {
-    if (people.length < 2) {
-      alert("You need at least 2 people to start a game!");
+    if (!groupData) return;
+
+    const minPeopleRequired = groupData.options_count;
+    if (people.length < minPeopleRequired) {
+      alert(
+        `You need at least ${minPeopleRequired} people (matching your options_count setting) to start a game!`,
+      );
       return;
     }
 
@@ -297,16 +302,21 @@ export default function GameHostPage({
               </Button>
               <Button
                 onClick={startGame}
-                disabled={loading || people.length < 2}
+                disabled={
+                  loading ||
+                  !groupData ||
+                  people.length < groupData.options_count
+                }
                 className="flex-1"
               >
                 {loading ? "Starting..." : "Start Game"}
               </Button>
             </div>
 
-            {people.length < 2 && (
+            {groupData && people.length < groupData.options_count && (
               <p className="text-sm text-destructive text-center">
-                You need at least 2 people to start a game
+                You need at least {groupData.options_count} people to start a
+                game
               </p>
             )}
           </>

@@ -1,17 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { PeopleList } from "@/components/people-list";
-import { AddPersonForm } from "@/components/add-person-form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { GroupSettings } from "@/components/group-settings";
+import { GroupDetailClient } from "@/components/group-detail-client";
 
 export default async function GroupDetailPage({
   params,
@@ -49,55 +38,10 @@ export default async function GroupDetailPage({
     .order("first_name", { ascending: true });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <Link href="/protected/groups">
-          <Button variant="ghost">← Back to Groups</Button>
-        </Link>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>{groupData.name}</CardTitle>
-              <CardDescription>
-                {people?.length || 0} people in this group
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <GroupSettings groupId={id} initialGroup={groupData} />
-              <div className="mt-6">
-                <Link href={`/protected/groups/${groupData.id}/host`}>
-                  <Button className="w-full">Start Game</Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Add Person</CardTitle>
-              <CardDescription>Add a new person to this group</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AddPersonForm groupId={id} />
-            </CardContent>
-          </Card>
-        </div>
-
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>People</CardTitle>
-              <CardDescription>Manage people in this group</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PeopleList people={people || []} />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+    <GroupDetailClient
+      groupData={groupData}
+      initialPeople={people || []}
+      groupId={id}
+    />
   );
 }

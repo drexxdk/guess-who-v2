@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,16 @@ export default function NewGroupPage() {
     options_count: 3,
   });
 
+  useEffect(() => {
+    // Reset form when component mounts
+    setFormData({
+      name: "",
+      time_limit_seconds: 15,
+      options_count: 3,
+    });
+    setError(null);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -39,17 +49,28 @@ export default function NewGroupPage() {
         throw new Error("Not authenticated");
       }
 
-      const { error: insertError } = await supabase.from("groups").insert({
-        name: formData.name,
-        creator_id: user.id,
-        time_limit_seconds: formData.time_limit_seconds,
-        options_count: formData.options_count,
-      });
+      const { data, error: insertError } = await supabase
+        .from("groups")
+        .insert({
+          name: formData.name,
+          creator_id: user.id,
+          time_limit_seconds: formData.time_limit_seconds,
+          options_count: formData.options_count,
+        })
+        .select()
+        .single();
 
       if (insertError) throw insertError;
 
-      router.push("/protected/groups");
-      router.refresh();
+      if (data) {
+        setFormData({
+          name: "",
+          time_limit_seconds: 15,
+          options_count: 3,
+        });
+        router.push(`/protected/groups/${data.id}`);
+        router.refresh();
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
