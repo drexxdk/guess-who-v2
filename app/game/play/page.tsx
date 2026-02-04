@@ -69,10 +69,21 @@ export default function GamePlayPage() {
 
         // Get wrong options based on options_count (e.g., if options_count is 3, we need 2 wrong options + 1 correct)
         const numWrongOptions = Math.max(1, optionsCount - 1);
-        const wrongOptions = allPeople
-          .filter((p) => p.id !== correctPerson.id)
+
+        // Filter candidates by the same gender as the correct person
+        const samGenderPeople = allPeople.filter(
+          (p) => p.id !== correctPerson.id && p.gender === correctPerson.gender,
+        );
+
+        // If not enough same gender people, fall back to any gender
+        const candidates =
+          samGenderPeople.length >= numWrongOptions
+            ? samGenderPeople
+            : allPeople.filter((p) => p.id !== correctPerson.id);
+
+        const wrongOptions = candidates
           .sort(() => Math.random() - 0.5)
-          .slice(0, Math.min(numWrongOptions, allPeople.length - 1));
+          .slice(0, Math.min(numWrongOptions, candidates.length));
 
         const options = [...wrongOptions, correctPerson].sort(
           () => Math.random() - 0.5,
@@ -431,7 +442,7 @@ const RenderState = ({ state }: { state: StateUnion }) => {
           </div>
 
           {/* Question Card */}
-          <Card>
+          <Card key={`question-${state.currentQuestion}`}>
             <CardHeader>
               <CardTitle className="text-center text-2xl">
                 {state.gameType === "guess_name"
@@ -444,12 +455,14 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                 <div className="flex justify-center">
                   <div className="relative w-64 h-64 rounded-lg overflow-hidden border-4 border-gray-200">
                     <Image
+                      key={`person-image-${state.currentQuestion}-${state.question.person.id}`}
                       src={
                         state.question.person.image_url || "/placeholder.png"
                       }
                       alt="Person"
                       fill
                       className="object-cover"
+                      priority={true}
                     />
                   </div>
                 </div>
@@ -486,12 +499,16 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                       {option.first_name} {option.last_name}
                     </span>
                   ) : (
-                    <div className="relative w-full h-32">
+                    <div
+                      key={`option-image-${state.currentQuestion}-${option.id}`}
+                      className="relative w-full h-32"
+                    >
                       <Image
                         src={option.image_url || "/placeholder.png"}
                         alt={`${option.first_name} ${option.last_name}`}
                         fill
                         className="object-cover rounded"
+                        priority={true}
                       />
                     </div>
                   )}
