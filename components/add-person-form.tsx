@@ -247,9 +247,14 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
         </div>
       </div>
 
-      <Button 
-        type="submit" 
-        disabled={loading || !formData.first_name.trim() || !formData.last_name.trim() || !selectedFile} 
+      <Button
+        type="submit"
+        disabled={
+          loading ||
+          !formData.first_name.trim() ||
+          !formData.last_name.trim() ||
+          !selectedFile
+        }
         className="w-full"
       >
         {loading ? "Adding..." : "Add Person"}
