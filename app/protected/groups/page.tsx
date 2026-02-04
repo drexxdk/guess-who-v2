@@ -24,15 +24,17 @@ export default async function GroupsPage() {
   // Get groups for this user
   const { data: groups } = await supabase
     .from("groups")
-    .select(`
+    .select(
+      `
       *,
       people:people(count)
-    `)
+    `,
+    )
     .eq("creator_id", user.id)
     .order("created_at", { ascending: false });
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <>
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">My Groups</h1>
@@ -49,7 +51,7 @@ export default async function GroupsPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <p className="text-muted-foreground mb-4">
-              You haven't created any groups yet
+              You haven&apos;t created any groups yet
             </p>
             <Link href="/protected/groups/new">
               <Button>Create Your First Group</Button>
@@ -72,15 +74,19 @@ export default async function GroupsPage() {
                   <p>Options per question: {group.options_count}</p>
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <Link href={`/protected/groups/${group.id}`} className="flex-1">
+                  <Link
+                    href={`/protected/groups/${group.id}`}
+                    className="flex-1"
+                  >
                     <Button variant="outline" className="w-full">
                       Manage
                     </Button>
                   </Link>
-                  <Link href={`/protected/game/host/${group.id}`} className="flex-1">
-                    <Button className="w-full">
-                      Start Game
-                    </Button>
+                  <Link
+                    href={`/protected/game/host/${group.id}`}
+                    className="flex-1"
+                  >
+                    <Button className="w-full">Start Game</Button>
                   </Link>
                 </div>
               </CardContent>
@@ -88,6 +94,6 @@ export default async function GroupsPage() {
           ))}
         </div>
       )}
-    </div>
+    </>
   );
 }

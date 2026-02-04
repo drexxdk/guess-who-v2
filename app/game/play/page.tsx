@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 type GameType = "guess_name" | "guess_image";
 
@@ -237,162 +238,234 @@ export default function GamePlayPage() {
     }
   }, [timeLeft, answered, gameStarted, handleAnswer]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
-        <Card>
-          <CardContent className="p-8">
-            <p className="text-lg">Loading game...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!gameStarted || questions.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
-        <Card>
-          <CardContent className="p-8">
-            <p className="text-lg">Waiting for game to start...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const question = questions[currentQuestion];
-
-  if (!question) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
-        <Card>
-          <CardContent className="p-8">
-            <p className="text-lg">Loading question...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const gameType = gameSession?.game_type as GameType;
-
   return (
-    <div className="container mx-auto max-w-4xl">
-      {/* Header */}
-      <div className="mb-6 flex justify-between items-center">
-        <div className="text-white">
-          <p className="text-sm opacity-80">{playerName}</p>
-          <p className="text-2xl font-bold">
-            Score: {score}/{questions.length}
-          </p>
-        </div>
-        <div className="text-white text-right">
-          <p className="text-sm opacity-80">
-            Question {currentQuestion + 1}/{questions.length}
-          </p>
-          <Badge
-            variant={timeLeft < 10 ? "destructive" : "default"}
-            className="text-2xl px-4 py-2"
-          >
-            {timeLeft}s
-          </Badge>
-        </div>
-      </div>
-
-      {/* Question Card */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-center text-2xl">
-            {gameType === "guess_name"
-              ? "Who is this?"
-              : "Where is " + question.person.first_name + "?"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {gameType === "guess_name" && (
-            <div className="flex justify-center mb-6">
-              <div className="relative w-64 h-64 rounded-lg overflow-hidden border-4 border-gray-200">
-                <Image
-                  src={question.person.image_url || "/placeholder.png"}
-                  alt="Person"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Options Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        {question.options.map((option) => {
-          const isSelected = selectedAnswer === option.id;
-          const isCorrect = option.id === question.person.id;
-
-          let buttonClass = "h-auto min-h-[120px] text-lg font-semibold";
-
-          if (answered) {
-            if (isCorrect) {
-              buttonClass += " bg-green-500 hover:bg-green-500 text-white";
-            } else if (isSelected) {
-              buttonClass += " bg-red-500 hover:bg-red-500 text-white";
-            }
-          }
-
-          return (
-            <Button
-              key={option.id}
-              onClick={() => handleAnswer(option.id)}
-              disabled={answered}
-              className={buttonClass}
-              variant={answered ? "default" : "outline"}
-            >
-              {gameType === "guess_name" ? (
-                <span>
-                  {option.first_name} {option.last_name}
-                </span>
-              ) : (
-                <div className="relative w-full h-32">
-                  <Image
-                    src={option.image_url || "/placeholder.png"}
-                    alt={`${option.first_name} ${option.last_name}`}
-                    fill
-                    className="object-cover rounded"
-                  />
-                </div>
-              )}
-            </Button>
-          );
-        })}
-      </div>
-
-      {answered && (
-        <div className="mt-6 text-center">
-          <Card
-            className={
-              selectedAnswer === question.person.id
-                ? "bg-green-100"
-                : "bg-red-100"
-            }
-          >
-            <CardContent className="p-4">
-              <p className="text-xl font-bold">
-                {selectedAnswer === question.person.id
-                  ? "✓ Correct!"
-                  : "✗ Wrong!"}
-              </p>
-              {selectedAnswer !== question.person.id && (
-                <p className="text-sm mt-2">
-                  Correct answer: {question.person.first_name}{" "}
-                  {question.person.last_name}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
-    </div>
+    <RenderState
+      state={
+        loading
+          ? { type: "loading" }
+          : !gameStarted || questions.length === 0
+            ? { type: "waiting-for-start" }
+            : !questions[currentQuestion]
+              ? { type: "loading-question" }
+              : {
+                  type: "active",
+                  gameType: gameSession!.game_type,
+                  playerName: playerName || "Player",
+                  score,
+                  question: questions[currentQuestion],
+                  currentQuestion,
+                  questions,
+                  timeLeft,
+                  selectedAnswer,
+                  answered,
+                  handleAnswer,
+                }
+      }
+    />
   );
 }
+
+const Container = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  return (
+    <div className={cn("w-full max-w-screen-lg", className)}>{children}</div>
+  );
+};
+
+const Message = ({ text }: { text: string }) => {
+  return (
+    <Card>
+      <CardContent>
+        <p className="text-lg p-8">{text}</p>
+      </CardContent>
+    </Card>
+  );
+};
+
+interface State {
+  type: "loading" | "waiting-for-start" | "loading-question" | "active";
+}
+
+interface LoadingState extends State {
+  type: "loading";
+}
+
+interface WaitingForStartState extends State {
+  type: "waiting-for-start";
+}
+
+interface LoadingQuestionState extends State {
+  type: "loading-question";
+}
+
+interface ActiveState extends State {
+  type: "active";
+  gameType: GameType;
+  playerName: string;
+  score: number;
+  question: Question;
+  currentQuestion: number;
+  questions: Question[];
+  timeLeft: number;
+  selectedAnswer: string | null;
+  answered: boolean;
+  handleAnswer: (answerId: string | null) => void;
+}
+
+type StateUnion =
+  | LoadingState
+  | WaitingForStartState
+  | LoadingQuestionState
+  | ActiveState;
+
+const RenderState = ({ state }: { state: StateUnion }) => {
+  switch (state.type) {
+    case "loading":
+      return (
+        <Container>
+          <Message text="Loading game..." />
+        </Container>
+      );
+    case "waiting-for-start":
+      return (
+        <Container>
+          <Message text="Waiting for game to start..." />
+        </Container>
+      );
+    case "loading-question":
+      return (
+        <Container>
+          <Message text="Loading question..." />
+        </Container>
+      );
+    case "active":
+      return (
+        <Container className="flex flex-col gap-6">
+          {/* Header */}
+          <div className="flex justify-between items-center">
+            <div className="text-white">
+              <p className="text-sm opacity-80">{state.playerName}</p>
+              <p className="text-2xl font-bold">
+                Score: {state.score}/{state.questions.length}
+              </p>
+            </div>
+            <div className="text-white text-right">
+              <p className="text-sm opacity-80">
+                Question {state.currentQuestion + 1}/{state.questions.length}
+              </p>
+              <Badge
+                variant={state.timeLeft < 10 ? "destructive" : "default"}
+                className="text-2xl px-4 py-2"
+              >
+                {state.timeLeft}s
+              </Badge>
+            </div>
+          </div>
+
+          {/* Question Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center text-2xl">
+                {state.gameType === "guess_name"
+                  ? "Who is this?"
+                  : "Where is " + state.question.person.first_name + "?"}
+              </CardTitle>
+            </CardHeader>
+            {state.gameType === "guess_name" && (
+              <CardContent>
+                <div className="flex justify-center mb-6">
+                  <div className="relative w-64 h-64 rounded-lg overflow-hidden border-4 border-gray-200">
+                    <Image
+                      src={
+                        state.question.person.image_url || "/placeholder.png"
+                      }
+                      alt="Person"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+
+          {/* Options Grid */}
+          <div className="grid grid-cols-2 gap-4">
+            {state.question.options.map((option) => {
+              const isSelected = state.selectedAnswer === option.id;
+              const isCorrect = option.id === state.question.person.id;
+
+              let buttonClass = "h-auto min-h-[120px] text-lg font-semibold";
+
+              if (state.answered) {
+                if (isCorrect) {
+                  buttonClass += " bg-green-500 hover:bg-green-500 text-white";
+                } else if (isSelected) {
+                  buttonClass += " bg-red-500 hover:bg-red-500 text-white";
+                }
+              }
+
+              return (
+                <Button
+                  key={option.id}
+                  onClick={() => state.handleAnswer(option.id)}
+                  disabled={state.answered}
+                  className={buttonClass}
+                  variant={state.answered ? "default" : "outline"}
+                >
+                  {state.gameType === "guess_name" ? (
+                    <span>
+                      {option.first_name} {option.last_name}
+                    </span>
+                  ) : (
+                    <div className="relative w-full h-32">
+                      <Image
+                        src={option.image_url || "/placeholder.png"}
+                        alt={`${option.first_name} ${option.last_name}`}
+                        fill
+                        className="object-cover rounded"
+                      />
+                    </div>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+
+          {state.answered && (
+            <div className="text-center">
+              <Card
+                className={
+                  state.selectedAnswer === state.question.person.id
+                    ? "bg-green-100"
+                    : "bg-red-100"
+                }
+              >
+                <CardContent className="p-4">
+                  <p className="text-xl font-bold">
+                    {state.selectedAnswer === state.question.person.id
+                      ? "✓ Correct!"
+                      : "✗ Wrong!"}
+                  </p>
+                  {state.selectedAnswer !== state.question.person.id && (
+                    <p className="text-sm mt-2">
+                      Correct answer: {state.question.person.first_name}{" "}
+                      {state.question.person.last_name}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </Container>
+      );
+    default:
+      const _exhaustiveCheck: undefined = state;
+      return _exhaustiveCheck;
+  }
+};

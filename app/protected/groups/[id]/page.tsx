@@ -48,8 +48,8 @@ export default async function GroupDetailPage({
     .order("first_name", { ascending: true });
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-6">
+    <div className="flex flex-col gap-6">
+      <div>
         <Link href="/protected/groups">
           <Button variant="ghost">← Back to Groups</Button>
         </Link>
@@ -86,9 +86,7 @@ export default async function GroupDetailPage({
           <Card className="mt-6">
             <CardHeader>
               <CardTitle>Add Person</CardTitle>
-              <CardDescription>
-                Add a new person to this group
-              </CardDescription>
+              <CardDescription>Add a new person to this group</CardDescription>
             </CardHeader>
             <CardContent>
               <AddPersonForm groupId={id} />
@@ -100,9 +98,7 @@ export default async function GroupDetailPage({
           <Card>
             <CardHeader>
               <CardTitle>People</CardTitle>
-              <CardDescription>
-                Manage people in this group
-              </CardDescription>
+              <CardDescription>Manage people in this group</CardDescription>
             </CardHeader>
             <CardContent>
               <PeopleList people={people || []} groupId={id} />
