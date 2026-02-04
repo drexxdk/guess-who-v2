@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { GroupSettings } from "@/components/group-settings";
 
 export default async function GroupDetailPage({
   params,
@@ -64,17 +65,8 @@ export default async function GroupDetailPage({
                 {people?.length || 0} people in this group
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p className="text-sm">
-                  <span className="font-medium">Time limit:</span>{" "}
-                  {groupData.time_limit_seconds} seconds
-                </p>
-                <p className="text-sm">
-                  <span className="font-medium">Options per question:</span>{" "}
-                  {groupData.options_count}
-                </p>
-              </div>
+            <CardContent className="space-y-4">
+              <GroupSettings groupId={id} initialGroup={groupData} />
               <div className="mt-6">
                 <Link href={`/protected/game/host/${groupData.id}`}>
                   <Button className="w-full">Start Game</Button>

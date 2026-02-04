@@ -50,7 +50,12 @@ export default function GamePlayPage() {
   const [gameStarted, setGameStarted] = useState(false);
 
   const generateQuestions = useCallback(
-    (allPeople: Person[], gameType: GameType, count: number) => {
+    (
+      allPeople: Person[],
+      gameType: GameType,
+      count: number,
+      optionsCount: number,
+    ) => {
       if (allPeople.length < 2) {
         alert("Not enough people in this group to play!");
         return;
@@ -62,11 +67,12 @@ export default function GamePlayPage() {
       for (let i = 0; i < Math.min(count, shuffled.length); i++) {
         const correctPerson = shuffled[i];
 
-        // Get as many wrong options as available (up to 3)
+        // Get wrong options based on options_count (e.g., if options_count is 3, we need 2 wrong options + 1 correct)
+        const numWrongOptions = Math.max(1, optionsCount - 1);
         const wrongOptions = allPeople
           .filter((p) => p.id !== correctPerson.id)
           .sort(() => Math.random() - 0.5)
-          .slice(0, Math.min(3, allPeople.length - 1));
+          .slice(0, Math.min(numWrongOptions, allPeople.length - 1));
 
         const options = [...wrongOptions, correctPerson].sort(
           () => Math.random() - 0.5,
@@ -149,7 +155,21 @@ export default function GamePlayPage() {
       return;
     }
 
-    generateQuestions(peopleData, session.game_type, session.total_questions);
+    // Load group settings to get options_count
+    const { data: groupData } = await supabase
+      .from("groups")
+      .select("options_count")
+      .eq("id", session.group_id)
+      .single();
+
+    const optionsCount = groupData?.options_count || 4;
+
+    generateQuestions(
+      peopleData,
+      session.game_type,
+      session.total_questions,
+      optionsCount,
+    );
 
     setLoading(false);
     setGameStarted(true);
@@ -160,19 +180,20 @@ export default function GamePlayPage() {
 
     const supabase = createClient();
 
-    // Update game session with final score
+    // Save final score but don't mark session as completed
+    // The session will only be marked complete when the host clicks "End Game"
     await supabase
       .from("game_sessions")
       .update({
         score,
-        status: "completed",
       })
       .eq("id", gameSession.id);
 
+    // Redirect to results page
     router.push(
-      `/game/results?session=${gameSession.id}&score=${score}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || "")}`,
+      `/game/results?session=${gameSession.id}&score=${score}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || "")}&gameCode=${gameSession.game_code}`,
     );
-  }, [gameSession, score, questions.length, router]);
+  }, [gameSession, score, questions.length, router, playerName]);
 
   const handleAnswer = useCallback(
     async (answerId: string | null) => {
@@ -229,6 +250,48 @@ export default function GamePlayPage() {
     }
   }, [gameCode, playerName, loadGame]);
 
+  // Watch for session status changes (when host ends game)
+  useEffect(() => {
+    if (!gameSession?.id || !playerName) return;
+
+    const supabase = createClient();
+    const sessionId = gameSession.id;
+    const gameCode = gameSession.game_code;
+
+    const channel = supabase
+      .channel(`game:${sessionId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "game_sessions",
+          filter: `id=eq.${sessionId}`,
+        },
+        (payload) => {
+          const updatedSession = payload.new as GameSession;
+          if (updatedSession.status === "completed") {
+            // Game ended by host - redirect to results
+            router.push(
+              `/game/results?session=${sessionId}&score=${score}&total=${questions.length}&code=${gameCode}&name=${encodeURIComponent(playerName || "")}`,
+            );
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [
+    gameSession?.id,
+    playerName,
+    score,
+    questions.length,
+    router,
+    gameSession?.game_code,
+  ]);
+
   useEffect(() => {
     if (gameStarted && timeLeft > 0 && !answered) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
@@ -281,7 +344,7 @@ const Message = ({ text }: { text: string }) => {
   return (
     <Card>
       <CardContent>
-        <p className="text-lg p-8">{text}</p>
+        <p>{text}</p>
       </CardContent>
     </Card>
   );
@@ -378,7 +441,7 @@ const RenderState = ({ state }: { state: StateUnion }) => {
             </CardHeader>
             {state.gameType === "guess_name" && (
               <CardContent>
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center">
                   <div className="relative w-64 h-64 rounded-lg overflow-hidden border-4 border-gray-200">
                     <Image
                       src={

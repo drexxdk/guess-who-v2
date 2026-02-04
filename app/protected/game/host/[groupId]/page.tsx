@@ -84,6 +84,9 @@ export default function GameHostPage({
 
   useEffect(() => {
     loadGroupData();
+    // Reset game session state when component mounts
+    setGameSession(null);
+    setGameCode("");
   }, [groupId, loadGroupData]);
 
   const generateGameCode = () => {
@@ -93,6 +96,22 @@ export default function GameHostPage({
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return code;
+  };
+
+  const cancelGame = async () => {
+    if (!gameSession) return;
+
+    const supabase = createClient();
+
+    // End the game by marking it as completed
+    await supabase
+      .from("game_sessions")
+      .update({ status: "completed" })
+      .eq("id", gameSession.id);
+
+    // Reset local state
+    setGameSession(null);
+    setGameCode("");
   };
 
   const startGame = async () => {
@@ -183,14 +202,7 @@ export default function GameHostPage({
             </div>
 
             <div className="flex gap-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setGameSession(null);
-                  setGameCode("");
-                }}
-                className="flex-1"
-              >
+              <Button variant="outline" onClick={cancelGame} className="flex-1">
                 Cancel Game
               </Button>
               <Button
