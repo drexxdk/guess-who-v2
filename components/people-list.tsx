@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -53,10 +54,12 @@ export function PeopleList({ people }: { people: Person[] }) {
         <Card key={person.id} className="p-4">
           <div className="flex items-center gap-4">
             {person.image_url ? (
-              <img
+              <Image
                 src={person.image_url}
                 alt={`${person.first_name} ${person.last_name}`}
-                className="w-12 h-12 rounded-full object-cover"
+                width={48}
+                height={48}
+                className="rounded-full object-cover"
               />
             ) : (
               <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">

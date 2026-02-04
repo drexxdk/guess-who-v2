@@ -15,7 +15,7 @@ import { createClient } from "@/lib/supabase/client";
 export default function GameResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [gameEnded, setGameEnded] = useState(false);
+  const [gameEnded, setGameEnded] = useState<boolean | null>(null);
 
   const score = parseInt(searchParams.get("score") || "0");
   const total = parseInt(searchParams.get("total") || "0");
@@ -33,14 +33,20 @@ export default function GameResultsPage() {
 
     // Check initial game session status
     const checkGameStatus = async () => {
-      const { data: session } = await supabase
-        .from("game_sessions")
-        .select("status")
-        .eq("id", sessionId)
-        .single();
+      try {
+        const { data: session } = await supabase
+          .from("game_sessions")
+          .select("status")
+          .eq("id", sessionId)
+          .single();
 
-      if (session?.status === "completed") {
-        setGameEnded(true);
+        if (session?.status === "completed") {
+          setGameEnded(true);
+        } else {
+          setGameEnded(false);
+        }
+      } catch (error) {
+        console.error("Error checking game status:", error);
       }
     };
 
@@ -59,9 +65,7 @@ export default function GameResultsPage() {
         },
         (payload) => {
           const updatedSession = payload.new as { status: string };
-          if (updatedSession.status === "completed") {
-            setGameEnded(true);
-          }
+          setGameEnded(updatedSession.status === "completed");
         },
       )
       .subscribe();
@@ -136,7 +140,11 @@ export default function GameResultsPage() {
         </div>
 
         <div className="space-y-2">
-          {gameEnded ? (
+          {gameEnded === null ? (
+            <div className="p-3 bg-gray-100 rounded-lg text-center">
+              <p className="text-sm text-muted-foreground">Loading...</p>
+            </div>
+          ) : gameEnded ? (
             <>
               <div className="p-3 bg-orange-50 rounded-lg text-black text-center mb-2">
                 <p className="text-sm font-medium">Game has ended</p>

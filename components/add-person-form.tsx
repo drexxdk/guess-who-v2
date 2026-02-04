@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -483,14 +484,11 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
                     : "grab",
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={originalImage}
                 alt="Crop"
+                fill
                 style={{
-                  position: "absolute",
-                  width: "100%",
-                  height: "100%",
                   objectFit: "contain",
                 }}
               />
@@ -627,11 +625,11 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
             {preview ? (
               <div className="space-y-3">
                 <div className="relative w-40 h-40 mx-auto">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={preview}
                     alt="Preview"
-                    className="w-full h-full object-cover rounded-lg"
+                    fill
+                    className="object-cover rounded-lg"
                   />
                 </div>
                 <p className="text-sm font-medium">Image ready</p>
