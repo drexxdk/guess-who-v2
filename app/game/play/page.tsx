@@ -522,14 +522,17 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                   const isCorrect = option.id === state.question.person.id;
 
                   let buttonClass =
-                    "h-auto min-h-[120px] text-lg font-semibold";
+                    "h-auto min-h-[120px] text-lg font-semibold disabled:opacity-100";
+                  let buttonVariant: "default" | "outline" = "outline";
 
                   if (state.answered) {
                     if (isCorrect) {
                       buttonClass +=
                         " bg-green-500 hover:bg-green-500 text-white";
+                      buttonVariant = "default";
                     } else if (isSelected) {
                       buttonClass += " bg-red-500 hover:bg-red-500 text-white";
+                      buttonVariant = "default";
                     }
                   }
 
@@ -539,7 +542,7 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                       onClick={() => state.handleAnswer(option.id)}
                       disabled={state.answered}
                       className={buttonClass}
-                      variant={state.answered ? "default" : "outline"}
+                      variant={buttonVariant}
                     >
                       {state.gameType === "guess_name" ? (
                         <span>
