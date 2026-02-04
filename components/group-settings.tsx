@@ -97,11 +97,7 @@ export function GroupSettings({ groupId, initialGroup }: GroupSettingsProps) {
         {error && <p className="text-sm text-red-500">{error}</p>}
 
         <div className="flex gap-2">
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex-1"
-          >
+          <Button onClick={handleSave} disabled={isSaving} className="flex-1">
             {isSaving ? "Saving..." : "Save"}
           </Button>
           <Button

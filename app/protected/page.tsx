@@ -25,7 +25,7 @@ interface GameSession {
 
 export default async function ProtectedPage() {
   const supabase = await createClient();
-  
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -60,26 +60,40 @@ export default async function ProtectedPage() {
           <h2 className="text-2xl font-semibold mb-4">Your Active Games</h2>
           <div className="grid gap-4 md:grid-cols-3 mb-8">
             {activeSessions.map((session: GameSession) => (
-              <Card key={session.id} className="hover:shadow-lg transition-shadow">
+              <Card
+                key={session.id}
+                className="hover:shadow-lg transition-shadow"
+              >
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-base">{session.groups?.name || "Unknown Group"}</CardTitle>
+                      <CardTitle className="text-base">
+                        {session.groups?.name || "Unknown Group"}
+                      </CardTitle>
                       <CardDescription className="text-sm">
-                        {session.game_type === "guess_name" ? "Guess the Name" : "Guess the Face"}
+                        {session.game_type === "guess_name"
+                          ? "Guess the Name"
+                          : "Guess the Face"}
                       </CardDescription>
                     </div>
-                    <Badge variant="default" className="text-xs">Active</Badge>
+                    <Badge variant="default" className="text-xs">
+                      Active
+                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="text-center">
-                    <p className="text-xs text-muted-foreground mb-1">Game Code</p>
-                    <Badge variant="outline" className="text-xl px-4 py-1 font-mono">
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Game Code
+                    </p>
+                    <Badge
+                      variant="outline"
+                      className="text-xl px-4 py-1 font-mono"
+                    >
                       {session.game_code}
                     </Badge>
                   </div>
-                  
+
                   <Link href={`/protected/game/play/${session.id}`}>
                     <Button className="w-full">Open Game</Button>
                   </Link>
@@ -108,9 +122,7 @@ export default async function ProtectedPage() {
         <Card>
           <CardHeader>
             <CardTitle>Join a Game</CardTitle>
-            <CardDescription>
-              Enter a game code to play
-            </CardDescription>
+            <CardDescription>Enter a game code to play</CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/game/join">
@@ -128,7 +140,9 @@ export default async function ProtectedPage() {
           <CardContent>
             <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
               <li>Create a group and add people with their photos and names</li>
-              <li>Start a game and choose the mode (guess name or guess face)</li>
+              <li>
+                Start a game and choose the mode (guess name or guess face)
+              </li>
               <li>Share the game code with players</li>
               <li>Players join using the code and compete in real-time</li>
               <li>View results and see who knows the group best!</li>
