@@ -19,12 +19,48 @@ export function PeopleList({ people }: { people: Person[] }) {
   const router = useRouter();
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  const handleDelete = async (personId: string) => {
+  const handleDelete = async (personId: string, imageUrl: string | null) => {
     if (!confirm("Are you sure you want to delete this person?")) return;
 
     setDeleting(personId);
     try {
       const supabase = createClient();
+
+      // Delete image from storage if it exists
+      if (imageUrl) {
+        try {
+          console.log("Full image URL:", imageUrl);
+
+          // Extract filename from URL
+          // URL format: https://{domain}/storage/v1/object/public/person-images/{filename}
+          const urlParts = imageUrl.split("/person-images/");
+          console.log("URL parts:", urlParts);
+
+          if (urlParts.length > 1) {
+            const filename = decodeURIComponent(urlParts[1]);
+            console.log("Extracted filename:", filename);
+
+            const { data, error: deleteError } = await supabase.storage
+              .from("person-images")
+              .remove([filename]);
+
+            console.log("Delete response - data:", data, "error:", deleteError);
+
+            if (deleteError) {
+              console.error("Error deleting image:", deleteError);
+            } else {
+              console.log("Image deleted successfully. Response:", data);
+            }
+          } else {
+            console.warn("Could not extract filename from URL:", imageUrl);
+          }
+        } catch (storageErr) {
+          console.error("Failed to delete image from storage:", storageErr);
+          // Continue with person deletion even if image deletion fails
+        }
+      }
+
+      // Delete person from database
       const { error } = await supabase
         .from("people")
         .delete()
@@ -59,10 +95,10 @@ export function PeopleList({ people }: { people: Person[] }) {
                 alt={`${person.first_name} ${person.last_name}`}
                 width={48}
                 height={48}
-                className="rounded-full object-cover"
+                className="object-cover"
               />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+              <div className="w-12 h-12 bg-muted flex items-center justify-center">
                 <span className="text-lg font-semibold">
                   {person.first_name[0]}
                   {person.last_name[0]}
@@ -80,7 +116,7 @@ export function PeopleList({ people }: { people: Person[] }) {
             <Button
               variant="destructive"
               size="sm"
-              onClick={() => handleDelete(person.id)}
+              onClick={() => handleDelete(person.id, person.image_url)}
               disabled={deleting === person.id}
             >
               {deleting === person.id ? "Deleting..." : "Delete"}

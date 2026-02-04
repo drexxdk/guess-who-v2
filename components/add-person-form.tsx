@@ -625,11 +625,10 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
             {preview ? (
               <div className="space-y-3">
                 <div className="relative w-40 h-40 mx-auto">
-                  <Image
+                  <img
                     src={preview}
                     alt="Preview"
-                    fill
-                    className="object-cover rounded-lg"
+                    className="w-full h-full object-cover rounded-lg"
                   />
                 </div>
                 <p className="text-sm font-medium">Image ready</p>
