@@ -14,13 +14,7 @@ type Person = {
   image_url: string | null;
 };
 
-export function PeopleList({
-  people,
-  groupId,
-}: {
-  people: Person[];
-  groupId: string;
-}) {
+export function PeopleList({ people }: { people: Person[] }) {
   const router = useRouter();
   const [deleting, setDeleting] = useState<string | null>(null);
 
@@ -37,8 +31,9 @@ export function PeopleList({
 
       if (error) throw error;
       router.refresh();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      alert(errorMessage);
     } finally {
       setDeleting(null);
     }

@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Image from "next/image";
 
 export function AddPersonForm({ groupId }: { groupId: string }) {
   const router = useRouter();
@@ -17,15 +16,22 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showCropper, setShowCropper] = useState(false);
   const [originalImage, setOriginalImage] = useState<string>("");
-  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+  const [imageDimensions, setImageDimensions] = useState({
+    width: 0,
+    height: 0,
+  });
   const [draggingBox, setDraggingBox] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [resizingCorner, setResizingCorner] = useState<string | null>(null);
   const [cropX, setCropX] = useState(0);
   const [cropY, setCropY] = useState(0);
   const [cropSize, setCropSize] = useState(200);
-  const [startCropState, setStartCropState] = useState({ x: 0, y: 0, size: 0, mouseX: 0, mouseY: 0 });
-  const [containerDims, setContainerDims] = useState({ width: 0, height: 0 });
+  const [startCropState, setStartCropState] = useState({
+    x: 0,
+    y: 0,
+    size: 0,
+    mouseX: 0,
+    mouseY: 0,
+  });
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -114,59 +120,80 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
   const handleCropBoxMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!cropContainerRef.current) return;
-    
+
     const rect = cropContainerRef.current.getBoundingClientRect();
     const relativeX = e.clientX - rect.left;
     const relativeY = e.clientY - rect.top;
-    
+
     setDraggingBox(true);
-    setStartCropState({ x: cropX, y: cropY, size: cropSize, mouseX: relativeX, mouseY: relativeY });
+    setStartCropState({
+      x: cropX,
+      y: cropY,
+      size: cropSize,
+      mouseX: relativeX,
+      mouseY: relativeY,
+    });
   };
 
-  const handleResizeMouseDown = (
-    e: React.MouseEvent,
-    corner: string
-  ) => {
+  const handleResizeMouseDown = (e: React.MouseEvent, corner: string) => {
     e.preventDefault();
     e.stopPropagation();
     if (!cropContainerRef.current) return;
-    
+
     const rect = cropContainerRef.current.getBoundingClientRect();
     const relativeX = e.clientX - rect.left;
     const relativeY = e.clientY - rect.top;
-    
+
     setResizingCorner(corner);
-    setStartCropState({ x: cropX, y: cropY, size: cropSize, mouseX: relativeX, mouseY: relativeY });
+    setStartCropState({
+      x: cropX,
+      y: cropY,
+      size: cropSize,
+      mouseX: relativeX,
+      mouseY: relativeY,
+    });
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!cropContainerRef.current) return;
-    
+
     const rect = cropContainerRef.current.getBoundingClientRect();
     const relativeX = e.clientX - rect.left;
     const relativeY = e.clientY - rect.top;
-    
+
     if (draggingBox) {
       const deltaX = relativeX - startCropState.mouseX;
       const deltaY = relativeY - startCropState.mouseY;
-      
+
       // Scale delta based on container size vs image dimensions
       const scaleX = imageDimensions.width / rect.width;
       const scaleY = imageDimensions.height / rect.height;
-      
-      const newX = Math.max(0, Math.min(startCropState.x + deltaX * scaleX, imageDimensions.width - cropSize));
-      const newY = Math.max(0, Math.min(startCropState.y + deltaY * scaleY, imageDimensions.height - cropSize));
-      
+
+      const newX = Math.max(
+        0,
+        Math.min(
+          startCropState.x + deltaX * scaleX,
+          imageDimensions.width - cropSize,
+        ),
+      );
+      const newY = Math.max(
+        0,
+        Math.min(
+          startCropState.y + deltaY * scaleY,
+          imageDimensions.height - cropSize,
+        ),
+      );
+
       setCropX(newX);
       setCropY(newY);
     } else if (resizingCorner) {
       const deltaX = relativeX - startCropState.mouseX;
       const deltaY = relativeY - startCropState.mouseY;
-      
+
       // Scale delta based on container size vs image dimensions
       const scaleX = imageDimensions.width / rect.width;
       const scaleY = imageDimensions.height / rect.height;
-      
+
       let newSize = startCropState.size;
       let newX = startCropState.x;
       let newY = startCropState.y;
@@ -183,18 +210,48 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
         delta = Math.max(deltaX * scaleX, deltaY * scaleY);
       }
 
-      newSize = Math.max(50, Math.min(startCropState.size + delta, Math.min(imageDimensions.width, imageDimensions.height)));
+      newSize = Math.max(
+        50,
+        Math.min(
+          startCropState.size + delta,
+          Math.min(imageDimensions.width, imageDimensions.height),
+        ),
+      );
       const sizeDiff = newSize - startCropState.size;
 
       // Adjust position based on corner to keep the opposite corner fixed
       if (resizingCorner === "tl") {
-        newX = Math.max(0, Math.min(startCropState.x - sizeDiff, imageDimensions.width - newSize));
-        newY = Math.max(0, Math.min(startCropState.y - sizeDiff, imageDimensions.height - newSize));
+        newX = Math.max(
+          0,
+          Math.min(
+            startCropState.x - sizeDiff,
+            imageDimensions.width - newSize,
+          ),
+        );
+        newY = Math.max(
+          0,
+          Math.min(
+            startCropState.y - sizeDiff,
+            imageDimensions.height - newSize,
+          ),
+        );
       } else if (resizingCorner === "tr") {
         newX = startCropState.x;
-        newY = Math.max(0, Math.min(startCropState.y - sizeDiff, imageDimensions.height - newSize));
+        newY = Math.max(
+          0,
+          Math.min(
+            startCropState.y - sizeDiff,
+            imageDimensions.height - newSize,
+          ),
+        );
       } else if (resizingCorner === "bl") {
-        newX = Math.max(0, Math.min(startCropState.x - sizeDiff, imageDimensions.width - newSize));
+        newX = Math.max(
+          0,
+          Math.min(
+            startCropState.x - sizeDiff,
+            imageDimensions.width - newSize,
+          ),
+        );
         newY = startCropState.y;
       } else if (resizingCorner === "br") {
         newX = startCropState.x;
@@ -285,7 +342,15 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
       }
 
       // Build the person object
-      const personData: any = {
+      interface PersonData {
+        group_id: string;
+        first_name: string;
+        last_name: string;
+        gender: "male" | "female" | "other";
+        image_url?: string;
+      }
+
+      const personData: PersonData = {
         group_id: groupId,
         first_name: formData.first_name,
         last_name: formData.last_name,
@@ -320,9 +385,10 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
       setShowCropper(false);
 
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      alert("Error adding person: " + err.message);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      alert("Error adding person: " + errorMessage);
     } finally {
       setLoading(false);
     }
@@ -393,11 +459,16 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
                 width: "100%",
                 maxWidth: "400px",
                 margin: "0 auto",
-                aspectRatio: imageDimensions.width / imageDimensions.height || "1",
+                aspectRatio:
+                  imageDimensions.width / imageDimensions.height || "1",
                 overflow: "hidden",
                 backgroundColor: "#f0f0f0",
                 borderRadius: "8px",
-                cursor: resizingCorner ? "pointer" : draggingBox ? "grabbing" : "grab",
+                cursor: resizingCorner
+                  ? "pointer"
+                  : draggingBox
+                    ? "grabbing"
+                    : "grab",
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -517,11 +588,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
               <Button onClick={applyCrop} className="flex-1">
                 ✓ Use This Crop
               </Button>
-              <Button
-                onClick={cancelCrop}
-                variant="outline"
-                className="flex-1"
-              >
+              <Button onClick={cancelCrop} variant="outline" className="flex-1">
                 ✕ Change Image
               </Button>
             </div>
@@ -562,7 +629,9 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
               </div>
             ) : (
               <div className="space-y-2 py-8">
-                <p className="text-sm font-medium">Drag and drop an image here</p>
+                <p className="text-sm font-medium">
+                  Drag and drop an image here
+                </p>
                 <p className="text-xs text-muted-foreground">
                   or click to select from your device
                 </p>

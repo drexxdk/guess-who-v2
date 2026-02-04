@@ -93,7 +93,7 @@ export default async function GroupDetailPage({
               <CardDescription>Manage people in this group</CardDescription>
             </CardHeader>
             <CardContent>
-              <PeopleList people={people || []} groupId={id} />
+              <PeopleList people={people || []} />
             </CardContent>
           </Card>
         </div>
