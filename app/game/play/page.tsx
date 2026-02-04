@@ -344,7 +344,8 @@ export default function GamePlayPage() {
                   playerName: playerName || "Player",
                   score,
                   question: questions[currentQuestion],
-                  nextQuestion: nextQuestion !== null ? questions[nextQuestion] : null,
+                  nextQuestion:
+                    nextQuestion !== null ? questions[nextQuestion] : null,
                   currentQuestion,
                   questions,
                   timeLeft,
@@ -505,7 +506,8 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                         <Image
                           key={`person-image-${state.currentQuestion}-${state.question.person.id}`}
                           src={
-                            state.question.person.image_url || "/placeholder.png"
+                            state.question.person.image_url ||
+                            "/placeholder.png"
                           }
                           alt="Person"
                           fill
@@ -530,7 +532,9 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                     <CardTitle className="text-center text-2xl">
                       {state.gameType === "guess_name"
                         ? "Who is this?"
-                        : "Where is " + state.nextQuestion.person.first_name + "?"}
+                        : "Where is " +
+                          state.nextQuestion.person.first_name +
+                          "?"}
                     </CardTitle>
                   </CardHeader>
                   {state.gameType === "guess_name" && (
@@ -540,7 +544,8 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                           <Image
                             key={`person-image-next-${state.nextQuestion.person.id}`}
                             src={
-                              state.nextQuestion.person.image_url || "/placeholder.png"
+                              state.nextQuestion.person.image_url ||
+                              "/placeholder.png"
                             }
                             alt="Person"
                             fill
@@ -565,49 +570,50 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                 )}
               >
                 {state.question.options.map((option) => {
-                const isSelected = state.selectedAnswer === option.id;
-                const isCorrect = option.id === state.question.person.id;
+                  const isSelected = state.selectedAnswer === option.id;
+                  const isCorrect = option.id === state.question.person.id;
 
-                let buttonClass = "h-auto min-h-[120px] text-lg font-semibold";
+                  let buttonClass =
+                    "h-auto min-h-[120px] text-lg font-semibold";
 
-                if (state.answered) {
-                  if (isCorrect) {
-                    buttonClass +=
-                      " bg-green-500 hover:bg-green-500 text-white";
-                  } else if (isSelected) {
-                    buttonClass += " bg-red-500 hover:bg-red-500 text-white";
+                  if (state.answered) {
+                    if (isCorrect) {
+                      buttonClass +=
+                        " bg-green-500 hover:bg-green-500 text-white";
+                    } else if (isSelected) {
+                      buttonClass += " bg-red-500 hover:bg-red-500 text-white";
+                    }
                   }
-                }
 
-                return (
-                  <Button
-                    key={option.id}
-                    onClick={() => state.handleAnswer(option.id)}
-                    disabled={state.answered}
-                    className={buttonClass}
-                    variant={state.answered ? "default" : "outline"}
-                  >
-                    {state.gameType === "guess_name" ? (
-                      <span>
-                        {option.first_name} {option.last_name}
-                      </span>
-                    ) : (
-                      <div
-                        key={`option-image-${state.currentQuestion}-${option.id}`}
-                        className="relative w-full h-32"
-                      >
-                        <Image
-                          src={option.image_url || "/placeholder.png"}
-                          alt={`${option.first_name} ${option.last_name}`}
-                          fill
-                          className="object-cover rounded"
-                          priority={true}
-                        />
-                      </div>
-                    )}
-                  </Button>
-                );
-              })}
+                  return (
+                    <Button
+                      key={option.id}
+                      onClick={() => state.handleAnswer(option.id)}
+                      disabled={state.answered}
+                      className={buttonClass}
+                      variant={state.answered ? "default" : "outline"}
+                    >
+                      {state.gameType === "guess_name" ? (
+                        <span>
+                          {option.first_name} {option.last_name}
+                        </span>
+                      ) : (
+                        <div
+                          key={`option-image-${state.currentQuestion}-${option.id}`}
+                          className="relative w-full h-32"
+                        >
+                          <Image
+                            src={option.image_url || "/placeholder.png"}
+                            alt={`${option.first_name} ${option.last_name}`}
+                            fill
+                            className="object-cover rounded"
+                            priority={true}
+                          />
+                        </div>
+                      )}
+                    </Button>
+                  );
+                })}
               </div>
 
               {/* Next options - fades in */}
@@ -620,9 +626,11 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                 >
                   {state.nextQuestion.options.map((option) => {
                     const isSelected = state.selectedAnswer === option.id;
-                    const isCorrect = option.id === state.nextQuestion!.person.id;
+                    const isCorrect =
+                      option.id === state.nextQuestion!.person.id;
 
-                    let buttonClass = "h-auto min-h-[120px] text-lg font-semibold";
+                    let buttonClass =
+                      "h-auto min-h-[120px] text-lg font-semibold";
 
                     if (state.answered) {
                       if (isCorrect) {
