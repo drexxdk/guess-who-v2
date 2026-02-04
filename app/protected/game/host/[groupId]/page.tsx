@@ -202,8 +202,12 @@ export default function GameHostPage({
             </div>
 
             <div className="flex gap-4">
-              <Button variant="outline" onClick={cancelGame} className="flex-1">
-                Cancel Game
+              <Button
+                variant="destructive"
+                onClick={cancelGame}
+                className="flex-1"
+              >
+                End Game
               </Button>
               <Button
                 onClick={() =>

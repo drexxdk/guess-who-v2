@@ -499,32 +499,6 @@ const RenderState = ({ state }: { state: StateUnion }) => {
               );
             })}
           </div>
-
-          {state.answered && (
-            <div className="text-center">
-              <Card
-                className={
-                  state.selectedAnswer === state.question.person.id
-                    ? "bg-green-100"
-                    : "bg-red-100"
-                }
-              >
-                <CardContent className="p-4">
-                  <p className="text-xl font-bold">
-                    {state.selectedAnswer === state.question.person.id
-                      ? "✓ Correct!"
-                      : "✗ Wrong!"}
-                  </p>
-                  {state.selectedAnswer !== state.question.person.id && (
-                    <p className="text-sm mt-2">
-                      Correct answer: {state.question.person.first_name}{" "}
-                      {state.question.person.last_name}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          )}
         </Container>
       );
     default:
