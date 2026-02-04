@@ -479,32 +479,32 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-center text-2xl">
-                    {state.gameType === "guess_name"
-                      ? "Who is this?"
-                      : "Where is " + state.question.person.first_name + "?"}
-                  </CardTitle>
-                </CardHeader>
-                {state.gameType === "guess_name" && (
-                  <CardContent>
-                    <div className="flex justify-center">
-                      <div className="relative w-64 h-64 rounded-lg overflow-hidden border-4 border-gray-200">
-                        <Image
-                          key={`person-image-${state.currentQuestion}-${state.question.person.id}`}
-                          src={
-                            state.question.person.image_url ||
-                            "/placeholder.png"
-                          }
-                          alt="Person"
-                          fill
-                          className="object-cover"
-                          priority={true}
-                        />
+                      {state.gameType === "guess_name"
+                        ? "Who is this?"
+                        : "Where is " + state.question.person.first_name + "?"}
+                    </CardTitle>
+                  </CardHeader>
+                  {state.gameType === "guess_name" && (
+                    <CardContent>
+                      <div className="flex justify-center">
+                        <div className="relative w-64 h-64 rounded-lg overflow-hidden border-4 border-gray-200">
+                          <Image
+                            key={`person-image-${state.currentQuestion}-${state.question.person.id}`}
+                            src={
+                              state.question.person.image_url ||
+                              "/placeholder.png"
+                            }
+                            alt="Person"
+                            fill
+                            className="object-cover"
+                            priority={true}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            </motion.div>
+                    </CardContent>
+                  )}
+                </Card>
+              </motion.div>
             </AnimatePresence>
 
             {/* Options Grid */}
@@ -562,7 +562,7 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                     </Button>
                   );
                 })}
-                </motion.div>
+              </motion.div>
             </AnimatePresence>
           </Container>
         </div>
