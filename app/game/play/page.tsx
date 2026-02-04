@@ -468,12 +468,12 @@ const RenderState = ({ state }: { state: StateUnion }) => {
             </div>
 
             {/* Question Card */}
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="popLayout">
               <motion.div
                 key={state.currentQuestion}
-                initial={{ x: "100vw" }}
-                animate={{ x: 0 }}
-                exit={{ x: "-100vw" }}
+                initial={{ x: "100vw", opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: "-100vw", opacity: 0 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
               >
                 <Card>
@@ -508,12 +508,12 @@ const RenderState = ({ state }: { state: StateUnion }) => {
             </AnimatePresence>
 
             {/* Options Grid */}
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="popLayout">
               <motion.div
                 key={`options-${state.currentQuestion}`}
-                initial={{ x: "100vw" }}
-                animate={{ x: 0 }}
-                exit={{ x: "-100vw" }}
+                initial={{ x: "100vw", opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: "-100vw", opacity: 0 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
                 className="grid grid-cols-2 gap-4"
               >
