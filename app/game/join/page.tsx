@@ -36,43 +36,47 @@ export default function JoinGamePage() {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold">Join Game</CardTitle>
-        <CardDescription>Enter the game code to join the fun!</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleJoin} className="space-y-4">
-          <div className="space-y-2">
-            <Input
-              placeholder="Game Code"
-              value={gameCode}
-              onChange={(e) => setGameCode(e.target.value.toUpperCase())}
-              maxLength={6}
-              className="text-center text-2xl font-bold tracking-widest"
-              required
-            />
-          </div>
+    <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold">Join Game</CardTitle>
+          <CardDescription>
+            Enter the game code to join the fun!
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleJoin} className="space-y-4">
+            <div className="space-y-2">
+              <Input
+                placeholder="Game Code"
+                value={gameCode}
+                onChange={(e) => setGameCode(e.target.value.toUpperCase())}
+                maxLength={6}
+                className="text-center text-2xl font-bold tracking-widest"
+                required
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Input
-              placeholder="Your Name"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              maxLength={20}
-              required
-            />
-          </div>
+            <div className="space-y-2">
+              <Input
+                placeholder="Your Name"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                maxLength={20}
+                required
+              />
+            </div>
 
-          <Button
-            type="submit"
-            disabled={loading || !gameCode || !playerName}
-            className="w-full text-lg py-6"
-          >
-            {loading ? "Joining..." : "Join Game"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+            <Button
+              type="submit"
+              disabled={loading || !gameCode || !playerName}
+              className="w-full text-lg py-6"
+            >
+              {loading ? "Joining..." : "Join Game"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

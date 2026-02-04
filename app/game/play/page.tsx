@@ -42,12 +42,17 @@ export default function GamePlayPage() {
   const [loading, setLoading] = useState(true);
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [nextQuestion, setNextQuestion] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [answered, setAnswered] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(
+    null,
+  );
 
   const generateQuestions = useCallback(
     (
@@ -214,6 +219,7 @@ export default function GamePlayPage() {
       setSelectedAnswer(answerId);
 
       const isCorrect = answerId === questions[currentQuestion].person.id;
+      setLastAnswerCorrect(isCorrect);
 
       if (isCorrect) {
         setScore(score + 1);
@@ -230,18 +236,29 @@ export default function GamePlayPage() {
         player_name: playerName,
       });
 
-      // Move to next question after delay
+      // Trigger fade out animation
+      setIsTransitioning(true);
+
+      // Set the next question to render (overlaid)
+      if (currentQuestion < questions.length - 1) {
+        setNextQuestion(currentQuestion + 1);
+      }
+
+      // Reset transition state and update current question after fade completes
       setTimeout(() => {
         if (currentQuestion < questions.length - 1) {
           setCurrentQuestion(currentQuestion + 1);
+          setNextQuestion(null);
           setSelectedAnswer(null);
           setAnswered(false);
           setTimeLeft(30);
+          setLastAnswerCorrect(null);
+          setIsTransitioning(false);
         } else {
           // Game finished
           finishGame();
         }
-      }, 2000);
+      }, 700);
     },
     [
       answered,
@@ -327,12 +344,15 @@ export default function GamePlayPage() {
                   playerName: playerName || "Player",
                   score,
                   question: questions[currentQuestion],
+                  nextQuestion: nextQuestion !== null ? questions[nextQuestion] : null,
                   currentQuestion,
                   questions,
                   timeLeft,
                   selectedAnswer,
                   answered,
                   handleAnswer,
+                  isTransitioning,
+                  lastAnswerCorrect,
                 }
       }
     />
@@ -347,7 +367,9 @@ const Container = ({
   className?: string;
 }) => {
   return (
-    <div className={cn("w-full max-w-screen-lg", className)}>{children}</div>
+    <div className="w-full max-w-screen-lg">
+      <div className={cn("w-full max-w-screen-lg ", className)}>{children}</div>
+    </div>
   );
 };
 
@@ -383,12 +405,15 @@ interface ActiveState extends State {
   playerName: string;
   score: number;
   question: Question;
+  nextQuestion: Question | null;
   currentQuestion: number;
   questions: Question[];
   timeLeft: number;
   selectedAnswer: string | null;
   answered: boolean;
   handleAnswer: (answerId: string | null) => void;
+  isTransitioning: boolean;
+  lastAnswerCorrect: boolean | null;
 }
 
 type StateUnion =
@@ -401,122 +426,248 @@ const RenderState = ({ state }: { state: StateUnion }) => {
   switch (state.type) {
     case "loading":
       return (
-        <Container>
-          <Message text="Loading game..." />
-        </Container>
+        <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
+          <Container>
+            <Message text="Loading game..." />
+          </Container>
+        </div>
       );
     case "waiting-for-start":
       return (
-        <Container>
-          <Message text="Waiting for game to start..." />
-        </Container>
+        <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
+          <Container>
+            <Message text="Waiting for game to start..." />
+          </Container>
+        </div>
       );
     case "loading-question":
       return (
-        <Container>
-          <Message text="Loading question..." />
-        </Container>
+        <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
+          <Container>
+            <Message text="Loading question..." />
+          </Container>
+        </div>
       );
     case "active":
       return (
-        <Container className="flex flex-col gap-6">
-          {/* Header */}
-          <div className="flex justify-between items-center">
-            <div className="text-white">
-              <p className="text-sm opacity-80">{state.playerName}</p>
-              <p className="text-2xl font-bold">
-                Score: {state.score}/{state.questions.length}
-              </p>
-            </div>
-            <div className="text-white text-right">
-              <p className="text-sm opacity-80">
-                Question {state.currentQuestion + 1}/{state.questions.length}
-              </p>
-              <Badge
-                variant={state.timeLeft < 10 ? "destructive" : "default"}
-                className="text-2xl px-4 py-2"
-              >
-                {state.timeLeft}s
-              </Badge>
-            </div>
-          </div>
-
-          {/* Question Card */}
-          <Card key={`question-${state.currentQuestion}`}>
-            <CardHeader>
-              <CardTitle className="text-center text-2xl">
-                {state.gameType === "guess_name"
-                  ? "Who is this?"
-                  : "Where is " + state.question.person.first_name + "?"}
-              </CardTitle>
-            </CardHeader>
-            {state.gameType === "guess_name" && (
-              <CardContent>
-                <div className="flex justify-center">
-                  <div className="relative w-64 h-64 rounded-lg overflow-hidden border-4 border-gray-200">
-                    <Image
-                      key={`person-image-${state.currentQuestion}-${state.question.person.id}`}
-                      src={
-                        state.question.person.image_url || "/placeholder.png"
-                      }
-                      alt="Person"
-                      fill
-                      className="object-cover"
-                      priority={true}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            )}
-          </Card>
-
-          {/* Options Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            {state.question.options.map((option) => {
-              const isSelected = state.selectedAnswer === option.id;
-              const isCorrect = option.id === state.question.person.id;
-
-              let buttonClass = "h-auto min-h-[120px] text-lg font-semibold";
-
-              if (state.answered) {
-                if (isCorrect) {
-                  buttonClass += " bg-green-500 hover:bg-green-500 text-white";
-                } else if (isSelected) {
-                  buttonClass += " bg-red-500 hover:bg-red-500 text-white";
-                }
-              }
-
-              return (
-                <Button
-                  key={option.id}
-                  onClick={() => state.handleAnswer(option.id)}
-                  disabled={state.answered}
-                  className={buttonClass}
-                  variant={state.answered ? "default" : "outline"}
+        <div
+          className={cn(
+            "transition-colors duration-700 grow flex flex-col gap-2 p-4 items-center justify-center bg-gradient-to-br",
+            state.isTransitioning && state.lastAnswerCorrect === true
+              ? "from-green-600 to-green-800"
+              : state.isTransitioning && state.lastAnswerCorrect === false
+                ? "from-red-600 to-red-800"
+                : "from-purple-500 to-pink-500",
+          )}
+        >
+          <Container className="flex flex-col gap-6">
+            {/* Header */}
+            <div className="flex justify-between items-center">
+              <div className="text-white">
+                <p className="text-sm opacity-80">{state.playerName}</p>
+                <p className="text-2xl font-bold">
+                  Score: {state.score}/{state.questions.length}
+                </p>
+              </div>
+              <div className="text-white text-right">
+                <p className="text-sm opacity-80">
+                  Question {state.currentQuestion + 1}/{state.questions.length}
+                </p>
+                <Badge
+                  variant={state.timeLeft < 10 ? "destructive" : "default"}
+                  className="text-2xl px-4 py-2"
                 >
-                  {state.gameType === "guess_name" ? (
-                    <span>
-                      {option.first_name} {option.last_name}
-                    </span>
-                  ) : (
-                    <div
-                      key={`option-image-${state.currentQuestion}-${option.id}`}
-                      className="relative w-full h-32"
-                    >
-                      <Image
-                        src={option.image_url || "/placeholder.png"}
-                        alt={`${option.first_name} ${option.last_name}`}
-                        fill
-                        className="object-cover rounded"
-                        priority={true}
-                      />
+                  {state.timeLeft}s
+                </Badge>
+              </div>
+            </div>
+
+            {/* Question Card */}
+            <div className="relative">
+              {/* Current question - fades out */}
+              <Card
+                className={cn(
+                  "transition-opacity duration-700",
+                  state.isTransitioning ? "opacity-0" : "opacity-100",
+                )}
+              >
+                <CardHeader>
+                  <CardTitle className="text-center text-2xl">
+                    {state.gameType === "guess_name"
+                      ? "Who is this?"
+                      : "Where is " + state.question.person.first_name + "?"}
+                  </CardTitle>
+                </CardHeader>
+                {state.gameType === "guess_name" && (
+                  <CardContent>
+                    <div className="flex justify-center">
+                      <div className="relative w-64 h-64 rounded-lg overflow-hidden border-4 border-gray-200">
+                        <Image
+                          key={`person-image-${state.currentQuestion}-${state.question.person.id}`}
+                          src={
+                            state.question.person.image_url || "/placeholder.png"
+                          }
+                          alt="Person"
+                          fill
+                          className="object-cover"
+                          priority={true}
+                        />
+                      </div>
                     </div>
+                  </CardContent>
+                )}
+              </Card>
+
+              {/* Next question - fades in */}
+              {state.nextQuestion && (
+                <Card
+                  className={cn(
+                    "absolute inset-0 transition-opacity duration-700",
+                    state.isTransitioning ? "opacity-0" : "opacity-100",
                   )}
-                </Button>
-              );
-            })}
-          </div>
-        </Container>
+                >
+                  <CardHeader>
+                    <CardTitle className="text-center text-2xl">
+                      {state.gameType === "guess_name"
+                        ? "Who is this?"
+                        : "Where is " + state.nextQuestion.person.first_name + "?"}
+                    </CardTitle>
+                  </CardHeader>
+                  {state.gameType === "guess_name" && (
+                    <CardContent>
+                      <div className="flex justify-center">
+                        <div className="relative w-64 h-64 rounded-lg overflow-hidden border-4 border-gray-200">
+                          <Image
+                            key={`person-image-next-${state.nextQuestion.person.id}`}
+                            src={
+                              state.nextQuestion.person.image_url || "/placeholder.png"
+                            }
+                            alt="Person"
+                            fill
+                            className="object-cover"
+                            priority={true}
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  )}
+                </Card>
+              )}
+            </div>
+
+            {/* Options Grid */}
+            <div className="relative">
+              {/* Current options - fades out */}
+              <div
+                className={cn(
+                  "grid grid-cols-2 gap-4 transition-opacity duration-700",
+                  state.isTransitioning ? "opacity-0" : "opacity-100",
+                )}
+              >
+                {state.question.options.map((option) => {
+                const isSelected = state.selectedAnswer === option.id;
+                const isCorrect = option.id === state.question.person.id;
+
+                let buttonClass = "h-auto min-h-[120px] text-lg font-semibold";
+
+                if (state.answered) {
+                  if (isCorrect) {
+                    buttonClass +=
+                      " bg-green-500 hover:bg-green-500 text-white";
+                  } else if (isSelected) {
+                    buttonClass += " bg-red-500 hover:bg-red-500 text-white";
+                  }
+                }
+
+                return (
+                  <Button
+                    key={option.id}
+                    onClick={() => state.handleAnswer(option.id)}
+                    disabled={state.answered}
+                    className={buttonClass}
+                    variant={state.answered ? "default" : "outline"}
+                  >
+                    {state.gameType === "guess_name" ? (
+                      <span>
+                        {option.first_name} {option.last_name}
+                      </span>
+                    ) : (
+                      <div
+                        key={`option-image-${state.currentQuestion}-${option.id}`}
+                        className="relative w-full h-32"
+                      >
+                        <Image
+                          src={option.image_url || "/placeholder.png"}
+                          alt={`${option.first_name} ${option.last_name}`}
+                          fill
+                          className="object-cover rounded"
+                          priority={true}
+                        />
+                      </div>
+                    )}
+                  </Button>
+                );
+              })}
+              </div>
+
+              {/* Next options - fades in */}
+              {state.nextQuestion && (
+                <div
+                  className={cn(
+                    "absolute inset-0 grid grid-cols-2 gap-4 transition-opacity duration-700",
+                    state.isTransitioning ? "opacity-0" : "opacity-100",
+                  )}
+                >
+                  {state.nextQuestion.options.map((option) => {
+                    const isSelected = state.selectedAnswer === option.id;
+                    const isCorrect = option.id === state.nextQuestion!.person.id;
+
+                    let buttonClass = "h-auto min-h-[120px] text-lg font-semibold";
+
+                    if (state.answered) {
+                      if (isCorrect) {
+                        buttonClass +=
+                          " bg-green-500 hover:bg-green-500 text-white";
+                      } else if (isSelected) {
+                        buttonClass +=
+                          " bg-red-500 hover:bg-red-500 text-white";
+                      }
+                    }
+
+                    return (
+                      <Button
+                        key={option.id}
+                        onClick={() => state.handleAnswer(option.id)}
+                        disabled={state.answered}
+                        className={buttonClass}
+                        variant={state.answered ? "default" : "outline"}
+                      >
+                        {state.gameType === "guess_name" ? (
+                          <span>
+                            {option.first_name} {option.last_name}
+                          </span>
+                        ) : (
+                          <div
+                            key={`option-image-${option.id}`}
+                            className="relative w-full h-32"
+                          >
+                            <Image
+                              src={option.image_url || "/placeholder.png"}
+                              alt={`${option.first_name} ${option.last_name}`}
+                              fill
+                              className="object-cover rounded"
+                              priority={true}
+                            />
+                          </div>
+                        )}
+                      </Button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </Container>
+        </div>
       );
     default:
       const _exhaustiveCheck: undefined = state;

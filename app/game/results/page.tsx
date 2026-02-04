@@ -106,82 +106,84 @@ export default function GameResultsPage() {
   const grade = getGrade();
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <div className="text-6xl mb-4">{grade.emoji}</div>
-        <CardTitle className={`text-4xl font-bold ${grade.color}`}>
-          {grade.text}
-        </CardTitle>
-        <CardDescription className="text-lg mt-2">
-          You scored {score} out of {total}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="text-center">
-          <div className="text-6xl font-bold mb-2">{percentage}%</div>
-          <p className="text-muted-foreground">Accuracy</p>
-        </div>
+    <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="text-6xl mb-4">{grade.emoji}</div>
+          <CardTitle className={`text-4xl font-bold ${grade.color}`}>
+            {grade.text}
+          </CardTitle>
+          <CardDescription className="text-lg mt-2">
+            You scored {score} out of {total}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="text-center">
+            <div className="text-6xl font-bold mb-2">{percentage}%</div>
+            <p className="text-muted-foreground">Accuracy</p>
+          </div>
 
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <div className="text-2xl font-bold text-green-600">{score}</div>
-            <p className="text-sm text-muted-foreground">Correct</p>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-red-600">
-              {total - score}
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold text-green-600">{score}</div>
+              <p className="text-sm text-muted-foreground">Correct</p>
             </div>
-            <p className="text-sm text-muted-foreground">Wrong</p>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-blue-600">{total}</div>
-            <p className="text-sm text-muted-foreground">Total</p>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          {gameEnded === null ? (
-            <div className="p-3 bg-gray-100 rounded-lg text-center">
-              <p className="text-sm text-muted-foreground">Loading...</p>
-            </div>
-          ) : gameEnded ? (
-            <>
-              <div className="p-3 bg-orange-50 rounded-lg text-black text-center mb-2">
-                <p className="text-sm font-medium">Game has ended</p>
+            <div>
+              <div className="text-2xl font-bold text-red-600">
+                {total - score}
               </div>
-              <Button
-                onClick={() => router.push("/game/join")}
-                className="w-full"
-                size="lg"
-              >
-                Join New Game
-              </Button>
-              <Button
-                onClick={() => router.push("/")}
-                variant="outline"
-                className="w-full"
-                size="lg"
-              >
-                Back to Home
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button onClick={handlePlayAgain} className="w-full" size="lg">
-                Play Again
-              </Button>
-              <Button
-                onClick={() => router.push("/")}
-                variant="outline"
-                className="w-full"
-                size="lg"
-              >
-                Back to Home
-              </Button>
-            </>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+              <p className="text-sm text-muted-foreground">Wrong</p>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-blue-600">{total}</div>
+              <p className="text-sm text-muted-foreground">Total</p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {gameEnded === null ? (
+              <div className="p-3 bg-gray-100 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">Loading...</p>
+              </div>
+            ) : gameEnded ? (
+              <>
+                <div className="p-3 bg-orange-50 rounded-lg text-black text-center mb-2">
+                  <p className="text-sm font-medium">Game has ended</p>
+                </div>
+                <Button
+                  onClick={() => router.push("/game/join")}
+                  className="w-full"
+                  size="lg"
+                >
+                  Join New Game
+                </Button>
+                <Button
+                  onClick={() => router.push("/")}
+                  variant="outline"
+                  className="w-full"
+                  size="lg"
+                >
+                  Back to Home
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button onClick={handlePlayAgain} className="w-full" size="lg">
+                  Play Again
+                </Button>
+                <Button
+                  onClick={() => router.push("/")}
+                  variant="outline"
+                  className="w-full"
+                  size="lg"
+                >
+                  Back to Home
+                </Button>
+              </>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

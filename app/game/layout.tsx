@@ -18,9 +18,7 @@ export default function ProtectedLayout({
           <AuthButton />
         </div>
       </header>
-      <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
-        <Suspense>{children}</Suspense>
-      </div>
+      <Suspense>{children}</Suspense>
     </main>
   );
 }
