@@ -68,7 +68,7 @@ export default async function GroupDetailPage({
             <CardContent className="space-y-4">
               <GroupSettings groupId={id} initialGroup={groupData} />
               <div className="mt-6">
-                <Link href={`/protected/game/host/${groupData.id}`}>
+                <Link href={`/protected/groups/${groupData.id}/host`}>
                   <Button className="w-full">Start Game</Button>
                 </Link>
               </div>

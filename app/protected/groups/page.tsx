@@ -83,7 +83,7 @@ export default async function GroupsPage() {
                     </Button>
                   </Link>
                   <Link
-                    href={`/protected/game/host/${group.id}`}
+                    href={`/protected/groups/${group.id}/host`}
                     className="flex-1"
                   >
                     <Button className="w-full">Start Game</Button>

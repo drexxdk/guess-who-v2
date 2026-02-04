@@ -273,6 +273,18 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
     setResizingCorner(null);
   };
 
+  const handleReset = () => {
+    setFormData({
+      first_name: "",
+      last_name: "",
+      gender: "other",
+    });
+    setPreview("");
+    setSelectedFile(null);
+    setOriginalImage("");
+    setShowCropper(false);
+  };
+
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -641,18 +653,29 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
         )}
       </div>
 
-      <Button
-        type="submit"
-        disabled={
-          loading ||
-          !formData.first_name.trim() ||
-          !formData.last_name.trim() ||
-          !selectedFile
-        }
-        className="w-full"
-      >
-        {loading ? "Adding..." : "Add Person"}
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleReset}
+          disabled={loading}
+          className="flex-1"
+        >
+          Reset
+        </Button>
+        <Button
+          type="submit"
+          disabled={
+            loading ||
+            !formData.first_name.trim() ||
+            !formData.last_name.trim() ||
+            !selectedFile
+          }
+          className="flex-1"
+        >
+          {loading ? "Adding..." : "Add Person"}
+        </Button>
+      </div>
     </form>
   );
 }

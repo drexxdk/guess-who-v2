@@ -1,4 +1,5 @@
 import { AuthButton } from "@/components/auth-button";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -18,6 +19,7 @@ export default function ProtectedLayout({
       <div className="flex-grow flex flex-col">
         <div className="py-8 px-2">
           <div className="w-full mx-auto max-w-screen-lg">
+            <Breadcrumbs />
             <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
           </div>
         </div>
