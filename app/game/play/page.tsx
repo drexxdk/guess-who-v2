@@ -467,7 +467,6 @@ const RenderState = ({ state }: { state: StateUnion }) => {
               </div>
             </div>
 
-            {/* Question Card */}
             <AnimatePresence mode="popLayout">
               <motion.div
                 key={state.currentQuestion}
@@ -476,95 +475,94 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                 exit={{ x: "-100vw", opacity: 0 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
               >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-center text-2xl">
-                      {state.gameType === "guess_name"
-                        ? "Who is this?"
-                        : "Where is " + state.question.person.first_name + "?"}
-                    </CardTitle>
-                  </CardHeader>
-                  {state.gameType === "guess_name" && (
-                    <CardContent>
-                      <div className="flex justify-center">
-                        <div className="relative w-64 h-64 rounded-lg overflow-hidden border-4 border-gray-200">
-                          <Image
-                            key={`person-image-${state.currentQuestion}-${state.question.person.id}`}
-                            src={
-                              state.question.person.image_url ||
-                              "/placeholder.png"
-                            }
-                            alt="Person"
-                            fill
-                            className="object-cover"
-                            priority={true}
-                          />
+                <div
+                  className={`flex gap-6 ${state.gameType === "guess_image" ? "flex-col" : "flex-col lg:flex-row"}`}
+                >
+                  <Card className="flex-shrink-0 justify-center">
+                    <CardHeader>
+                      <CardTitle className="text-center text-2xl">
+                        {state.gameType === "guess_name"
+                          ? "Who is this?"
+                          : "Where is " +
+                            state.question.person.first_name +
+                            "?"}
+                      </CardTitle>
+                    </CardHeader>
+                    {state.gameType === "guess_name" && (
+                      <CardContent>
+                        <div className="flex justify-center">
+                          <div className="relative w-full max-w-64 aspect-square rounded-lg overflow-hidden border-4 border-gray-200">
+                            <Image
+                              width={200}
+                              height={200}
+                              key={`person-image-${state.currentQuestion}-${state.question.person.id}`}
+                              src={
+                                state.question.person.image_url ||
+                                "/placeholder.png"
+                              }
+                              alt="Person"
+                              priority={true}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  )}
-                </Card>
-              </motion.div>
-            </AnimatePresence>
+                      </CardContent>
+                    )}
+                  </Card>
+                  {/* Question Options */}
+                  <div
+                    className={`gap-2 flex-1 justify-center ${state.gameType === "guess_image" ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]" : "flex flex-col"}`}
+                  >
+                    {state.question.options.map((option) => {
+                      const isSelected = state.selectedAnswer === option.id;
+                      const isCorrect = option.id === state.question.person.id;
 
-            {/* Options Grid */}
-            <AnimatePresence mode="popLayout">
-              <motion.div
-                key={`options-${state.currentQuestion}`}
-                initial={{ x: "100vw", opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: "-100vw", opacity: 0 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="grid grid-cols-2 gap-4"
-              >
-                {state.question.options.map((option) => {
-                  const isSelected = state.selectedAnswer === option.id;
-                  const isCorrect = option.id === state.question.person.id;
+                      let buttonClass =
+                        "text-lg font-semibold disabled:opacity-100";
+                      let buttonVariant: "default" | "outline" = "outline";
 
-                  let buttonClass =
-                    "h-auto min-h-[120px] text-lg font-semibold disabled:opacity-100";
-                  let buttonVariant: "default" | "outline" = "outline";
+                      if (state.answered) {
+                        if (isCorrect) {
+                          buttonClass +=
+                            " bg-green-500 hover:bg-green-500 text-white";
+                          buttonVariant = "default";
+                        } else if (isSelected) {
+                          buttonClass +=
+                            " bg-red-500 hover:bg-red-500 text-white";
+                          buttonVariant = "default";
+                        }
+                      }
 
-                  if (state.answered) {
-                    if (isCorrect) {
-                      buttonClass +=
-                        " bg-green-500 hover:bg-green-500 text-white";
-                      buttonVariant = "default";
-                    } else if (isSelected) {
-                      buttonClass += " bg-red-500 hover:bg-red-500 text-white";
-                      buttonVariant = "default";
-                    }
-                  }
-
-                  return (
-                    <Button
-                      key={option.id}
-                      onClick={() => state.handleAnswer(option.id)}
-                      disabled={state.answered}
-                      className={buttonClass}
-                      variant={buttonVariant}
-                    >
-                      {state.gameType === "guess_name" ? (
-                        <span>
-                          {option.first_name} {option.last_name}
-                        </span>
-                      ) : (
-                        <div
-                          key={`option-image-${state.currentQuestion}-${option.id}`}
-                          className="relative w-full h-32"
+                      return (
+                        <Button
+                          key={option.id}
+                          onClick={() => state.handleAnswer(option.id)}
+                          disabled={state.answered}
+                          className={buttonClass}
+                          variant={buttonVariant}
                         >
-                          <Image
-                            src={option.image_url || "/placeholder.png"}
-                            alt={`${option.first_name} ${option.last_name}`}
-                            fill
-                            className="object-cover rounded"
-                            priority={true}
-                          />
-                        </div>
-                      )}
-                    </Button>
-                  );
-                })}
+                          {state.gameType === "guess_name" ? (
+                            <span className="truncate">
+                              {option.first_name} {option.last_name}
+                            </span>
+                          ) : (
+                            <div
+                              key={`option-image-${state.currentQuestion}-${option.id}`}
+                              className="flex justify-center relative w-full min-w-[100px] min-h-[100px] max-h-[200px]"
+                            >
+                              <Image
+                                src={option.image_url || "/placeholder.png"}
+                                alt={`${option.first_name} ${option.last_name}`}
+                                width={200}
+                                height={200}
+                                priority={true}
+                              />
+                            </div>
+                          )}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
               </motion.div>
             </AnimatePresence>
           </Container>

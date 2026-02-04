@@ -153,7 +153,6 @@ export default function GameResultsPage() {
                 <Button
                   onClick={() => router.push("/game/join")}
                   className="w-full"
-                  size="lg"
                 >
                   Join New Game
                 </Button>
@@ -161,21 +160,19 @@ export default function GameResultsPage() {
                   onClick={() => router.push("/")}
                   variant="outline"
                   className="w-full"
-                  size="lg"
                 >
                   Back to Home
                 </Button>
               </>
             ) : (
               <>
-                <Button onClick={handlePlayAgain} className="w-full" size="lg">
+                <Button onClick={handlePlayAgain} className="w-full">
                   Play Again
                 </Button>
                 <Button
                   onClick={() => router.push("/")}
                   variant="outline"
                   className="w-full"
-                  size="lg"
                 >
                   Back to Home
                 </Button>

@@ -248,7 +248,6 @@ export default function GameControlPage({
                 onClick={endGame}
                 variant="destructive"
                 className="w-full"
-                size="lg"
               >
                 End Game
               </Button>
@@ -256,7 +255,6 @@ export default function GameControlPage({
                 onClick={() => router.push("/protected")}
                 variant="outline"
                 className="w-full"
-                size="lg"
               >
                 Back to Dashboard
               </Button>

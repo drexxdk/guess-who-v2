@@ -116,7 +116,6 @@ export function PeopleList({ people }: { people: Person[] }) {
             </div>
             <Button
               variant="destructive"
-              size="sm"
               onClick={() => handleDelete(person.id, person.image_url)}
               disabled={deleting === person.id}
             >

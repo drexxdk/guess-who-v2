@@ -81,7 +81,7 @@ export default async function ProtectedPage() {
                   </div>
                   
                   <Link href={`/protected/game/play/${session.id}`}>
-                    <Button className="w-full" size="sm">Open Game</Button>
+                    <Button className="w-full">Open Game</Button>
                   </Link>
                 </CardContent>
               </Card>

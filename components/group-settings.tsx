@@ -101,7 +101,6 @@ export function GroupSettings({ groupId, initialGroup }: GroupSettingsProps) {
             onClick={handleSave}
             disabled={isSaving}
             className="flex-1"
-            size="sm"
           >
             {isSaving ? "Saving..." : "Save"}
           </Button>
@@ -109,7 +108,6 @@ export function GroupSettings({ groupId, initialGroup }: GroupSettingsProps) {
             onClick={handleCancel}
             variant="outline"
             className="flex-1"
-            size="sm"
             disabled={isSaving}
           >
             Cancel
@@ -135,7 +133,6 @@ export function GroupSettings({ groupId, initialGroup }: GroupSettingsProps) {
       <Button
         onClick={() => setIsEditing(true)}
         variant="outline"
-        size="sm"
         className="mt-2"
       >
         Edit Settings
