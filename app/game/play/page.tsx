@@ -8,6 +8,9 @@ import { markPlayerAsLeft } from "@/app/actions/mark-player-left";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ErrorMessage } from "@/components/ui/error-message";
+import { logger, logError, getErrorMessage } from "@/lib/logger";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { Person, GameSession, GameType } from "@/lib/schemas";
@@ -108,7 +111,7 @@ export default function GamePlayPage() {
         });
       }
 
-      console.log(
+      logger.log(
         "generateQuestions: Created",
         questionList.length,
         "questions",
@@ -125,7 +128,7 @@ export default function GamePlayPage() {
     }
 
     try {
-      console.log("[loadGame] Starting loadGame");
+      logger.log("[loadGame] Starting loadGame");
       // Reset all game state at the start
       setLoading(true);
       setCurrentQuestion(0);
@@ -149,7 +152,7 @@ export default function GamePlayPage() {
         .single();
 
       if (!session) {
-        console.error("Game session not found for code:", gameCode);
+        logError("Game session not found for code:", gameCode);
         setError("Game not found!");
         setLoading(false);
         return;
@@ -170,10 +173,10 @@ export default function GamePlayPage() {
         .select("*")
         .eq("group_id", session.group_id);
 
-      console.log("People data:", peopleData, "Error:", peopleError);
+      logger.log("People data:", peopleData, "Error:", peopleError);
 
       if (!peopleData || peopleData.length === 0) {
-        console.error("No people found in group");
+        logError("No people found in group");
         setError("This group has no people! Add people to the group first.");
         setLoading(false);
         return;
@@ -189,7 +192,7 @@ export default function GamePlayPage() {
         totalQuestions,
         optionsCount,
       );
-      console.log(
+      logger.log(
         "[loadGame] generateQuestions called with",
         totalQuestions,
         "questions, got",
@@ -223,7 +226,7 @@ export default function GamePlayPage() {
           );
 
           if (answeredQuestions.length > 0) {
-            console.log(
+            logger.log(
               "Player has answered",
               answeredQuestions.length,
               "questions, resuming from question",
@@ -249,7 +252,7 @@ export default function GamePlayPage() {
         const elapsedMs = Date.now() - parseInt(storedStartTime);
         const elapsedSeconds = Math.floor(elapsedMs / 1000);
         initialTimeLeft = Math.max(0, timeLimit - elapsedSeconds);
-        console.log(
+        logger.log(
           "Resuming question with",
           initialTimeLeft,
           "seconds remaining",
@@ -262,19 +265,16 @@ export default function GamePlayPage() {
         );
       }
 
-      console.log("Game loaded successfully, starting game");
-      console.log("Questions generated:", session.total_questions);
+      logger.log("Game loaded successfully, starting game");
+      logger.log("Questions generated:", session.total_questions);
 
       // Ensure all state updates are batched before marking game as started
       setTimeLeft(initialTimeLeft);
       setLoading(false);
       // Don't set gameStarted here - let the useEffect below handle it when questions are ready
     } catch (error) {
-      console.error("Error loading game:", error);
-      setError(
-        "Error loading game: " +
-          (error instanceof Error ? error.message : "Unknown error"),
-      );
+      logError("Error loading game:", error);
+      setError("Error loading game: " + getErrorMessage(error));
       setLoading(false);
     }
   }, [gameCode, playerName, generateQuestions, retry]);
@@ -294,7 +294,7 @@ export default function GamePlayPage() {
       .not("correct_option_id", "is", null); // Exclude join tracking records
 
     if (queryError) {
-      console.error("Error querying answers:", queryError);
+      logError("Error querying answers:", queryError);
     }
 
     // Count correct answers from the database
@@ -323,7 +323,7 @@ export default function GamePlayPage() {
       // Get join record ID from state or sessionStorage
       const recordId = joinRecordId || sessionStorage.getItem("joinRecordId");
       if (!recordId) {
-        console.error("No join record ID available");
+        logError("No join record ID available");
         return;
       }
 
@@ -339,7 +339,7 @@ export default function GamePlayPage() {
 
       // Save answer to database
       const supabase = createClient();
-      console.log(
+      logger.log(
         "Saving answer with join_id:",
         recordId,
         "is_correct:",
@@ -357,9 +357,9 @@ export default function GamePlayPage() {
       });
 
       if (error) {
-        console.error("Error saving answer:", error);
+        logError("Error saving answer:", error);
       } else {
-        console.log("Answer saved successfully");
+        logger.log("Answer saved successfully");
       }
 
       // Move to next question after animation completes
@@ -409,7 +409,7 @@ export default function GamePlayPage() {
 
     // Check if this component instance has already created a join record (for React Strict Mode)
     if (joinRecordId) {
-      console.log(
+      logger.log(
         "Join record already created for this instance:",
         joinRecordId,
       );
@@ -431,7 +431,7 @@ export default function GamePlayPage() {
 
       if (existingJoins && existingJoins.length > 0) {
         // Reuse the existing join record (player rejoining)
-        console.log(
+        logger.log(
           "Player rejoining - using existing join record:",
           existingJoins[0].id,
         );
@@ -442,7 +442,7 @@ export default function GamePlayPage() {
         );
       } else {
         // New join - create a new join tracking entry
-        console.log("Creating new join tracking record:", {
+        logger.log("Creating new join tracking record:", {
           session_id: gameSession.id,
           player_name: playerName,
         });
@@ -458,15 +458,15 @@ export default function GamePlayPage() {
           })
           .select("id");
         if (insertError) {
-          console.error("Error inserting join tracking:", insertError);
-          console.error(
+          logError("Error inserting join tracking:", insertError);
+          logError(
             "Full error object:",
             JSON.stringify(insertError, null, 2),
           );
         } else {
-          console.log("Join tracking inserted successfully");
+          logger.log("Join tracking inserted successfully");
           const recordId = joinData?.[0]?.id;
-          console.log("Join record ID:", recordId);
+          logger.log("Join record ID:", recordId);
           setJoinRecordId(recordId || null);
           if (recordId) {
             sessionStorage.setItem(
@@ -486,9 +486,9 @@ export default function GamePlayPage() {
     if (!gameSession?.id || !playerName) return;
 
     const handlePlayerLeft = async () => {
-      console.log("Player leaving game:", playerName);
+      logger.log("Player leaving game:", playerName);
       const result = await markPlayerAsLeft(gameSession.id, playerName);
-      console.log("Mark player as left result:", result);
+      logger.log("Mark player as left result:", result);
     };
 
     const handleBeforeUnload = () => {
@@ -534,7 +534,7 @@ export default function GamePlayPage() {
               .not("correct_option_id", "is", null); // Exclude join tracking records
 
             if (queryError) {
-              console.error("Error querying answers:", queryError);
+              logError("Error querying answers:", queryError);
             }
 
             // Count correct answers from the database
@@ -673,14 +673,10 @@ const RenderState = ({ state }: { state: StateUnion }) => {
         <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
           {state.error && (
             <Container>
-              <div className="p-4 bg-red-100 text-red-700 rounded-lg">
-                {state.error}
-              </div>
+              <ErrorMessage message={state.error} size="lg" />
             </Container>
           )}
-          {!state.error && (
-            <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-          )}
+          {!state.error && <LoadingSpinner />}
         </div>
       );
     case "waiting-for-start":
@@ -688,9 +684,7 @@ const RenderState = ({ state }: { state: StateUnion }) => {
         <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
           <Container>
             {state.error ? (
-              <div className="p-4 bg-red-100 text-red-700 rounded-lg">
-                {state.error}
-              </div>
+              <ErrorMessage message={state.error} size="lg" />
             ) : (
               <Message text="Waiting for game to start..." />
             )}

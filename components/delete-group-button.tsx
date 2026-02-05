@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ErrorMessage } from "@/components/ui/error-message";
 import { createClient } from "@/lib/supabase/client";
+import { logError, getErrorMessage } from "@/lib/logger";
 
 export function DeleteGroupButton({ groupId }: { groupId: string }) {
   const router = useRouter();
@@ -39,7 +41,7 @@ export function DeleteGroupButton({ groupId }: { groupId: string }) {
                 await supabase.storage.from("person-images").remove([filename]);
               }
             } catch (err) {
-              console.error("Failed to delete image:", err);
+              logError("Failed to delete image:", err);
               // Continue with deletion even if image deletion fails
             }
           }
@@ -63,8 +65,7 @@ export function DeleteGroupButton({ groupId }: { groupId: string }) {
       router.push("/protected/groups");
       router.refresh();
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      setError("Error deleting group: " + errorMessage);
+      setError("Error deleting group: " + getErrorMessage(err));
     } finally {
       setDeleting(false);
     }
@@ -81,11 +82,7 @@ export function DeleteGroupButton({ groupId }: { groupId: string }) {
         {deleting ? "Deleting Group..." : "Delete Group"}
       </Button>
 
-      {error && (
-        <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm mt-2">
-          {error}
-        </div>
-      )}
+      <ErrorMessage message={error} className="mt-2" />
     </>
   );
 }

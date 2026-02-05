@@ -13,11 +13,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useFormState } from "@/lib/hooks/use-form-state";
+import { ErrorMessage } from "@/components/ui/error-message";
 
 export default function NewGroupPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { error, isLoading, execute, clearError } = useFormState();
   const [formData, setFormData] = useState({
     name: "",
     time_limit_seconds: 15,
@@ -31,15 +32,13 @@ export default function NewGroupPage() {
       time_limit_seconds: 15,
       options_count: 3,
     });
-    setError(null);
-  }, []);
+    clearError();
+  }, [clearError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
 
-    try {
+    await execute(async () => {
       const supabase = createClient();
       const {
         data: { user },
@@ -71,11 +70,7 @@ export default function NewGroupPage() {
         router.push(`/protected/groups/${data.id}`);
         router.refresh();
       }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -145,7 +140,7 @@ export default function NewGroupPage() {
             </p>
           </div>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          <ErrorMessage message={error} />
 
           <div className="flex gap-4">
             <Button
@@ -156,8 +151,8 @@ export default function NewGroupPage() {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? "Creating..." : "Create Group"}
+            <Button type="submit" disabled={isLoading} className="flex-1">
+              {isLoading ? "Creating..." : "Create Group"}
             </Button>
           </div>
         </form>

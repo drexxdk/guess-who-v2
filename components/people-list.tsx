@@ -6,6 +6,9 @@ import { FaTrash } from "react-icons/fa6";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ErrorMessage } from "@/components/ui/error-message";
+import { deletePersonImage } from "@/lib/game-utils";
+import { getErrorMessage } from "@/lib/logger";
 import type { Person } from "@/lib/schemas";
 
 export function PeopleList({ people }: { people: Person[] }) {
@@ -21,34 +24,8 @@ export function PeopleList({ people }: { people: Person[] }) {
 
       // Delete image from storage if it exists
       if (imageUrl) {
-        try {
-          console.log("Full image URL:", imageUrl);
-
-          // Extract filename from URL
-          // URL format: https://{domain}/storage/v1/object/public/person-images/{filename}
-          const urlParts = imageUrl.split("/person-images/");
-          console.log("URL parts:", urlParts);
-
-          if (urlParts.length > 1) {
-            const filename = decodeURIComponent(urlParts[1]);
-            console.log("Extracted filename:", filename);
-
-            const { data, error: deleteError } = await supabase.storage
-              .from("person-images")
-              .remove([filename]);
-
-            console.log("Delete response - data:", data, "error:", deleteError);
-
-            if (deleteError) {
-              console.error("Error deleting image:", deleteError);
-            } else {
-              console.log("Image deleted successfully. Response:", data);
-            }
-          } else {
-            console.warn("Could not extract filename from URL:", imageUrl);
-          }
-        } catch (storageErr) {
-          console.error("Failed to delete image from storage:", storageErr);
+        const result = await deletePersonImage(supabase, imageUrl);
+        if (!result.success) {
           // Continue with person deletion even if image deletion fails
         }
       }
@@ -63,8 +40,7 @@ export function PeopleList({ people }: { people: Person[] }) {
 
       // Let real-time subscription handle the removal
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      setError(errorMessage);
+      setError(getErrorMessage(err));
     } finally {
       setDeleting(null);
     }
@@ -121,11 +97,7 @@ export function PeopleList({ people }: { people: Person[] }) {
         ))}
       </div>
 
-      {error && (
-        <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm mt-3">
-          {error}
-        </div>
-      )}
+      <ErrorMessage message={error} className="mt-3" />
     </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { FaPencil } from "react-icons/fa6";
 import { PeopleList } from "@/components/people-list";
 import { AddPersonForm } from "@/components/add-person-form";
@@ -16,8 +16,9 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { GroupSettings } from "@/components/group-settings";
 import { DeleteGroupButton } from "@/components/delete-group-button";
-import { createClient } from "@/lib/supabase/client";
 import type { Group, Person } from "@/lib/schemas";
+import { logger } from "@/lib/logger";
+import { useMultiRealtimeSubscription } from "@/lib/hooks/use-realtime";
 
 export function GroupDetailClient({
   groupData,
@@ -32,72 +33,61 @@ export function GroupDetailClient({
   const [people, setPeople] = useState<Person[]>(initialPeople);
   const [isEditingSettings, setIsEditingSettings] = useState(false);
 
+  // Realtime event handlers
+  const handleDelete = useCallback((payload: { old: Record<string, unknown> }) => {
+    const deletedId = (payload.old as { id: string }).id;
+    logger.log("DELETE event received for person:", deletedId);
+    setPeople((prev) => prev.filter((p) => p.id !== deletedId));
+  }, []);
+
+  const handleInsert = useCallback((payload: { new: Record<string, unknown> }) => {
+    logger.log("INSERT event received:", payload.new);
+    setPeople((prev) =>
+      [...prev, payload.new as Person].sort((a, b) =>
+        a.first_name.localeCompare(b.first_name),
+      ),
+    );
+  }, []);
+
+  const handleUpdate = useCallback((payload: { new: Record<string, unknown> }) => {
+    logger.log("UPDATE event received:", payload.new);
+    setPeople((prev) =>
+      prev
+        .map((p) =>
+          p.id === (payload.new as Person).id ? (payload.new as Person) : p,
+        )
+        .sort((a, b) => a.first_name.localeCompare(b.first_name)),
+    );
+  }, []);
+
   // Watch for changes to people in this group
-  useEffect(() => {
-    const supabase = createClient();
-
-    const channel = supabase
-      .channel(`people:${groupId}`)
-      .on(
-        "postgres_changes",
+  const realtimeConfig = useMemo(
+    () => ({
+      channelName: `people:${groupId}`,
+      subscriptions: [
         {
-          event: "DELETE",
-          schema: "public",
           table: "people",
+          event: "DELETE" as const,
+          onEvent: handleDelete,
         },
-        (payload) => {
-          // Remove deleted person from state
-          const deletedId = (payload.old as { id: string }).id;
-          console.log("DELETE event received for person:", deletedId);
-          setPeople((prev) => prev.filter((p) => p.id !== deletedId));
-        },
-      )
-      .on(
-        "postgres_changes",
         {
-          event: "INSERT",
-          schema: "public",
           table: "people",
+          event: "INSERT" as const,
           filter: `group_id=eq.${groupId}`,
+          onEvent: handleInsert,
         },
-        (payload) => {
-          // Add new person to state
-          console.log("INSERT event received:", payload.new);
-          setPeople((prev) =>
-            [...prev, payload.new as Person].sort((a, b) =>
-              a.first_name.localeCompare(b.first_name),
-            ),
-          );
-        },
-      )
-      .on(
-        "postgres_changes",
         {
-          event: "UPDATE",
-          schema: "public",
           table: "people",
+          event: "UPDATE" as const,
           filter: `group_id=eq.${groupId}`,
+          onEvent: handleUpdate,
         },
-        (payload) => {
-          // Update person in state
-          console.log("UPDATE event received:", payload.new);
-          setPeople((prev) =>
-            prev
-              .map((p) =>
-                p.id === (payload.new as Person).id
-                  ? (payload.new as Person)
-                  : p,
-              )
-              .sort((a, b) => a.first_name.localeCompare(b.first_name)),
-          );
-        },
-      )
-      .subscribe();
+      ],
+    }),
+    [groupId, handleDelete, handleInsert, handleUpdate],
+  );
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [groupId]);
+  useMultiRealtimeSubscription<Person>(realtimeConfig);
 
   const hasEnoughPeople =
     people.length >= (updatedGroupData.options_count ?? 4);

@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +12,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { logger, logError } from "@/lib/logger";
+import { useRealtimeSubscription } from "@/lib/hooks/use-realtime";
 
 export default function GameResultsPage() {
   const searchParams = useSearchParams();
@@ -27,14 +29,13 @@ export default function GameResultsPage() {
     searchParams?.get("name") || sessionStorage.getItem("lastPlayerName") || "";
   const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
 
+  // Check initial game session status
   useEffect(() => {
     if (!sessionId) return;
 
-    const supabase = createClient();
-
-    // Check initial game session status
     const checkGameStatus = async () => {
       try {
+        const supabase = createClient();
         const { data: session } = await supabase
           .from("game_sessions")
           .select("status")
@@ -47,34 +48,37 @@ export default function GameResultsPage() {
           setGameEnded(false);
         }
       } catch (error) {
-        console.error("Error checking game status:", error);
+        logError("Error checking game status:", error);
       }
     };
 
     checkGameStatus();
-
-    // Watch for game session status changes
-    const channel = supabase
-      .channel(`game-results:${sessionId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "game_sessions",
-          filter: `id=eq.${sessionId}`,
-        },
-        (payload) => {
-          const updatedSession = payload.new as { status: string };
-          setGameEnded(updatedSession.status === "completed");
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [sessionId]);
+
+  // Watch for game session status changes
+  const handleSessionUpdate = useCallback(
+    (payload: { new: Record<string, unknown> }) => {
+      const updatedSession = payload.new as { status: string };
+      setGameEnded(updatedSession.status === "completed");
+    },
+    [],
+  );
+
+  const realtimeConfig = useMemo(
+    () =>
+      sessionId
+        ? {
+            channelName: `game-results:${sessionId}`,
+            table: "game_sessions",
+            event: "UPDATE" as const,
+            filter: `id=eq.${sessionId}`,
+            onEvent: handleSessionUpdate,
+          }
+        : null,
+    [sessionId, handleSessionUpdate],
+  );
+
+  useRealtimeSubscription<{ status: string }>(realtimeConfig);
 
   const handlePlayAgain = async () => {
     if (gameEnded) {
@@ -88,7 +92,7 @@ export default function GameResultsPage() {
         // Clear all previous data for this player in this session before restarting
         const supabase = createClient();
 
-        console.log("[handlePlayAgain] Starting retry for:", playerName);
+        logger.log("[handlePlayAgain] Starting retry for:", playerName);
 
         // First, find the join record for this player
         const { data: joinRecords } = await supabase
@@ -101,7 +105,7 @@ export default function GameResultsPage() {
           .limit(1);
 
         const joinRecordId = joinRecords?.[0]?.id;
-        console.log("[handlePlayAgain] Found join record:", joinRecordId);
+        logger.log("[handlePlayAgain] Found join record:", joinRecordId);
 
         // Delete only the actual answers (not the join tracking record)
         // Join tracking records have correct_option_id = null, so we only delete where it's not null
@@ -113,15 +117,15 @@ export default function GameResultsPage() {
           .not("correct_option_id", "is", null);
 
         if (deleteError) {
-          console.error("Error deleting answers:", deleteError);
+          logError("Error deleting answers:", deleteError);
         } else {
-          console.log("[handlePlayAgain] Answers deleted successfully");
+          logger.log("[handlePlayAgain] Answers deleted successfully");
         }
 
         // Touch the join record by updating it to trigger host's real-time subscription
         // This ensures the host sees the updated player list immediately
         if (joinRecordId) {
-          console.log(
+          logger.log(
             "[handlePlayAgain] Touching join record to trigger host update",
           );
           const { error: touchError } = await supabase
@@ -130,16 +134,16 @@ export default function GameResultsPage() {
             .eq("id", joinRecordId);
 
           if (touchError) {
-            console.error("Error touching join record:", touchError);
+            logError("Error touching join record:", touchError);
           } else {
-            console.log("[handlePlayAgain] Join record touched successfully");
+            logger.log("[handlePlayAgain] Join record touched successfully");
           }
         }
 
         // Clear all sessionStorage entries for this game/player
         Object.keys(sessionStorage).forEach((key) => {
           if (key.includes(gameCode) && key.includes(playerName)) {
-            console.log("[handlePlayAgain] Clearing sessionStorage:", key);
+            logger.log("[handlePlayAgain] Clearing sessionStorage:", key);
             sessionStorage.removeItem(key);
           }
         });
@@ -148,7 +152,7 @@ export default function GameResultsPage() {
         // and broadcasted the changes to subscribed clients
         await new Promise((resolve) => setTimeout(resolve, 300));
 
-        console.log(
+        logger.log(
           "[handlePlayAgain] Redirecting to play page with retry flag",
         );
 
@@ -157,7 +161,7 @@ export default function GameResultsPage() {
           `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&retry=true`,
         );
       } catch (err) {
-        console.error("Error in handlePlayAgain:", err);
+        logError("Error in handlePlayAgain:", err);
         // Even if there's an error, still try to navigate with retry flag
         router.push(
           `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&retry=true`,

@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { logger, logError } from "@/lib/logger";
 
 export async function markPlayerAsLeft(sessionId: string, playerName: string) {
   const supabase = await createClient();
@@ -13,11 +14,11 @@ export async function markPlayerAsLeft(sessionId: string, playerName: string) {
     .select();
 
   if (error) {
-    console.error("Error marking player as left:", error);
+    logError("Error marking player as left:", error);
     return { success: false, error };
   }
 
-  console.log(
+  logger.log(
     "Player marked as left successfully, updated records:",
     data?.length,
   );

@@ -9,6 +9,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { endGameSession } from "@/lib/game-utils";
 import type { GameSessionWithGroup } from "@/lib/schemas";
 
 export default function GameStartedPage({
@@ -35,7 +36,6 @@ export default function GameStartedPage({
       .single();
 
     if (error) {
-      console.error(error);
       setLoading(false);
       return;
     }
@@ -52,12 +52,7 @@ export default function GameStartedPage({
     if (!gameSession) return;
 
     const supabase = createClient();
-
-    // End the game by marking it as completed
-    await supabase
-      .from("game_sessions")
-      .update({ status: "completed" })
-      .eq("id", gameSession.id);
+    await endGameSession(supabase, gameSession.id);
 
     // Navigate back to group
     router.push(`/protected/groups/${groupId}/host`);

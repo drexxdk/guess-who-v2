@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { getErrorMessage } from "@/lib/logger";
 
 export function useFormState() {
   const [error, setError] = useState<string | null>(null);
@@ -13,9 +14,7 @@ export function useFormState() {
       try {
         return await action();
       } catch (err: unknown) {
-        const message =
-          err instanceof Error ? err.message : "An error occurred";
-        setError(message);
+        setError(getErrorMessage(err));
         return undefined;
       } finally {
         setIsLoading(false);

@@ -7,6 +7,10 @@ import { createClient } from "@/lib/supabase/client";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ErrorMessage } from "@/components/ui/error-message";
+import { endGameSession } from "@/lib/game-utils";
+import { logger } from "@/lib/logger";
 import { use } from "react";
 import type { GameSessionWithGroup } from "@/lib/schemas";
 
@@ -61,8 +65,8 @@ export default function GameControlPage({
       .select("*")
       .eq("session_id", sessionId);
 
-    console.log("Fetched game_answers for sessionId", sessionId, ":", answers);
-    console.log(
+    logger.log("Fetched game_answers for sessionId", sessionId, ":", answers);
+    logger.log(
       "Raw is_active values:",
       answers?.map((a) => ({
         name: a.player_name,
@@ -122,11 +126,11 @@ export default function GameControlPage({
     // Second pass: count answers for each player
     if (answers && answers.length > 0) {
       const joinIds = Array.from(playerStats.keys());
-      console.log("Available join IDs in playerStats:", joinIds);
+      logger.log("Available join IDs in playerStats:", joinIds);
 
       const answerRecords = answers.filter((a) => a.correct_option_id);
-      console.log("Answer records found:", answerRecords.length);
-      console.log(
+      logger.log("Answer records found:", answerRecords.length);
+      logger.log(
         "Answer records join_ids:",
         answerRecords.map((a) => ({
           join_id: a.join_id,
@@ -140,7 +144,7 @@ export default function GameControlPage({
 
         // Count actual answers (records where correct_option_id is NOT null)
         if (answer.correct_option_id) {
-          console.log(
+          logger.log(
             "Processing answer for",
             playerName,
             "with join_id:",
@@ -156,13 +160,13 @@ export default function GameControlPage({
               stats.wrong++;
             }
           } else {
-            console.log("Answer skipped - join_id not found in playerStats");
+            logger.log("Answer skipped - join_id not found in playerStats");
           }
         }
       });
     }
 
-    console.log(
+    logger.log(
       "Final player stats:",
       Array.from(playerStats.entries()).map(([, stats]) => ({
         name: stats.displayName,
@@ -188,7 +192,7 @@ export default function GameControlPage({
       },
     );
 
-    console.log("Active players found:", activePlayers);
+    logger.log("Active players found:", activePlayers);
 
     setPlayers(
       activePlayers.length > 0
@@ -215,7 +219,7 @@ export default function GameControlPage({
 
   // Set up real-time subscription for players
   useEffect(() => {
-    console.log("Setting up subscription for sessionId:", sessionId);
+    logger.log("Setting up subscription for sessionId:", sessionId);
     const supabase = createClient();
 
     const channel = supabase
@@ -228,7 +232,7 @@ export default function GameControlPage({
           table: "game_answers",
         },
         (payload) => {
-          console.log("🔔 REAL-TIME UPDATE RECEIVED:", payload);
+          logger.log("🔔 REAL-TIME UPDATE RECEIVED:", payload);
           // Only reload if it's for this session
           const newData = payload.new as Record<string, unknown> | null;
           const oldData = payload.old as Record<string, unknown> | null;
@@ -236,37 +240,32 @@ export default function GameControlPage({
             newData?.session_id === sessionId ||
             oldData?.session_id === sessionId
           ) {
-            console.log("✅ Update is for this session, reloading...");
+            logger.log("✅ Update is for this session, reloading...");
             loadGameSession();
           }
         },
       )
       .subscribe((status, err) => {
-        console.log("📡 Subscription status:", status);
+        logger.log("📡 Subscription status:", status);
         if (err) {
-          console.error("❌ Subscription error:", err);
+          logger.error("❌ Subscription error:", err);
         }
         if (status === "SUBSCRIBED") {
-          console.log("✅ Successfully subscribed to game_answers");
+          logger.log("✅ Successfully subscribed to game_answers");
         }
       });
 
-    console.log("Subscription channel created:", channel);
+    logger.log("Subscription channel created:", channel);
 
     return () => {
-      console.log("Cleaning up subscription for sessionId:", sessionId);
+      logger.log("Cleaning up subscription for sessionId:", sessionId);
       supabase.removeChannel(channel);
     };
   }, [sessionId, loadGameSession]);
 
   const endGame = async () => {
     const supabase = createClient();
-
-    await supabase
-      .from("game_sessions")
-      .update({ status: "completed" })
-      .eq("id", sessionId);
-
+    await endGameSession(supabase, sessionId);
     router.push("/protected");
   };
 
@@ -276,15 +275,11 @@ export default function GameControlPage({
         {error && (
           <Card className="w-full max-w-md">
             <CardContent>
-              <div className="p-4 bg-red-100 text-red-700 rounded-lg text-center">
-                {error}
-              </div>
+              <ErrorMessage message={error} size="lg" className="text-center" />
             </CardContent>
           </Card>
         )}
-        {!error && (
-          <div className="w-16 h-16 border-4 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
-        )}
+        {!error && <LoadingSpinner className="border-gray-900" />}
       </div>
     );
   }
@@ -293,9 +288,11 @@ export default function GameControlPage({
     return (
       <Card className="w-full max-w-md">
         <CardContent>
-          <div className="p-4 bg-red-100 text-red-700 rounded-lg text-center">
-            {error || "Game session not found"}
-          </div>
+          <ErrorMessage
+            message={error || "Game session not found"}
+            size="lg"
+            className="text-center"
+          />
         </CardContent>
       </Card>
     );

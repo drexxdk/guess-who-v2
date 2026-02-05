@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { getErrorMessage } from "@/lib/logger";
 
 interface GoogleAuthButtonProps {
   label?: string;
@@ -25,7 +26,7 @@ export function GoogleAuthButton({
       });
       if (error) throw error;
     } catch (error: unknown) {
-      onError?.(error instanceof Error ? error.message : "An error occurred");
+      onError?.(getErrorMessage(error));
     }
   };
 

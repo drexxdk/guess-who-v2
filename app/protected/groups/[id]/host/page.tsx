@@ -13,7 +13,11 @@ import {
 } from "@/components/ui/card";
 import { use } from "react";
 import { Badge } from "@/components/ui/badge";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ErrorMessage } from "@/components/ui/error-message";
+import { generateGameCode, endGameSession } from "@/lib/game-utils";
 import type { Group, Person, GameSession, GameType } from "@/lib/schemas";
+import { logError } from "@/lib/logger";
 
 export default function GameHostPage({
   params,
@@ -62,7 +66,7 @@ export default function GameHostPage({
       setOptionsCount(groupInfo.options_count || 4);
       setTotalQuestions(Math.min((peopleData || []).length || 1, 10));
     } catch (error) {
-      console.error("Error loading group data:", error);
+      logError("Error loading group data:", error);
     } finally {
       setLoading(false);
     }
@@ -72,25 +76,11 @@ export default function GameHostPage({
     loadGroupData();
   }, [groupId, loadGroupData]);
 
-  const generateGameCode = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let code = "";
-    for (let i = 0; i < 6; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
-  };
-
   const cancelGame = async () => {
     if (!gameSession) return;
 
     const supabase = createClient();
-
-    // End the game by marking it as completed
-    await supabase
-      .from("game_sessions")
-      .update({ status: "completed" })
-      .eq("id", gameSession.id);
+    await endGameSession(supabase, gameSession.id);
 
     // Reset local state
     setGameSession(null);
@@ -142,7 +132,7 @@ export default function GameHostPage({
       .single();
 
     if (createError) {
-      console.error(createError);
+      logError(createError);
       setError("Failed to create game session");
       setLoading(false);
       return;
@@ -333,11 +323,7 @@ export default function GameHostPage({
               </Button>
             </div>
 
-            {error && (
-              <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+            <ErrorMessage message={error} />
 
             {people.length < optionsCount && !error && (
               <p className="text-sm text-destructive text-center">
@@ -349,7 +335,7 @@ export default function GameHostPage({
       </CardContent>
       {loading && (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-          <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+          <LoadingSpinner />
         </div>
       )}
     </Card>

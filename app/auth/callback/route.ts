@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { logError } from "@/lib/logger";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
       await supabase.auth.exchangeCodeForSession(code);
 
     if (exchangeError) {
-      console.error("Session exchange error:", exchangeError);
+      logError("Session exchange error:", exchangeError);
       return NextResponse.redirect(
         `${origin}/auth/error?error=${encodeURIComponent(exchangeError.message)}`,
       );

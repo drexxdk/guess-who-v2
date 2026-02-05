@@ -12,6 +12,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ErrorMessage } from "@/components/ui/error-message";
+import { getErrorMessage } from "@/lib/logger";
 
 export default function JoinGamePage() {
   const router = useRouter();
@@ -60,9 +63,7 @@ export default function JoinGamePage() {
         `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${joinSessionId}`,
       );
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "An error occurred";
-      setError(errorMessage);
+      setError(getErrorMessage(err));
       setLoading(false);
     }
   };
@@ -101,11 +102,7 @@ export default function JoinGamePage() {
               />
             </div>
 
-            {error && (
-              <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+            <ErrorMessage message={error} />
 
             <Button
               type="submit"
@@ -118,7 +115,7 @@ export default function JoinGamePage() {
         </CardContent>
         {loading && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            <LoadingSpinner />
           </div>
         )}
       </Card>

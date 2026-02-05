@@ -6,7 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ErrorMessage } from "@/components/ui/error-message";
 import type { PersonInsert, GenderType } from "@/lib/schemas";
+import { logError, getErrorMessage } from "@/lib/logger";
 
 export function AddPersonForm({ groupId }: { groupId: string }) {
   const cropContainerRef = useRef<HTMLDivElement>(null);
@@ -398,9 +400,8 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
 
       // Let real-time subscription handle the update
     } catch (err: unknown) {
-      console.error(err);
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      setError("Error adding person: " + errorMessage);
+      logError(err);
+      setError("Error adding person: " + getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -661,11 +662,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
           )}
         </div>
 
-        {error && (
-          <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
+        <ErrorMessage message={error} />
 
         <div className="flex gap-2">
           <Button

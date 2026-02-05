@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { getErrorMessage } from "@/lib/logger";
 import type { Group } from "@/lib/schemas";
 
 interface GroupSettingsProps {
@@ -93,7 +94,7 @@ export function GroupSettings({
       // Clear success message after 2 seconds
       setTimeout(() => setSuccess(false), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save settings");
+      setError(getErrorMessage(err));
     } finally {
       setIsSaving(false);
     }
