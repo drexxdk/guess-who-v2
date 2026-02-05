@@ -1,8 +1,9 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -75,7 +76,7 @@ export default function GameResultsPage() {
     };
   }, [sessionId]);
 
-  const handlePlayAgain = () => {
+  const handlePlayAgain = async () => {
     if (gameEnded) {
       // Game has been ended by host, send them back to join
       router.push("/game/join");
@@ -83,9 +84,85 @@ export default function GameResultsPage() {
     }
 
     if (gameCode && playerName) {
-      router.push(
-        `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}`,
-      );
+      try {
+        // Clear all previous data for this player in this session before restarting
+        const supabase = createClient();
+
+        console.log("[handlePlayAgain] Starting retry for:", playerName);
+
+        // First, find the join record for this player
+        const { data: joinRecords } = await supabase
+          .from("game_answers")
+          .select("id")
+          .eq("session_id", sessionId)
+          .eq("player_name", playerName)
+          .is("correct_option_id", null)
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        const joinRecordId = joinRecords?.[0]?.id;
+        console.log("[handlePlayAgain] Found join record:", joinRecordId);
+
+        // Delete only the actual answers (not the join tracking record)
+        // Join tracking records have correct_option_id = null, so we only delete where it's not null
+        const { error: deleteError } = await supabase
+          .from("game_answers")
+          .delete()
+          .eq("session_id", sessionId)
+          .eq("player_name", playerName)
+          .not("correct_option_id", "is", null);
+
+        if (deleteError) {
+          console.error("Error deleting answers:", deleteError);
+        } else {
+          console.log("[handlePlayAgain] Answers deleted successfully");
+        }
+
+        // Touch the join record by updating it to trigger host's real-time subscription
+        // This ensures the host sees the updated player list immediately
+        if (joinRecordId) {
+          console.log(
+            "[handlePlayAgain] Touching join record to trigger host update",
+          );
+          const { error: touchError } = await supabase
+            .from("game_answers")
+            .update({ updated_at: new Date().toISOString() })
+            .eq("id", joinRecordId);
+
+          if (touchError) {
+            console.error("Error touching join record:", touchError);
+          } else {
+            console.log("[handlePlayAgain] Join record touched successfully");
+          }
+        }
+
+        // Clear all sessionStorage entries for this game/player
+        Object.keys(sessionStorage).forEach((key) => {
+          if (key.includes(gameCode) && key.includes(playerName)) {
+            console.log("[handlePlayAgain] Clearing sessionStorage:", key);
+            sessionStorage.removeItem(key);
+          }
+        });
+
+        // Wait a brief moment to ensure Supabase has fully processed the updates
+        // and broadcasted the changes to subscribed clients
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        console.log(
+          "[handlePlayAgain] Redirecting to play page with retry flag",
+        );
+
+        // Redirect to play page with retry flag to force fresh start
+        router.push(
+          `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&retry=true`,
+        );
+      } catch (err) {
+        console.error("Error in handlePlayAgain:", err);
+        // Even if there's an error, still try to navigate with retry flag
+        router.push(
+          `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&retry=true`,
+        );
+      }
     } else {
       router.push("/game/join");
     }
@@ -156,26 +233,30 @@ export default function GameResultsPage() {
                 >
                   Join New Game
                 </Button>
-                <Button
-                  onClick={() => router.push("/")}
-                  variant="outline"
-                  className="w-full"
+                <Link
+                  href="/game/join"
+                  className={buttonVariants({
+                    variant: "outline",
+                    className: "w-full",
+                  })}
                 >
                   Back to Home
-                </Button>
+                </Link>
               </>
             ) : (
               <>
                 <Button onClick={handlePlayAgain} className="w-full">
                   Play Again
                 </Button>
-                <Button
-                  onClick={() => router.push("/")}
-                  variant="outline"
-                  className="w-full"
+                <Link
+                  href="/game/join"
+                  className={buttonVariants({
+                    variant: "outline",
+                    className: "w-full",
+                  })}
                 >
                   Back to Home
-                </Button>
+                </Link>
               </>
             )}
           </div>

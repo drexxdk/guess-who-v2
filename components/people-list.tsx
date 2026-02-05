@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { FaTrash } from "react-icons/fa6";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -116,8 +117,9 @@ export function PeopleList({ people }: { people: Person[] }) {
               variant="destructive"
               onClick={() => handleDelete(person.id, person.image_url)}
               disabled={deleting === person.id}
+              size="icon"
             >
-              {deleting === person.id ? "Deleting..." : "Delete"}
+              <FaTrash className="w-4 h-4" />
             </Button>
           </div>
         </Card>

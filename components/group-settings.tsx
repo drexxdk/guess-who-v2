@@ -51,6 +51,12 @@ export function GroupSettings({
     setIsEditing(externalIsEditing);
   }, [externalIsEditing]);
 
+  // Adjust totalQuestions if peopleCount changes and becomes smaller
+  useEffect(() => {
+    const maxQuestions = Math.min(peopleCount, 10);
+    setTotalQuestions((prev) => Math.min(prev, maxQuestions));
+  }, [peopleCount]);
+
   const handleSave = async () => {
     setIsSaving(true);
     setError(null);

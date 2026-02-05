@@ -41,7 +41,7 @@ export default function GamePlayPage() {
   const router = useRouter();
   const gameCode = searchParams?.get("code");
   const playerName = searchParams?.get("name");
-  const joinSessionId = searchParams?.get("joinSessionId"); // Unique ID for this join instance
+  const retry = searchParams?.get("retry"); // Flag to indicate this is a retry/fresh start
 
   const [loading, setLoading] = useState(true);
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
@@ -52,7 +52,6 @@ export default function GamePlayPage() {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [answered, setAnswered] = useState(false);
-  const [gameStarted, setGameStarted] = useState(false);
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(
     null,
   );
@@ -63,10 +62,10 @@ export default function GamePlayPage() {
       gameType: GameType,
       count: number,
       optionsCount: number,
-    ) => {
+    ): Question[] => {
       if (allPeople.length < 2) {
         alert("Not enough people in this group to play!");
-        return;
+        return [];
       }
 
       const shuffled = [...allPeople].sort(() => Math.random() - 0.5);
@@ -103,129 +102,170 @@ export default function GamePlayPage() {
         });
       }
 
-      setQuestions(questionList);
-      // Timer will be set from gameSession when it loads
+      console.log(
+        "generateQuestions: Created",
+        questionList.length,
+        "questions",
+      );
+      return questionList;
     },
     [],
   );
 
   const loadGame = useCallback(async () => {
-    // Reset all game state at the start
-    setLoading(true);
-    setCurrentQuestion(0);
-    setScore(0);
-    setAnswered(false);
-    setSelectedAnswer(null);
-    setTimeLeft(30); // Will be overridden once gameSession loads
-    setGameStarted(false);
+    try {
+      console.log("[loadGame] Starting loadGame");
+      // Reset all game state at the start
+      setLoading(true);
+      setCurrentQuestion(0);
+      setScore(0);
+      setAnswered(false);
+      setSelectedAnswer(null);
+      setTimeLeft(30); // Will be overridden once gameSession loads
+      setLastAnswerCorrect(null);
 
-    const supabase = createClient();
+      const supabase = createClient();
 
-    // Store game code and player name for "Play Again" feature
-    if (gameCode && playerName) {
-      sessionStorage.setItem("lastGameCode", gameCode);
-      sessionStorage.setItem("lastPlayerName", playerName);
-    }
-
-    // Find game session by code
-    const { data: session } = await supabase
-      .from("game_sessions")
-      .select("*")
-      .eq("game_code", gameCode)
-      .eq("status", "active")
-      .single();
-
-    if (!session) {
-      alert("Game not found!");
-      router.push("/game/join");
-      return;
-    }
-
-    setGameSession(session);
-
-    // Load people from the group
-    const { data: peopleData, error: peopleError } = await supabase
-      .from("people")
-      .select("*")
-      .eq("group_id", session.group_id);
-
-    console.log("People data:", peopleData, "Error:", peopleError);
-
-    if (!peopleData || peopleData.length === 0) {
-      alert("This group has no people! Add people to the group first.");
-      router.push("/game/join");
-      return;
-    }
-
-    // Use options_count from game session (set when host started the game)
-    const optionsCount = session.options_count || 4;
-
-    generateQuestions(
-      peopleData,
-      session.game_type,
-      session.total_questions,
-      optionsCount,
-    );
-
-    // Check how many questions the player has already answered to resume from the right question
-    const { data: allAnswers } = await supabase
-      .from("game_answers")
-      .select("id, correct_option_id, selected_option_id, response_time_ms")
-      .eq("session_id", session.id)
-      .eq("player_name", playerName)
-      .order("id", { ascending: true });
-
-    let resumeFromQuestion = 0;
-    let answeredQuestions: typeof allAnswers = [];
-
-    if (allAnswers && allAnswers.length > 0) {
-      // Filter answers that have been submitted (both correct_option_id and selected_option_id exist)
-      answeredQuestions = allAnswers.filter(
-        (a) => a.correct_option_id !== null && a.selected_option_id !== null,
-      );
-
-      if (answeredQuestions.length > 0) {
-        console.log(
-          "Player has answered",
-          answeredQuestions.length,
-          "questions, resuming from question",
-          answeredQuestions.length,
-        );
-        resumeFromQuestion = answeredQuestions.length;
-        setCurrentQuestion(resumeFromQuestion);
+      // Store game code and player name for "Play Again" feature
+      if (gameCode && playerName) {
+        sessionStorage.setItem("lastGameCode", gameCode);
+        sessionStorage.setItem("lastPlayerName", playerName);
       }
-    }
 
-    // Set initial timer based on game session settings
-    const timeLimit = session.time_limit_seconds || 30;
+      // Find game session by code (allow any status so player can rejoin and try again)
+      const { data: session } = await supabase
+        .from("game_sessions")
+        .select("*")
+        .eq("game_code", gameCode)
+        .single();
 
-    // Check if there's a stored question start time (from before reload)
-    const storedStartTime = sessionStorage.getItem(
-      `questionStartTime_${gameCode}_${playerName}`,
-    );
-    let initialTimeLeft = timeLimit;
+      if (!session) {
+        console.error("Game session not found for code:", gameCode);
+        alert("Game not found!");
+        setLoading(false);
+        router.push("/game/join");
+        return;
+      }
 
-    if (storedStartTime && resumeFromQuestion < session.total_questions) {
-      const elapsedMs = Date.now() - parseInt(storedStartTime);
-      const elapsedSeconds = Math.floor(elapsedMs / 1000);
-      initialTimeLeft = Math.max(0, timeLimit - elapsedSeconds);
+      setGameSession(session);
+
+      // Always clear any leftover data to start fresh
+      // This ensures clean state when player rejoins/tries again
+      sessionStorage.removeItem(
+        `questionStartTime_${session.id}_${playerName}`,
+      );
+      sessionStorage.removeItem(`joinRecordId_${gameCode}_${playerName}`);
+
+      // Load people from the group
+      const { data: peopleData, error: peopleError } = await supabase
+        .from("people")
+        .select("*")
+        .eq("group_id", session.group_id);
+
+      console.log("People data:", peopleData, "Error:", peopleError);
+
+      if (!peopleData || peopleData.length === 0) {
+        console.error("No people found in group");
+        alert("This group has no people! Add people to the group first.");
+        setLoading(false);
+        router.push("/game/join");
+        return;
+      }
+
+      // Use options_count from game session (set when host started the game)
+      const optionsCount = session.options_count || 4;
+
+      const generatedQuestions = generateQuestions(
+        peopleData,
+        session.game_type,
+        session.total_questions,
+        optionsCount,
+      );
       console.log(
-        "Resuming question with",
-        initialTimeLeft,
-        "seconds remaining",
+        "[loadGame] generateQuestions called with",
+        session.total_questions,
+        "questions, got",
+        generatedQuestions.length,
+        "back",
       );
-    } else {
-      // New question, store the start time
-      sessionStorage.setItem(
-        `questionStartTime_${gameCode}_${playerName}`,
-        Date.now().toString(),
-      );
-    }
+      setQuestions(generatedQuestions);
 
-    setTimeLeft(initialTimeLeft);
-    setLoading(false);
-    setGameStarted(true);
-  }, [gameCode, router, playerName, generateQuestions]);
+      // Check how many questions the player has already answered to resume from the right question
+      // Skip this if it's a retry (fresh start)
+      let resumeFromQuestion = 0;
+      let answeredQuestions: any = [];
+
+      if (!retry) {
+        const { data: allAnswers } = await supabase
+          .from("game_answers")
+          .select("id, correct_option_id, selected_option_id, response_time_ms")
+          .eq("session_id", session.id)
+          .eq("player_name", playerName)
+          .order("id", { ascending: true });
+
+        if (allAnswers && allAnswers.length > 0) {
+          // Filter answers that have been submitted (both correct_option_id and selected_option_id exist)
+          answeredQuestions = allAnswers.filter(
+            (a: any) =>
+              a.correct_option_id !== null && a.selected_option_id !== null,
+          );
+
+          if (answeredQuestions.length > 0) {
+            console.log(
+              "Player has answered",
+              answeredQuestions.length,
+              "questions, resuming from question",
+              answeredQuestions.length,
+            );
+            resumeFromQuestion = answeredQuestions.length;
+            setCurrentQuestion(resumeFromQuestion);
+          }
+        }
+      }
+
+      // Set initial timer based on game session settings
+      const timeLimit = session.time_limit_seconds || 30;
+
+      // Check if there's a stored question start time (from before reload)
+      // Use session ID in key to isolate different game sessions
+      const storedStartTime = sessionStorage.getItem(
+        `questionStartTime_${session.id}_${playerName}`,
+      );
+      let initialTimeLeft = timeLimit;
+
+      if (storedStartTime && resumeFromQuestion < session.total_questions) {
+        const elapsedMs = Date.now() - parseInt(storedStartTime);
+        const elapsedSeconds = Math.floor(elapsedMs / 1000);
+        initialTimeLeft = Math.max(0, timeLimit - elapsedSeconds);
+        console.log(
+          "Resuming question with",
+          initialTimeLeft,
+          "seconds remaining",
+        );
+      } else {
+        // New question, store the start time
+        sessionStorage.setItem(
+          `questionStartTime_${session.id}_${playerName}`,
+          Date.now().toString(),
+        );
+      }
+
+      console.log("Game loaded successfully, starting game");
+      console.log("Questions generated:", session.total_questions);
+
+      // Ensure all state updates are batched before marking game as started
+      setTimeLeft(initialTimeLeft);
+      setLoading(false);
+      // Don't set gameStarted here - let the useEffect below handle it when questions are ready
+    } catch (error) {
+      console.error("Error loading game:", error);
+      alert(
+        "Error loading game: " +
+          (error instanceof Error ? error.message : "Unknown error"),
+      );
+      setLoading(false);
+    }
+  }, [gameCode, router, playerName, generateQuestions, retry]);
 
   const finishGame = useCallback(async () => {
     if (!gameSession) return;
@@ -303,13 +343,13 @@ export default function GamePlayPage() {
           setLastAnswerCorrect(null);
           // Store start time for the new question
           sessionStorage.setItem(
-            `questionStartTime_${gameCode}_${playerName}`,
+            `questionStartTime_${gameSession?.id}_${playerName}`,
             Date.now().toString(),
           );
         } else {
           // Game finished
           sessionStorage.removeItem(
-            `questionStartTime_${gameCode}_${playerName}`,
+            `questionStartTime_${gameSession?.id}_${playerName}`,
           );
           finishGame();
         }
@@ -334,32 +374,6 @@ export default function GamePlayPage() {
       loadGame();
     }
   }, [gameCode, playerName, loadGame]);
-
-  // Reset joinRecordId when joinSessionId changes (new join attempt with new joinSessionId)
-  useEffect(() => {
-    const storedJoinSessionId = sessionStorage.getItem(
-      `joinSessionId_${gameCode}_${playerName}`,
-    );
-
-    if (joinSessionId && joinSessionId !== storedJoinSessionId) {
-      // joinSessionId changed, this is a new join attempt
-      console.log("New joinSessionId detected, resetting join record");
-      setJoinRecordId(null);
-      sessionStorage.setItem(
-        `joinSessionId_${gameCode}_${playerName}`,
-        joinSessionId,
-      );
-    } else if (joinSessionId && joinSessionId === storedJoinSessionId) {
-      // Same joinSessionId, restore from storage if available
-      const storedJoinRecordId = sessionStorage.getItem(
-        `joinRecordId_${gameCode}_${playerName}`,
-      );
-      if (storedJoinRecordId) {
-        console.log("Restored joinRecordId from storage:", storedJoinRecordId);
-        setJoinRecordId(storedJoinRecordId);
-      }
-    }
-  }, [joinSessionId, gameCode, playerName]);
 
   // Handle join tracking separately - only once when player joins
   useEffect(() => {
@@ -437,7 +451,7 @@ export default function GamePlayPage() {
     };
 
     handlePlayerJoin();
-  }, [gameSession?.id, playerName, joinRecordId, joinSessionId, gameCode]);
+  }, [gameSession?.id, playerName, joinRecordId, gameCode]);
 
   // Mark player as left when they close the window or navigate away
   useEffect(() => {
@@ -449,10 +463,16 @@ export default function GamePlayPage() {
       console.log("Mark player as left result:", result);
     };
 
-    window.addEventListener("beforeunload", handlePlayerLeft);
-    return () => {
-      window.removeEventListener("beforeunload", handlePlayerLeft);
+    const handleBeforeUnload = () => {
       handlePlayerLeft();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      // Only mark as left if they're actually closing the window (beforeunload was triggered)
+      // Don't mark as left on normal navigation away (they might be going to results)
     };
   }, [gameSession?.id, playerName]);
 
@@ -499,20 +519,21 @@ export default function GamePlayPage() {
   ]);
 
   useEffect(() => {
-    if (gameStarted && timeLeft > 0 && !answered) {
+    // Only run timer if we have questions loaded and active
+    if (questions.length > 0 && timeLeft > 0 && !answered) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && !answered) {
+    } else if (timeLeft === 0 && !answered && questions.length > 0) {
       handleAnswer(null);
     }
-  }, [timeLeft, answered, gameStarted, handleAnswer]);
+  }, [timeLeft, answered, questions.length, handleAnswer]);
 
   return (
     <RenderState
       state={
         loading
           ? { type: "loading" }
-          : !gameStarted || questions.length === 0
+          : !questions || questions.length === 0
             ? { type: "waiting-for-start" }
             : !questions[currentQuestion]
               ? { type: "loading-question" }

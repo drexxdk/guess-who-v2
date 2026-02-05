@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { FaPencil } from "react-icons/fa6";
 import { PeopleList } from "@/components/people-list";
 import { AddPersonForm } from "@/components/add-person-form";
 import {
@@ -144,8 +145,9 @@ export function GroupDetailClient({
               <Button
                 onClick={() => setIsEditingSettings(true)}
                 variant="outline"
+                size="icon"
               >
-                Edit Settings
+                <FaPencil className="w-4 h-4" />
               </Button>
             </div>
           </CardHeader>
