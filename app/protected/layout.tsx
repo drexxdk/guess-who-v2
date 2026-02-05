@@ -1,6 +1,6 @@
-import { AuthButton } from "@/components/auth-button";
+import { Header } from "@/components/header";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import Link from "next/link";
+import { LoadingOverlay } from "@/components/ui/loading-spinner";
 import { Suspense } from "react";
 
 export default function ProtectedLayout({
@@ -10,25 +10,12 @@ export default function ProtectedLayout({
 }) {
   return (
     <main className="min-h-screen flex flex-col">
-      <header className="bg-black py-2 px-8 flex justify-center sticky top-0">
-        <div className="flex justify-between gap-2 items-center max-w-screen-lg w-full">
-          <Link href={"/"}>Guess Who</Link>
-          <AuthButton />
-        </div>
-      </header>
+      <Header />
       <div className="flex-grow flex flex-col relative">
         <div className="p-8">
           <div className="w-full mx-auto max-w-screen-lg">
             <Breadcrumbs />
-            <Suspense
-              fallback={
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              }
-            >
-              {children}
-            </Suspense>
+            <Suspense fallback={<LoadingOverlay />}>{children}</Suspense>
           </div>
         </div>
       </div>
