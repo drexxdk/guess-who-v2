@@ -84,7 +84,7 @@ export default function GameResultsPage() {
   const handlePlayAgain = async () => {
     if (gameEnded) {
       // Game has been ended by host, send them back to join
-      router.push("/game/join");
+      router.replace("/game/join");
       return;
     }
 
@@ -154,18 +154,18 @@ export default function GameResultsPage() {
         );
 
         // Redirect to play page with retry flag to force fresh start
-        router.push(
+        router.replace(
           `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&retry=true`,
         );
       } catch (err) {
         logError("Error in handlePlayAgain:", err);
         // Even if there's an error, still try to navigate with retry flag
-        router.push(
+        router.replace(
           `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&retry=true`,
         );
       }
     } else {
-      router.push("/game/join");
+      router.replace("/game/join");
     }
   };
 

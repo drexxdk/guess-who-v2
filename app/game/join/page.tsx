@@ -32,6 +32,7 @@ export default function JoinGamePage() {
     }
 
     // Game code is valid, redirect to play page
+    // Use push so /game/join stays in history - back from play will return here
     const joinSessionId = crypto.randomUUID();
     router.push(
       `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${joinSessionId}`,

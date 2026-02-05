@@ -399,7 +399,7 @@ export default function GamePlayPage() {
       .eq("id", gameSession.id);
 
     // Redirect to results page with the actual score from database
-    router.push(
+    router.replace(
       `/game/results?session=${gameSession.id}&score=${actualScore}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || "")}&gameCode=${gameSession.game_code}`,
     );
   }, [gameSession, questions.length, router, playerName, joinSessionId]);
@@ -609,7 +609,7 @@ export default function GamePlayPage() {
             const actualScore =
               answers?.filter((answer) => answer.is_correct).length || 0;
 
-            router.push(
+            router.replace(
               `/game/results?session=${sessionId}&score=${actualScore}&total=${questions.length}&code=${gameCode}&name=${encodeURIComponent(playerName || "")}`,
             );
           }
