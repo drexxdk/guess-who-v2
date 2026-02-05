@@ -166,3 +166,53 @@ export const personWithGroupSchema = personSchema.extend({
 });
 
 export type PersonWithGroup = z.infer<typeof personWithGroupSchema>;
+
+// =============================================================================
+// Validation Utilities
+// =============================================================================
+
+/**
+ * Parse data with a Zod schema, throwing a descriptive error if validation fails.
+ * Use this when you expect valid data and want to fail fast.
+ */
+export function parseOrThrow<T>(
+  schema: z.ZodType<T>,
+  data: unknown,
+  context?: string,
+): T {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    const errorMessage = result.error.issues
+      .map((e) => `${e.path.join(".")}: ${e.message}`)
+      .join(", ");
+    throw new Error(
+      context
+        ? `${context}: ${errorMessage}`
+        : `Validation failed: ${errorMessage}`,
+    );
+  }
+  return result.data;
+}
+
+/**
+ * Parse data with a Zod schema, returning null if validation fails.
+ * Use this for optional/nullable data where failure is acceptable.
+ */
+export function parseOrNull<T>(schema: z.ZodType<T>, data: unknown): T | null {
+  const result = schema.safeParse(data);
+  return result.success ? result.data : null;
+}
+
+/**
+ * Parse an array of items, filtering out invalid entries.
+ * Returns only the items that pass validation.
+ */
+export function parseArrayFiltered<T>(
+  schema: z.ZodType<T>,
+  data: unknown[],
+): T[] {
+  return data
+    .map((item) => schema.safeParse(item))
+    .filter((result): result is z.ZodSafeParseSuccess<T> => result.success)
+    .map((result) => result.data);
+}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -14,58 +15,36 @@ import {
 } from "@/components/ui/card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorMessage } from "@/components/ui/error-message";
-import { getErrorMessage } from "@/lib/logger";
+import { useMutation } from "@/lib/hooks/use-async";
+import { getActiveGameSessionByCode } from "@/lib/queries";
 
 export default function JoinGamePage() {
   const router = useRouter();
   const [gameCode, setGameCode] = useState("");
   const [playerName, setPlayerName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Reset loading state when component mounts
-  useEffect(() => {
-    setLoading(false);
-  }, []);
+  const joinGame = useCallback(async () => {
+    const supabase = createClient();
+    const session = await getActiveGameSessionByCode(supabase, gameCode);
+
+    if (!session) {
+      throw new Error("Invalid game code or game is not active");
+    }
+
+    // Game code is valid, redirect to play page
+    const joinSessionId = crypto.randomUUID();
+    router.push(
+      `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${joinSessionId}`,
+    );
+  }, [gameCode, playerName, router]);
+
+  const { error, isLoading, execute, setError } = useMutation(joinGame);
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (loading) return;
-
-    setLoading(true);
+    if (isLoading) return;
     setError(null);
-
-    try {
-      const supabase = createClient();
-
-      // Verify the game code exists and get the session
-      const { data: sessions, error: queryError } = await supabase
-        .from("game_sessions")
-        .select("id, status")
-        .eq("game_code", gameCode)
-        .eq("status", "active")
-        .limit(1);
-
-      if (queryError) {
-        throw new Error("Failed to verify game code");
-      }
-
-      if (!sessions || sessions.length === 0) {
-        setError("Invalid game code or game is not active");
-        setLoading(false);
-        return;
-      }
-
-      // Game code is valid, redirect to play page
-      const joinSessionId = crypto.randomUUID();
-      router.push(
-        `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${joinSessionId}`,
-      );
-    } catch (err) {
-      setError(getErrorMessage(err));
-      setLoading(false);
-    }
+    await execute();
   };
 
   return (
@@ -87,7 +66,7 @@ export default function JoinGamePage() {
                 maxLength={6}
                 className="text-center text-2xl font-bold tracking-widest"
                 required
-                disabled={loading}
+                disabled={isLoading}
               />
             </div>
 
@@ -98,7 +77,7 @@ export default function JoinGamePage() {
                 onChange={(e) => setPlayerName(e.target.value)}
                 maxLength={20}
                 required
-                disabled={loading}
+                disabled={isLoading}
               />
             </div>
 
@@ -106,14 +85,14 @@ export default function JoinGamePage() {
 
             <Button
               type="submit"
-              disabled={loading || !gameCode || !playerName}
+              disabled={isLoading || !gameCode || !playerName}
               className="w-full text-lg py-6"
             >
-              {loading ? "Joining..." : "Join Game"}
+              {isLoading ? "Joining..." : "Join Game"}
             </Button>
           </form>
         </CardContent>
-        {loading && (
+        {isLoading && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <LoadingSpinner />
           </div>

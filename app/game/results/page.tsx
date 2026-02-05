@@ -17,6 +17,7 @@ import {
   useRealtimeSubscription,
   getPayloadNew,
 } from "@/lib/hooks/use-realtime";
+import { getGameSessionStatus, getPlayerJoinRecord } from "@/lib/queries";
 
 interface GameSessionStatus extends Record<string, unknown> {
   status: string;
@@ -43,17 +44,8 @@ export default function GameResultsPage() {
     const checkGameStatus = async () => {
       try {
         const supabase = createClient();
-        const { data: session } = await supabase
-          .from("game_sessions")
-          .select("status")
-          .eq("id", sessionId)
-          .single();
-
-        if (session?.status === "completed") {
-          setGameEnded(true);
-        } else {
-          setGameEnded(false);
-        }
+        const session = await getGameSessionStatus(supabase, sessionId);
+        setGameEnded(session?.status === "completed");
       } catch (error) {
         logError("Error checking game status:", error);
       }
@@ -104,16 +96,11 @@ export default function GameResultsPage() {
         logger.log("[handlePlayAgain] Starting retry for:", playerName);
 
         // First, find the join record for this player
-        const { data: joinRecords } = await supabase
-          .from("game_answers")
-          .select("id")
-          .eq("session_id", sessionId)
-          .eq("player_name", playerName)
-          .is("correct_option_id", null)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        const [joinRecord] = joinRecords ?? [];
+        const joinRecord = await getPlayerJoinRecord(
+          supabase,
+          sessionId,
+          playerName,
+        );
         const joinRecordId = joinRecord?.id;
         logger.log("[handlePlayAgain] Found join record:", joinRecordId);
 

@@ -25,6 +25,7 @@ export default function GamePlayPage() {
   const router = useRouter();
   const gameCode = searchParams?.get("code");
   const playerName = searchParams?.get("name");
+  const joinSessionId = searchParams?.get("joinSessionId"); // Unique ID for this join instance
   const retry = searchParams?.get("retry"); // Flag to indicate this is a retry/fresh start
 
   const [loading, setLoading] = useState(true);
@@ -167,6 +168,90 @@ export default function GamePlayPage() {
       );
       sessionStorage.removeItem(`joinRecordId_${gameCode}_${playerName}`);
 
+      // Create or reuse join record for this player instance
+      let currentJoinRecordId: string | null = null;
+
+      if (joinSessionId) {
+        // Check if this specific join instance already has a record
+        const { data: existingJoins } = await supabase
+          .from("game_answers")
+          .select("id, is_active")
+          .eq("session_id", session.id)
+          .eq("join_session_id", joinSessionId)
+          .is("correct_option_id", null)
+          .limit(1);
+
+        const [existingJoin] = existingJoins ?? [];
+        if (existingJoin) {
+          logger.log(
+            "Player rejoining - using existing join record:",
+            existingJoin.id,
+          );
+          currentJoinRecordId = existingJoin.id;
+
+          // Re-mark as active if needed
+          if (!existingJoin.is_active) {
+            await supabase
+              .from("game_answers")
+              .update({ is_active: true })
+              .eq("id", existingJoin.id);
+          }
+        } else {
+          // Create new join record - database has unique constraint to prevent duplicates
+          logger.log("Creating new join tracking record:", {
+            session_id: session.id,
+            player_name: playerName,
+            join_session_id: joinSessionId,
+          });
+          const { data: joinData, error: insertError } = await supabase
+            .from("game_answers")
+            .insert({
+              session_id: session.id,
+              player_name: playerName,
+              is_correct: false,
+              response_time_ms: 0,
+              is_active: true,
+              join_session_id: joinSessionId,
+            })
+            .select("id");
+
+          if (insertError) {
+            // Check if it's a duplicate key error (race condition - record was created by another call)
+            if (insertError.code === "23505") {
+              logger.log(
+                "Duplicate key - fetching existing record created by race condition",
+              );
+              const { data: raceJoins } = await supabase
+                .from("game_answers")
+                .select("id")
+                .eq("session_id", session.id)
+                .eq("join_session_id", joinSessionId)
+                .is("correct_option_id", null)
+                .limit(1);
+              const [raceJoin] = raceJoins ?? [];
+              currentJoinRecordId = raceJoin?.id ?? null;
+            } else {
+              logError("Error inserting join tracking:", insertError);
+            }
+          } else {
+            const [joinRecord] = joinData ?? [];
+            currentJoinRecordId = joinRecord?.id ?? null;
+            logger.log(
+              "Join tracking inserted successfully, ID:",
+              currentJoinRecordId,
+            );
+          }
+        }
+      }
+
+      if (currentJoinRecordId) {
+        setJoinRecordId(currentJoinRecordId);
+        sessionStorage.setItem(
+          `joinRecordId_${gameCode}_${joinSessionId ?? playerName}`,
+          currentJoinRecordId,
+        );
+      }
+
       // Load people from the group
       const { data: peopleData, error: peopleError } = await supabase
         .from("people")
@@ -211,12 +296,13 @@ export default function GamePlayPage() {
         response_time_ms: number | null;
       }> = [];
 
-      if (!retry) {
+      if (!retry && joinSessionId) {
+        // Query by join_session_id to support multiple players with same name
         const { data: allAnswers } = await supabase
           .from("game_answers")
           .select("id, correct_option_id, selected_option_id, response_time_ms")
           .eq("session_id", session.id)
-          .eq("player_name", playerName)
+          .eq("join_session_id", joinSessionId)
           .order("id", { ascending: true });
 
         if (allAnswers && allAnswers.length > 0) {
@@ -278,20 +364,21 @@ export default function GamePlayPage() {
       setError("Error loading game: " + getErrorMessage(error));
       setLoading(false);
     }
-  }, [gameCode, playerName, generateQuestions, retry]);
+  }, [gameCode, playerName, generateQuestions, retry, joinSessionId]);
 
   const finishGame = useCallback(async () => {
-    if (!gameSession || !playerName) return;
+    if (!gameSession || !playerName || !joinSessionId) return;
 
     const supabase = createClient();
 
     // Query the database to get the actual count of correct answers
     // This is more reliable than using the score state variable
+    // Use join_session_id to support multiple players with same name
     const { data: answers, error: queryError } = await supabase
       .from("game_answers")
       .select("is_correct")
       .eq("session_id", gameSession.id)
-      .eq("player_name", playerName)
+      .eq("join_session_id", joinSessionId)
       .not("correct_option_id", "is", null); // Exclude join tracking records
 
     if (queryError) {
@@ -315,7 +402,7 @@ export default function GamePlayPage() {
     router.push(
       `/game/results?session=${gameSession.id}&score=${actualScore}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || "")}&gameCode=${gameSession.game_code}`,
     );
-  }, [gameSession, questions.length, router, playerName]);
+  }, [gameSession, questions.length, router, playerName, joinSessionId]);
 
   const handleAnswer = useCallback(
     async (answerId: string | null) => {
@@ -404,90 +491,70 @@ export default function GamePlayPage() {
     }
   }, [gameCode, playerName, loadGame]);
 
-  // Handle join tracking separately - only once when player joins
+  // Track presence using Supabase Realtime Presence
+  // This allows the host to see when players connect/disconnect instantly
   useEffect(() => {
-    if (!gameSession?.id || !playerName) return;
+    if (!gameSession?.id || !joinRecordId || !playerName) return;
 
-    // Check if this component instance has already created a join record (for React Strict Mode)
-    if (joinRecordId) {
-      logger.log(
-        "Join record already created for this instance:",
-        joinRecordId,
-      );
-      return;
-    }
+    const supabase = createClient();
+    const channelName = `presence:game:${gameSession.id}`;
 
-    const handlePlayerJoin = async () => {
-      const supabase = createClient();
+    logger.log(
+      "Setting up presence tracking for player:",
+      playerName,
+      "joinRecordId:",
+      joinRecordId,
+    );
 
-      // Check if a join record already exists for this player in this session
-      const { data: existingJoins } = await supabase
-        .from("game_answers")
-        .select("id, created_at")
-        .eq("session_id", gameSession.id)
-        .eq("player_name", playerName)
-        .is("correct_option_id", null)
-        .order("created_at", { ascending: false })
-        .limit(1);
+    const channel = supabase.channel(channelName, {
+      config: {
+        presence: {
+          key: joinRecordId, // Use joinRecordId as the unique presence key
+        },
+      },
+    });
 
-      const [existingJoin] = existingJoins ?? [];
-      if (existingJoin) {
-        // Reuse the existing join record (player rejoining)
-        logger.log(
-          "Player rejoining - using existing join record:",
-          existingJoin.id,
-        );
-        setJoinRecordId(existingJoin.id);
-        sessionStorage.setItem(
-          `joinRecordId_${gameCode}_${playerName}`,
-          existingJoin.id,
-        );
-      } else {
-        // New join - create a new join tracking entry
-        logger.log("Creating new join tracking record:", {
-          session_id: gameSession.id,
-          player_name: playerName,
-        });
-        const { data: joinData, error: insertError } = await supabase
-          .from("game_answers")
-          .insert({
-            session_id: gameSession.id,
-            player_name: playerName,
-            is_correct: false,
-            response_time_ms: 0,
-            is_active: true,
-            // No correct_option_id for join tracking - this distinguishes it from answer records
-          })
-          .select("id");
-        if (insertError) {
-          logError("Error inserting join tracking:", insertError);
-          logError("Full error object:", JSON.stringify(insertError, null, 2));
-        } else {
-          logger.log("Join tracking inserted successfully");
-          const [joinRecord] = joinData ?? [];
-          const recordId = joinRecord?.id;
-          logger.log("Join record ID:", recordId);
-          setJoinRecordId(recordId ?? null);
-          if (recordId) {
-            sessionStorage.setItem(
-              `joinRecordId_${gameCode}_${playerName}`,
-              recordId,
-            );
-          }
+    channel
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState();
+        logger.log("Presence sync:", state);
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          // Track this player's presence
+          await channel.track({
+            joinRecordId,
+            playerName,
+            joinSessionId,
+            online_at: new Date().toISOString(),
+          });
+          logger.log("Presence tracked successfully");
         }
-      }
-    };
+      });
 
-    handlePlayerJoin();
-  }, [gameSession?.id, playerName, joinRecordId, gameCode]);
+    return () => {
+      logger.log("Cleaning up presence for player:", playerName);
+      channel.untrack();
+      supabase.removeChannel(channel);
+    };
+  }, [gameSession?.id, joinRecordId, playerName, joinSessionId]);
 
   // Mark player as left when they close the window or navigate away
   useEffect(() => {
     if (!gameSession?.id || !playerName) return;
 
     const handlePlayerLeft = async () => {
-      logger.log("Player leaving game:", playerName);
-      const result = await markPlayerAsLeft(gameSession.id, playerName);
+      logger.log(
+        "Player leaving game:",
+        playerName,
+        "joinSessionId:",
+        joinSessionId,
+      );
+      const result = await markPlayerAsLeft(
+        gameSession.id,
+        playerName,
+        joinSessionId ?? undefined,
+      );
       logger.log("Mark player as left result:", result);
     };
 
@@ -502,11 +569,11 @@ export default function GamePlayPage() {
       // Only mark as left if they're actually closing the window (beforeunload was triggered)
       // Don't mark as left on normal navigation away (they might be going to results)
     };
-  }, [gameSession?.id, playerName]);
+  }, [gameSession?.id, playerName, joinSessionId]);
 
   // Watch for session status changes (when host ends game)
   useEffect(() => {
-    if (!gameSession?.id || !playerName) return;
+    if (!gameSession?.id || !playerName || !joinSessionId) return;
 
     const supabase = createClient();
     const sessionId = gameSession.id;
@@ -526,11 +593,12 @@ export default function GamePlayPage() {
           const updatedSession = payload.new as { status?: string } | null;
           if (updatedSession?.status === "completed") {
             // Game ended by host - get actual score from database and redirect to results
+            // Use join_session_id to support multiple players with same name
             const { data: answers, error: queryError } = await supabase
               .from("game_answers")
               .select("is_correct")
               .eq("session_id", sessionId)
-              .eq("player_name", playerName)
+              .eq("join_session_id", joinSessionId)
               .not("correct_option_id", "is", null); // Exclude join tracking records
 
             if (queryError) {
@@ -556,6 +624,7 @@ export default function GamePlayPage() {
     gameSession?.id,
     gameSession?.game_code,
     playerName,
+    joinSessionId,
     questions.length,
     router,
   ]);

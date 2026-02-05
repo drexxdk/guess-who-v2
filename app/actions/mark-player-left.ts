@@ -3,15 +3,28 @@
 import { createClient } from "@/lib/supabase/server";
 import { logger, logError } from "@/lib/logger";
 
-export async function markPlayerAsLeft(sessionId: string, playerName: string) {
+export async function markPlayerAsLeft(
+  sessionId: string,
+  playerName: string,
+  joinSessionId?: string,
+) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  // Build query - use joinSessionId for precise targeting if available
+  let query = supabase
     .from("game_answers")
     .update({ is_active: false })
-    .eq("session_id", sessionId)
-    .eq("player_name", playerName)
-    .select();
+    .eq("session_id", sessionId);
+
+  if (joinSessionId) {
+    // Target the specific browser instance
+    query = query.eq("join_session_id", joinSessionId);
+  } else {
+    // Fallback to player name for backward compatibility
+    query = query.eq("player_name", playerName);
+  }
+
+  const { data, error } = await query.select();
 
   if (error) {
     logError("Error marking player as left:", error);

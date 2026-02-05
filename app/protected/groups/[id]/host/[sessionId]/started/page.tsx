@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { use } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { buttonVariants } from "@/components/ui/button";
@@ -10,8 +10,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { endGameSession } from "@/lib/game-utils";
-import { gameSessionWithGroupSchema } from "@/lib/schemas";
-import type { GameSessionWithGroup } from "@/lib/schemas";
+import { useAsync } from "@/lib/hooks/use-async";
+import { getGameSessionWithGroup } from "@/lib/queries";
 
 export default function GameStartedPage({
   params: paramsPromise,
@@ -23,34 +23,14 @@ export default function GameStartedPage({
   const groupId = params.id;
   const sessionId = params.sessionId;
 
-  const [gameSession, setGameSession] = useState<GameSessionWithGroup | null>(
-    null,
-  );
-  const [loading, setLoading] = useState(true);
-
   const loadGameSession = useCallback(async () => {
     const supabase = createClient();
-    const { data: session, error } = await supabase
-      .from("game_sessions")
-      .select("*, groups(id, name)")
-      .eq("id", sessionId)
-      .single();
-
-    if (error) {
-      setLoading(false);
-      return;
-    }
-
-    const parsed = gameSessionWithGroupSchema.safeParse(session);
-    if (parsed.success) {
-      setGameSession(parsed.data);
-    }
-    setLoading(false);
+    return getGameSessionWithGroup(supabase, sessionId);
   }, [sessionId]);
 
-  useEffect(() => {
-    loadGameSession();
-  }, [loadGameSession]);
+  const { data: gameSession, isLoading: loading } = useAsync(loadGameSession, {
+    deps: [sessionId],
+  });
 
   async function cancelGame() {
     if (!gameSession) return;

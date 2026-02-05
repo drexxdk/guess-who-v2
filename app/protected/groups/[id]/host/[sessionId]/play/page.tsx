@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -13,6 +13,7 @@ import { endGameSession } from "@/lib/game-utils";
 import { logger } from "@/lib/logger";
 import { use } from "react";
 import type { GameSessionWithGroup } from "@/lib/schemas";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface Player {
   id: string;
@@ -40,184 +41,248 @@ export default function GameControlPage({
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameCode, setGameCode] = useState("");
 
-  const loadGameSession = useCallback(async () => {
-    const supabase = createClient();
+  // Track online players via Presence (Set of joinRecordIds)
+  const [onlinePlayerIds, setOnlinePlayerIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const onlinePlayerIdsRef = useRef<Set<string>>(new Set());
+  const presenceChannelRef = useRef<RealtimeChannel | null>(null);
 
-    // Get game session
-    const { data: session } = await supabase
-      .from("game_sessions")
-      .select("*, groups(*)")
-      .eq("id", sessionId)
-      .single();
+  const loadGameSession = useCallback(
+    async (currentOnlineIds?: Set<string>) => {
+      const supabase = createClient();
 
-    if (!session) {
-      setError("Game session not found!");
-      setLoading(false);
-      return;
-    }
+      // Use provided online IDs or fall back to ref (ref always has latest value)
+      const activeOnlineIds = currentOnlineIds ?? onlinePlayerIdsRef.current;
 
-    setGameSession(session);
-    setGameCode(session.game_code || "N/A");
+      // Get game session
+      const { data: session } = await supabase
+        .from("game_sessions")
+        .select("*, groups(*)")
+        .eq("id", sessionId)
+        .single();
 
-    // Get all unique players who have joined (even if they haven't answered yet)
-    const { data: answers } = await supabase
-      .from("game_answers")
-      .select("*")
-      .eq("session_id", sessionId);
-
-    logger.log("Fetched game_answers for sessionId", sessionId, ":", answers);
-    logger.log(
-      "Raw is_active values:",
-      answers?.map((a) => ({
-        name: a.player_name,
-        correct_option_id: a.correct_option_id,
-        is_active: a.is_active,
-      })),
-    );
-
-    // Count occurrences of each player name (only join records where correct_option_id is null)
-    const joinRecords = answers?.filter((a) => !a.correct_option_id) || [];
-    const nameCounts = new Map<string, number>();
-    const nameIndices = new Map<string, number>();
-    const latestJoinRecordIdPerName = new Map<string, string>();
-
-    joinRecords.forEach((record) => {
-      const playerName = record.player_name || "Anonymous";
-      nameCounts.set(playerName, (nameCounts.get(playerName) || 0) + 1);
-      // Keep track of the latest (most recent) join record for each name
-      latestJoinRecordIdPerName.set(playerName, record.id);
-    });
-
-    // Track unique players by their join record ID (one entry per join record)
-    const playerStats = new Map<
-      string,
-      {
-        name: string;
-        correct: number;
-        wrong: number;
-        missing: number;
-        isActive: boolean;
-        displayName: string;
+      if (!session) {
+        setError("Game session not found!");
+        setLoading(false);
+        return;
       }
-    >();
 
-    // First pass: create one player entry for each join record
-    joinRecords.forEach((joinRecord) => {
-      const playerName = joinRecord.player_name || "Anonymous";
-      const isDuplicate = nameCounts.get(playerName)! > 1;
+      setGameSession(session as GameSessionWithGroup);
+      setGameCode(session.game_code || "N/A");
 
-      const currentIndex = (nameIndices.get(playerName) || 0) + 1;
-      nameIndices.set(playerName, currentIndex);
+      // Get all unique players who have joined (even if they haven't answered yet)
+      const { data: answers } = await supabase
+        .from("game_answers")
+        .select("*")
+        .eq("session_id", sessionId);
 
-      const displayName = isDuplicate
-        ? `${playerName} (${currentIndex})`
-        : playerName;
+      logger.log("Fetched game_answers for sessionId", sessionId, ":", answers);
 
-      playerStats.set(joinRecord.id, {
-        name: playerName,
-        correct: 0,
-        wrong: 0,
-        missing: 0,
-        isActive: joinRecord.is_active !== false,
-        displayName,
+      // Count occurrences of each player name (only join records where correct_option_id is null)
+      // Sort by created_at to maintain join order
+      // Note: Append 'Z' to treat timestamps as UTC since Postgres returns timestamp without timezone
+      const joinRecords = (
+        answers?.filter((a) => !a.correct_option_id) || []
+      ).sort((a, b) => {
+        const timeA = a.created_at ? new Date(a.created_at + "Z").getTime() : 0;
+        const timeB = b.created_at ? new Date(b.created_at + "Z").getTime() : 0;
+        return timeA - timeB;
       });
-    });
+      const nameCounts = new Map<string, number>();
+      const nameIndices = new Map<string, number>();
 
-    // Second pass: count answers for each player
-    if (answers && answers.length > 0) {
-      const joinIds = Array.from(playerStats.keys());
-      logger.log("Available join IDs in playerStats:", joinIds);
+      joinRecords.forEach((record) => {
+        const playerName = record.player_name || "Anonymous";
+        nameCounts.set(playerName, (nameCounts.get(playerName) || 0) + 1);
+      });
 
-      const answerRecords = answers.filter((a) => a.correct_option_id);
-      logger.log("Answer records found:", answerRecords.length);
+      // Track unique players by their join record ID (one entry per join record)
+      const playerStats = new Map<
+        string,
+        {
+          name: string;
+          correct: number;
+          wrong: number;
+          missing: number;
+          isActive: boolean;
+          displayName: string;
+        }
+      >();
+
+      // First pass: create one player entry for each join record
+      joinRecords.forEach((joinRecord) => {
+        const playerName = joinRecord.player_name || "Anonymous";
+        const isDuplicate = nameCounts.get(playerName)! > 1;
+
+        const currentIndex = (nameIndices.get(playerName) || 0) + 1;
+        nameIndices.set(playerName, currentIndex);
+
+        const displayName = isDuplicate
+          ? `${playerName} (${currentIndex})`
+          : playerName;
+
+        // Check if player is active based on Presence (instant detection)
+        const isActive = activeOnlineIds.has(joinRecord.id);
+
+        playerStats.set(joinRecord.id, {
+          name: playerName,
+          correct: 0,
+          wrong: 0,
+          missing: 0,
+          isActive,
+          displayName,
+        });
+      });
+
+      // Second pass: count answers for each player
+      if (answers && answers.length > 0) {
+        const joinIds = Array.from(playerStats.keys());
+        logger.log("Available join IDs in playerStats:", joinIds);
+
+        const answerRecords = answers.filter((a) => a.correct_option_id);
+        logger.log("Answer records found:", answerRecords.length);
+        logger.log(
+          "Answer records join_ids:",
+          answerRecords.map((a) => ({
+            join_id: a.join_id,
+            is_correct: a.is_correct,
+            player_name: a.player_name,
+          })),
+        );
+
+        answers.forEach((answer) => {
+          const playerName = answer.player_name || "Anonymous";
+
+          // Count actual answers (records where correct_option_id is NOT null)
+          if (answer.correct_option_id) {
+            logger.log(
+              "Processing answer for",
+              playerName,
+              "with join_id:",
+              answer.join_id,
+              "has in stats:",
+              playerStats.has(answer.join_id || ""),
+            );
+            if (answer.join_id && playerStats.has(answer.join_id)) {
+              const stats = playerStats.get(answer.join_id)!;
+              if (answer.is_correct) {
+                stats.correct++;
+              } else {
+                stats.wrong++;
+              }
+            } else {
+              logger.log("Answer skipped - join_id not found in playerStats");
+            }
+          }
+        });
+      }
+
       logger.log(
-        "Answer records join_ids:",
-        answerRecords.map((a) => ({
-          join_id: a.join_id,
-          is_correct: a.is_correct,
-          player_name: a.player_name,
+        "Final player stats:",
+        Array.from(playerStats.entries()).map(([, stats]) => ({
+          name: stats.displayName,
+          isActive: stats.isActive,
         })),
       );
 
-      answers.forEach((answer) => {
-        const playerName = answer.player_name || "Anonymous";
+      const totalQuestions = session.total_questions ?? 10;
+      const activePlayers: Player[] = Array.from(playerStats.entries()).map(
+        ([id, stats]) => {
+          const total = stats.correct + stats.wrong;
+          const missing = Math.max(0, totalQuestions - total);
 
-        // Count actual answers (records where correct_option_id is NOT null)
-        if (answer.correct_option_id) {
-          logger.log(
-            "Processing answer for",
-            playerName,
-            "with join_id:",
-            answer.join_id,
-            "has in stats:",
-            playerStats.has(answer.join_id || ""),
-          );
-          if (answer.join_id && playerStats.has(answer.join_id)) {
-            const stats = playerStats.get(answer.join_id)!;
-            if (answer.is_correct) {
-              stats.correct++;
-            } else {
-              stats.wrong++;
-            }
-          } else {
-            logger.log("Answer skipped - join_id not found in playerStats");
-          }
-        }
-      });
-    }
+          return {
+            id,
+            name: stats.displayName,
+            correct: stats.correct,
+            wrong: stats.wrong,
+            missing: missing,
+            answered: total === totalQuestions,
+            isActive: stats.isActive,
+          };
+        },
+      );
 
-    logger.log(
-      "Final player stats:",
-      Array.from(playerStats.entries()).map(([, stats]) => ({
-        name: stats.displayName,
-        isActive: stats.isActive,
-      })),
-    );
+      logger.log("Active players found:", activePlayers);
 
-    const totalQuestions = session.total_questions ?? 10;
-    const activePlayers: Player[] = Array.from(playerStats.entries()).map(
-      ([id, stats]) => {
-        const total = stats.correct + stats.wrong;
-        const missing = Math.max(0, totalQuestions - total);
-
-        return {
-          id,
-          name: stats.displayName,
-          correct: stats.correct,
-          wrong: stats.wrong,
-          missing: missing,
-          answered: total === totalQuestions,
-          isActive: stats.isActive,
-        };
-      },
-    );
-
-    logger.log("Active players found:", activePlayers);
-
-    setPlayers(
-      activePlayers.length > 0
-        ? activePlayers
-        : [
-            {
-              id: "1",
-              name: "Waiting for players...",
-              correct: 0,
-              wrong: 0,
-              missing: 0,
-              answered: false,
-              isActive: false,
-            },
-          ],
-    );
-    setLoading(false);
-  }, [sessionId]);
+      setPlayers(
+        activePlayers.length > 0
+          ? activePlayers
+          : [
+              {
+                id: "1",
+                name: "Waiting for players...",
+                correct: 0,
+                wrong: 0,
+                missing: 0,
+                answered: false,
+                isActive: false,
+              },
+            ],
+      );
+      setLoading(false);
+    },
+    [sessionId],
+  );
 
   // Initial load
   useEffect(() => {
     loadGameSession();
   }, [loadGameSession]);
 
-  // Set up real-time subscription for players
+  // Set up Presence tracking for real-time player online/offline status
+  useEffect(() => {
+    const supabase = createClient();
+    const channelName = `presence:game:${sessionId}`;
+
+    logger.log("Host setting up presence channel:", channelName);
+
+    const channel = supabase.channel(channelName);
+    presenceChannelRef.current = channel;
+
+    channel
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState();
+        logger.log("🟢 Presence sync:", state);
+
+        // Extract all online joinRecordIds from presence state
+        const onlineIds = new Set<string>();
+        Object.values(state).forEach((presences) => {
+          (presences as Array<{ joinRecordId?: string }>).forEach(
+            (presence) => {
+              if (presence.joinRecordId) {
+                onlineIds.add(presence.joinRecordId);
+              }
+            },
+          );
+        });
+
+        logger.log("Online player IDs:", Array.from(onlineIds));
+        onlinePlayerIdsRef.current = onlineIds;
+        setOnlinePlayerIds(onlineIds);
+
+        // Reload game session with new online IDs
+        loadGameSession(onlineIds);
+      })
+      .on("presence", { event: "join" }, ({ key, newPresences }) => {
+        logger.log("🟢 Player joined:", key, newPresences);
+      })
+      .on("presence", { event: "leave" }, ({ key, leftPresences }) => {
+        logger.log("🔴 Player left:", key, leftPresences);
+      })
+      .subscribe((status) => {
+        logger.log("Presence subscription status:", status);
+      });
+
+    return () => {
+      logger.log("Cleaning up presence channel");
+      supabase.removeChannel(channel);
+      presenceChannelRef.current = null;
+    };
+  }, [sessionId, loadGameSession]);
+
+  // Set up real-time subscription for player answers (DB changes)
   useEffect(() => {
     logger.log("Setting up subscription for sessionId:", sessionId);
     const supabase = createClient();
