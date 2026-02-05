@@ -58,7 +58,7 @@ export function GroupSettings({
   const handleSave = async () => {
     // Sanitize and validate group name
     const sanitizedName = sanitizeGroupName(groupName);
-    
+
     if (!sanitizedName) {
       toast.error("Please enter a group name");
       return;

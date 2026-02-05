@@ -17,7 +17,7 @@ export function useNavigate() {
       setLoading(true);
       router.push(href);
     },
-    [router, setLoading]
+    [router, setLoading],
   );
 
   const replace = useCallback(
@@ -25,7 +25,7 @@ export function useNavigate() {
       setLoading(true);
       router.replace(href);
     },
-    [router, setLoading]
+    [router, setLoading],
   );
 
   const back = useCallback(() => {

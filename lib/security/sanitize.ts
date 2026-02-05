@@ -104,7 +104,11 @@ export function sanitizeObject<T extends Record<string, unknown>>(
         sanitized = escapeHtml(sanitized);
       }
       (result as Record<string, unknown>)[key] = sanitized;
-    } else if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+    } else if (
+      typeof value === "object" &&
+      value !== null &&
+      !Array.isArray(value)
+    ) {
       (result as Record<string, unknown>)[key] = sanitizeObject(
         value as Record<string, unknown>,
         options,

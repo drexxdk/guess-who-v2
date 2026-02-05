@@ -5,11 +5,7 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ className }: SkeletonProps) {
-  return (
-    <div
-      className={cn("animate-pulse rounded-md bg-muted", className)}
-    />
-  );
+  return <div className={cn("animate-pulse rounded-md bg-muted", className)} />;
 }
 
 export function CardSkeleton() {
@@ -99,7 +95,10 @@ export function PlayerListSkeleton() {
   return (
     <div className="space-y-2">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+        <div
+          key={i}
+          className="flex items-center justify-between p-3 bg-muted rounded-lg"
+        >
           <div className="flex items-center gap-3">
             <Skeleton className="w-3 h-3 rounded-full" />
             <Skeleton className="h-5 w-24" />

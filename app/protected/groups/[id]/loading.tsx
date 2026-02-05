@@ -1,4 +1,8 @@
-import { Skeleton, PersonCardSkeleton, CardSkeleton } from "@/components/ui/skeleton";
+import {
+  Skeleton,
+  PersonCardSkeleton,
+  CardSkeleton,
+} from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (

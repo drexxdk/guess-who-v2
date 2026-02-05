@@ -108,7 +108,9 @@ export function resetRateLimit(identifier: string, prefix = "default"): void {
 /**
  * Get rate limit headers for HTTP response
  */
-export function getRateLimitHeaders(result: RateLimitResult): Record<string, string> {
+export function getRateLimitHeaders(
+  result: RateLimitResult,
+): Record<string, string> {
   return {
     "X-RateLimit-Limit": result.limit.toString(),
     "X-RateLimit-Remaining": result.remaining.toString(),

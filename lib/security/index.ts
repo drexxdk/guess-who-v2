@@ -1,8 +1,8 @@
-export { 
-  escapeHtml, 
-  stripHtml, 
-  sanitizeString, 
-  sanitizeName, 
+export {
+  escapeHtml,
+  stripHtml,
+  sanitizeString,
+  sanitizeName,
   sanitizeGroupName,
   sanitizeGameCode,
   isValidUUID,
