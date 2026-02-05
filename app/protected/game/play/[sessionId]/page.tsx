@@ -140,11 +140,18 @@ export default function GameControlPage({
     if (answers && answers.length > 0) {
       const joinIds = Array.from(playerStats.keys());
       console.log("Available join IDs in playerStats:", joinIds);
-      
-      const answerRecords = answers.filter(a => a.correct_option_id);
+
+      const answerRecords = answers.filter((a) => a.correct_option_id);
       console.log("Answer records found:", answerRecords.length);
-      console.log("Answer records join_ids:", answerRecords.map(a => ({ join_id: a.join_id, is_correct: a.is_correct, player_name: a.player_name })));
-      
+      console.log(
+        "Answer records join_ids:",
+        answerRecords.map((a) => ({
+          join_id: a.join_id,
+          is_correct: a.is_correct,
+          player_name: a.player_name,
+        })),
+      );
+
       answers.forEach(
         (answer: {
           player_name: string;
@@ -157,7 +164,14 @@ export default function GameControlPage({
 
           // Count actual answers (records where correct_option_id is NOT null)
           if (answer.correct_option_id) {
-            console.log("Processing answer for", playerName, "with join_id:", answer.join_id, "has in stats:", playerStats.has(answer.join_id || ""));
+            console.log(
+              "Processing answer for",
+              playerName,
+              "with join_id:",
+              answer.join_id,
+              "has in stats:",
+              playerStats.has(answer.join_id || ""),
+            );
             if (answer.join_id && playerStats.has(answer.join_id)) {
               const stats = playerStats.get(answer.join_id)!;
               if (answer.is_correct) {
@@ -185,7 +199,7 @@ export default function GameControlPage({
       ([id, stats]) => {
         const total = stats.correct + stats.wrong;
         const missing = Math.max(0, session.total_questions - total);
-        
+
         return {
           id,
           name: stats.displayName,
@@ -332,9 +346,7 @@ export default function GameControlPage({
                       </Badge>
                     )}
                     {player.wrong > 0 && (
-                      <Badge variant="destructive">
-                        {player.wrong} wrong
-                      </Badge>
+                      <Badge variant="destructive">{player.wrong} wrong</Badge>
                     )}
                     {player.missing > 0 && (
                       <Badge variant="secondary">

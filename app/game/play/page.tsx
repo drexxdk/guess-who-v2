@@ -219,7 +219,12 @@ export default function GamePlayPage() {
 
       // Save answer to database
       const supabase = createClient();
-      console.log("Saving answer with join_id:", recordId, "is_correct:", isCorrect);
+      console.log(
+        "Saving answer with join_id:",
+        recordId,
+        "is_correct:",
+        isCorrect,
+      );
       const { error } = await supabase.from("game_answers").insert({
         session_id: gameSession.id,
         correct_option_id: questions[currentQuestion].person.id,
@@ -229,7 +234,7 @@ export default function GamePlayPage() {
         player_name: playerName,
         join_id: recordId,
       });
-      
+
       if (error) {
         console.error("Error saving answer:", error);
       } else {
@@ -279,13 +284,16 @@ export default function GamePlayPage() {
   // Handle join tracking separately - only once when player joins
   useEffect(() => {
     if (!gameSession?.id || !playerName) return;
-    
+
     // Check if this component instance has already created a join record (for React Strict Mode)
     if (joinRecordId) {
-      console.log("Join record already created for this instance:", joinRecordId);
+      console.log(
+        "Join record already created for this instance:",
+        joinRecordId,
+      );
       return;
     }
-    
+
     const handlePlayerJoin = async () => {
       const supabase = createClient();
 
