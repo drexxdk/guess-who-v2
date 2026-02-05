@@ -5,13 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { use } from "react";
 
@@ -235,7 +229,7 @@ export default function GameControlPage({
           ],
     );
     setLoading(false);
-  }, [sessionId, router]);
+  }, [sessionId]);
 
   // Initial load
   useEffect(() => {
@@ -304,7 +298,7 @@ export default function GameControlPage({
       <div className="grow flex flex-col gap-2 items-center justify-center p-4">
         {error && (
           <Card className="w-full max-w-md">
-            <CardContent className="pt-6">
+            <CardContent>
               <div className="p-4 bg-red-100 text-red-700 rounded-lg text-center">
                 {error}
               </div>
@@ -321,7 +315,7 @@ export default function GameControlPage({
   if (!gameSession) {
     return (
       <Card className="w-full max-w-md">
-        <CardContent className="pt-6">
+        <CardContent>
           <div className="p-4 bg-red-100 text-red-700 rounded-lg text-center">
             {error || "Game session not found"}
           </div>
@@ -331,126 +325,102 @@ export default function GameControlPage({
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       {/* Header */}
-      <Card className="mb-6">
+      <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle className="text-3xl">
-                {gameSession.groups?.name || "Game Session"}
-              </CardTitle>
-              <CardDescription className="text-lg mt-2">
-                Game Type:{" "}
-                {gameSession.game_type === "guess_name"
-                  ? "Guess the Name"
-                  : "Guess the Image"}
-              </CardDescription>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground mb-2">Game Code</p>
-              <Badge className="text-4xl px-8 py-4 font-mono">{gameCode}</Badge>
-              <div className="mt-4 space-y-1 text-sm">
-                <p>
-                  <span className="font-medium">Time limit:</span>{" "}
-                  {gameSession.time_limit_seconds || 30}s
-                </p>
-                <p>
-                  <span className="font-medium">Options:</span>{" "}
-                  {gameSession.options_count || 4}
-                </p>
-              </div>
-            </div>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl">
+              {gameSession.groups?.name || "Game Session"}
+            </CardTitle>
+            <Badge className="text-lg px-4 py-2 font-mono">{gameCode}</Badge>
           </div>
         </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="p-3 bg-muted rounded">
+              <p className="text-muted-foreground">Type</p>
+              <p className="font-semibold">
+                {gameSession.game_type === "guess_name"
+                  ? "Guess the Name"
+                  : "Guess the Face"}
+              </p>
+            </div>
+            <div className="p-3 bg-muted rounded">
+              <p className="text-muted-foreground">Time Limit</p>
+              <p className="font-semibold">
+                {gameSession.time_limit_seconds || 30}s
+              </p>
+            </div>
+            <div className="p-3 bg-muted rounded">
+              <p className="text-muted-foreground">Options</p>
+              <p className="font-semibold">{gameSession.options_count || 4}</p>
+            </div>
+            <div className="p-3 bg-muted rounded">
+              <p className="text-muted-foreground">Questions</p>
+              <p className="font-semibold">{gameSession.total_questions}</p>
+            </div>
+          </div>
+          <div className="flex gap-4 flex-wrap">
+            <Button onClick={endGame} variant="destructive" className="flex-1">
+              End Game
+            </Button>
+            <Link
+              href="/protected"
+              className={buttonVariants({
+                variant: "outline",
+                className: "flex-1",
+              })}
+            >
+              Back to Dashboard
+            </Link>
+          </div>
+        </CardContent>
       </Card>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Players List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Players ({players.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {players.map((player) => (
-                <div
-                  key={player.id}
-                  className="flex justify-between items-center p-3 bg-muted rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-3 h-3 rounded-full ${
-                        player.isActive ? "bg-green-500" : "bg-gray-300"
-                      }`}
-                    />
-                    <span className="font-medium">{player.name}</span>
-                  </div>
-                  <div className="text-sm text-muted-foreground space-x-2">
-                    {player.correct > 0 && (
-                      <Badge variant="default" className="bg-green-600">
-                        {player.correct} correct
-                      </Badge>
-                    )}
-                    {player.wrong > 0 && (
-                      <Badge variant="destructive">{player.wrong} wrong</Badge>
-                    )}
-                    {player.missing > 0 && (
-                      <Badge variant="secondary">
-                        {player.missing} missing
-                      </Badge>
-                    )}
-                  </div>
+      {/* Players List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Players ({players.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {players.map((player) => (
+              <div
+                key={player.id}
+                className="flex justify-between items-center p-3 bg-muted rounded-lg gap-3"
+              >
+                <div className="flex items-center gap-3 overflow-hidden text-ellipsis whitespace-nowrap">
+                  <div
+                    className={`w-3 h-3 rounded-full shrink-0 ${
+                      player.isActive ? "bg-green-500" : "bg-gray-300"
+                    }`}
+                  />
+                  <span className="font-medium overflow-hidden text-ellipsis whitespace-nowrap">
+                    {player.name}
+                  </span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Game Controls */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Game Controls</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 bg-blue-50 rounded-lg text-black">
-              <p className="text-sm mb-1">Status</p>
-              <p className="text-lg font-semibold capitalize">
-                {gameSession.status || "Active"}
-              </p>
-            </div>
-
-            <div className="p-4 bg-green-50 rounded-lg text-black">
-              <p className="text-sm mb-1">Questions</p>
-              <p className="text-lg font-semibold">
-                {gameSession.total_questions} total
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Button
-                onClick={endGame}
-                variant="destructive"
-                className="w-full"
-              >
-                End Game
-              </Button>
-              <Link
-                href="/protected"
-                className={buttonVariants({
-                  variant: "outline",
-                  className: "w-full",
-                })}
-              >
-                Back to Dashboard
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                <div className="text-sm text-muted-foreground space-x-2 shrink-0">
+                  {player.correct > 0 && (
+                    <Badge variant="default" className="bg-green-600">
+                      {player.correct} correct
+                    </Badge>
+                  )}
+                  {player.wrong > 0 && (
+                    <Badge variant="destructive">{player.wrong} wrong</Badge>
+                  )}
+                  {player.missing > 0 && (
+                    <Badge variant="secondary">{player.missing} missing</Badge>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Instructions */}
-      <Card className="mt-6">
+      <Card>
         <CardHeader>
           <CardTitle>How to Play</CardTitle>
         </CardHeader>
@@ -470,6 +440,6 @@ export default function GameControlPage({
           </ol>
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }

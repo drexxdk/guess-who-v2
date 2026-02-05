@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,11 @@ export default function JoinGamePage() {
   const [playerName, setPlayerName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Reset loading state when component mounts
+  useEffect(() => {
+    setLoading(false);
+  }, []);
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +69,7 @@ export default function JoinGamePage() {
 
   return (
     <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md relative">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold">Join Game</CardTitle>
           <CardDescription>

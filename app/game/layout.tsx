@@ -12,7 +12,7 @@ export default function ProtectedLayout({
       {/* <div className="flex justify-end">
         <AuthButton />
       </div> */}
-      <header className="bg-black p-2 flex justify-center sticky top-0 z-10">
+      <header className="bg-black py-2 px-8 flex justify-center sticky top-0 z-10">
         <div className="flex justify-between gap-2 items-center max-w-screen-lg w-full">
           <Link href={"/"}>Guess Who</Link>
           <AuthButton />

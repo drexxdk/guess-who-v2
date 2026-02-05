@@ -59,10 +59,27 @@ export default function GamePlayPage() {
 
   // Validate required search params and redirect if missing
   useEffect(() => {
-    if (searchParams && !gameCode && !playerName) {
+    const hasParams = gameCode && playerName;
+
+    if (!hasParams) {
+      setLoading(false);
+      setError(null);
       router.replace("/game/join");
     }
-  }, [searchParams, gameCode, playerName, router]);
+  }, [gameCode, playerName, router]);
+
+  // Handle browser back button
+  useEffect(() => {
+    const handlePopState = () => {
+      // When user navigates back, immediately redirect to ensure we don't show loading
+      if (!gameCode || !playerName) {
+        router.replace("/game/join");
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [gameCode, playerName, router]);
 
   const generateQuestions = useCallback(
     (
@@ -572,6 +589,11 @@ export default function GamePlayPage() {
       handleAnswer(null);
     }
   }, [timeLeft, answered, questions.length, handleAnswer]);
+
+  // If we don't have valid params, return empty while redirecting
+  if (!gameCode || !playerName) {
+    return null;
+  }
 
   return (
     <RenderState
