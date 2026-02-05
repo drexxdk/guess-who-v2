@@ -36,6 +36,9 @@ self.addEventListener("fetch", (event) => {
   // Skip non-GET requests
   if (request.method !== "GET") return;
 
+  // Only handle http and https requests (skip chrome-extension://, etc.)
+  if (!url.protocol.startsWith("http")) return;
+
   // Skip API requests and Supabase calls
   if (url.pathname.startsWith("/api") || url.hostname.includes("supabase")) {
     return;

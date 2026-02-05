@@ -12,8 +12,19 @@ export function InstallPrompt() {
     useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Only show install prompt on mobile devices
+    const checkMobile = () => {
+      const mobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent,
+        ) || window.innerWidth < 768;
+      setIsMobile(mobile);
+    };
+    checkMobile();
+
     // Check if already installed
     if (window.matchMedia("(display-mode: standalone)").matches) {
       setIsInstalled(true);
@@ -64,8 +75,8 @@ export function InstallPrompt() {
     localStorage.setItem("pwa-prompt-dismissed", Date.now().toString());
   };
 
-  // Don't show if already installed or dismissed recently
-  if (isInstalled || !showPrompt) return null;
+  // Don't show if already installed, not mobile, or dismissed recently
+  if (isInstalled || !showPrompt || !isMobile) return null;
 
   // Check if dismissed recently (within 7 days)
   const dismissedAt = localStorage.getItem("pwa-prompt-dismissed");
