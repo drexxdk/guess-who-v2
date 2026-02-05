@@ -44,10 +44,9 @@ export function throttle<T extends (...args: Parameters<T>) => ReturnType<T>>(
  * Hook for creating a debounced callback
  * Automatically cleans up on unmount
  */
-export function useDebounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
-  callback: T,
-  delay: number,
-): (...args: Parameters<T>) => void {
+export function useDebounce<
+  T extends (...args: Parameters<T>) => ReturnType<T>,
+>(callback: T, delay: number): (...args: Parameters<T>) => void {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const callbackRef = useRef(callback);
 
@@ -81,10 +80,9 @@ export function useDebounce<T extends (...args: Parameters<T>) => ReturnType<T>>
 /**
  * Hook for creating a throttled callback
  */
-export function useThrottle<T extends (...args: Parameters<T>) => ReturnType<T>>(
-  callback: T,
-  limit: number,
-): (...args: Parameters<T>) => void {
+export function useThrottle<
+  T extends (...args: Parameters<T>) => ReturnType<T>,
+>(callback: T, limit: number): (...args: Parameters<T>) => void {
   const inThrottleRef = useRef(false);
   const callbackRef = useRef(callback);
 

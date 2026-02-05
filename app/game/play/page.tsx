@@ -8,7 +8,6 @@ import { markPlayerAsLeft } from "@/app/actions/mark-player-left";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { logger, logError, getErrorMessage } from "@/lib/logger";
 import Image from "next/image";
@@ -32,12 +31,12 @@ export default function GamePlayPage() {
   const [loading, setLoadingState] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const { setLoading: setGlobalLoading } = useLoading();
-  
+
   // Ref to prevent double execution of loadGame (React StrictMode)
   const isLoadingGameRef = useRef(false);
   const hasLoadedRef = useRef(false);
   const lastJoinSessionIdRef = useRef<string | null>(null);
-  
+
   // Reset refs when joinSessionId changes (new game session)
   useEffect(() => {
     if (joinSessionId && joinSessionId !== lastJoinSessionIdRef.current) {
@@ -161,7 +160,7 @@ export default function GamePlayPage() {
       logger.log("[loadGame] Already loading, skipping duplicate call");
       return;
     }
-    
+
     // For the same joinSessionId, only load once
     if (hasLoadedRef.current && !retry) {
       logger.log("[loadGame] Already loaded for this session, skipping");
@@ -236,9 +235,9 @@ export default function GamePlayPage() {
             // Update the join record to be active
             await supabase
               .from("game_answers")
-              .update({ 
-                is_active: true, 
-                updated_at: new Date().toISOString()
+              .update({
+                is_active: true,
+                updated_at: new Date().toISOString(),
               })
               .eq("id", existingRecord.id);
           }
@@ -444,7 +443,14 @@ export default function GamePlayPage() {
     } finally {
       isLoadingGameRef.current = false;
     }
-  }, [gameCode, playerName, generateQuestions, retry, joinSessionId, setLoading]);
+  }, [
+    gameCode,
+    playerName,
+    generateQuestions,
+    retry,
+    joinSessionId,
+    setLoading,
+  ]);
 
   const finishGame = useCallback(async () => {
     if (!gameSession || !playerName || !joinSessionId) return;
@@ -479,13 +485,24 @@ export default function GamePlayPage() {
       .eq("id", gameSession.id);
 
     // Get join record ID from state or sessionStorage
-    const recordId = joinRecordId || sessionStorage.getItem(`joinRecordId_${gameSession.game_code}_${joinSessionId || playerName}`);
+    const recordId =
+      joinRecordId ||
+      sessionStorage.getItem(
+        `joinRecordId_${gameSession.game_code}_${joinSessionId || playerName}`,
+      );
 
     // Redirect to results page with the actual score from database
     router.replace(
       `/game/results?session=${gameSession.id}&score=${actualScore}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || "")}&gameCode=${gameSession.game_code}&joinRecordId=${recordId || ""}`,
     );
-  }, [gameSession, questions.length, router, playerName, joinSessionId, joinRecordId]);
+  }, [
+    gameSession,
+    questions.length,
+    router,
+    playerName,
+    joinSessionId,
+    joinRecordId,
+  ]);
 
   const handleAnswer = useCallback(
     async (answerId: string | null) => {
@@ -693,7 +710,11 @@ export default function GamePlayPage() {
               answers?.filter((answer) => answer.is_correct).length || 0;
 
             // Get join record ID
-            const recordId = joinRecordId || sessionStorage.getItem(`joinRecordId_${gameCode}_${joinSessionId || playerName}`);
+            const recordId =
+              joinRecordId ||
+              sessionStorage.getItem(
+                `joinRecordId_${gameCode}_${joinSessionId || playerName}`,
+              );
 
             router.replace(
               `/game/results?session=${sessionId}&score=${actualScore}&total=${questions.length}&code=${gameCode}&name=${encodeURIComponent(playerName || "")}&joinRecordId=${recordId || ""}`,

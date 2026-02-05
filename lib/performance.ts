@@ -97,7 +97,9 @@ export function useRenderTime(componentName: string): void {
     const duration = performance.now() - startTime;
     if (duration > 16) {
       // Longer than one frame (60fps)
-      console.warn(`🐢 Slow render: ${componentName} took ${duration.toFixed(2)}ms`);
+      console.warn(
+        `🐢 Slow render: ${componentName} took ${duration.toFixed(2)}ms`,
+      );
     }
   }, 0);
 }
@@ -108,11 +110,15 @@ export function useRenderTime(componentName: string): void {
 export function logMemoryUsage(): void {
   if (isProduction || typeof window === "undefined") return;
 
-  const memory = (performance as Performance & { memory?: {
-    usedJSHeapSize: number;
-    totalJSHeapSize: number;
-  }}).memory;
-  
+  const memory = (
+    performance as Performance & {
+      memory?: {
+        usedJSHeapSize: number;
+        totalJSHeapSize: number;
+      };
+    }
+  ).memory;
+
   if (memory) {
     const usedMB = (memory.usedJSHeapSize / 1024 / 1024).toFixed(2);
     const totalMB = (memory.totalJSHeapSize / 1024 / 1024).toFixed(2);
