@@ -13,38 +13,7 @@ import {
 } from "@/components/ui/card";
 import { use } from "react";
 import { Badge } from "@/components/ui/badge";
-
-type GameType = "guess_name" | "guess_image";
-
-interface GroupData {
-  id: string;
-  name: string;
-  creator_id: string;
-  time_limit_seconds: number;
-  options_count: number;
-  created_at?: string;
-}
-
-interface Person {
-  id: string;
-  group_id: string;
-  first_name: string;
-  last_name: string;
-  image_url: string;
-  gender: string;
-}
-
-interface GameSession {
-  id: string;
-  user_id: string;
-  group_id: string;
-  game_type: GameType;
-  total_questions: number;
-  game_code: string;
-  status: string;
-  score?: number;
-  created_at?: string;
-}
+import type { Group, Person, GameSession, GameType } from "@/lib/schemas";
 
 export default function GameHostPage({
   params,
@@ -55,7 +24,7 @@ export default function GameHostPage({
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [groupData, setGroupData] = useState<GroupData | null>(null);
+  const [groupData, setGroupData] = useState<Group | null>(null);
   const [people, setPeople] = useState<Person[]>([]);
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
   const [gameCode, setGameCode] = useState<string>("");

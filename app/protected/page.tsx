@@ -4,20 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface GameSession {
-  id: string;
-  game_code: string;
-  game_type: string;
-  status: string;
-  total_questions: number;
-  time_limit_seconds?: number;
-  options_count?: number;
-  groups: {
-    id: string;
-    name: string;
-  } | null;
-}
+import type { GameSessionWithGroup } from "@/lib/schemas";
 
 export default async function ProtectedPage() {
   const supabase = await createClient();
@@ -65,7 +52,7 @@ export default async function ProtectedPage() {
         <div>
           <h2 className="text-2xl font-semibold mb-4">Your Active Games</h2>
           <div className="grid gap-4 md:grid-cols-3">
-            {activeSessions.map((session: GameSession) => (
+            {activeSessions.map((session: GameSessionWithGroup) => (
               <Card
                 key={session.id}
                 className="hover:shadow-lg transition-shadow"

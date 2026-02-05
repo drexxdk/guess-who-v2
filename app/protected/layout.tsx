@@ -16,11 +16,19 @@ export default function ProtectedLayout({
           <AuthButton />
         </div>
       </header>
-      <div className="flex-grow flex flex-col">
+      <div className="flex-grow flex flex-col relative">
         <div className="p-8">
           <div className="w-full mx-auto max-w-screen-lg">
             <Breadcrumbs />
-            <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+            <Suspense
+              fallback={
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              }
+            >
+              {children}
+            </Suspense>
           </div>
         </div>
       </div>

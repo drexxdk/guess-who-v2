@@ -17,36 +17,18 @@ import Link from "next/link";
 import { GroupSettings } from "@/components/group-settings";
 import { DeleteGroupButton } from "@/components/delete-group-button";
 import { createClient } from "@/lib/supabase/client";
-
-type GroupData = {
-  id: string;
-  name: string;
-  creator_id: string;
-  time_limit_seconds: number;
-  options_count: number;
-  created_at?: string;
-};
-
-type Person = {
-  id: string;
-  group_id: string;
-  first_name: string;
-  last_name: string;
-  image_url: string;
-  gender: string;
-};
+import type { Group, Person } from "@/lib/schemas";
 
 export function GroupDetailClient({
   groupData,
   initialPeople,
   groupId,
 }: {
-  groupData: GroupData;
+  groupData: Group;
   initialPeople: Person[];
   groupId: string;
 }) {
-  const [updatedGroupData, setUpdatedGroupData] =
-    useState<GroupData>(groupData);
+  const [updatedGroupData, setUpdatedGroupData] = useState<Group>(groupData);
   const [people, setPeople] = useState<Person[]>(initialPeople);
   const [isEditingSettings, setIsEditingSettings] = useState(false);
 
@@ -117,13 +99,12 @@ export function GroupDetailClient({
     };
   }, [groupId]);
 
-  const hasEnoughPeople = people.length >= updatedGroupData.options_count;
+  const hasEnoughPeople =
+    people.length >= (updatedGroupData.options_count ?? 4);
 
-  const handleGroupUpdate = (updated: {
-    name: string;
-    time_limit_seconds: number;
-    options_count: number;
-  }) => {
+  const handleGroupUpdate = (
+    updated: Pick<Group, "name" | "time_limit_seconds" | "options_count">,
+  ) => {
     setUpdatedGroupData((prev) => ({
       ...prev,
       ...updated,

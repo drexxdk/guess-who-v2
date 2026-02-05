@@ -6,14 +6,7 @@ import { FaTrash } from "react-icons/fa6";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-
-type Person = {
-  id: string;
-  first_name: string;
-  last_name: string;
-  gender: string;
-  image_url: string | null;
-};
+import type { Person } from "@/lib/schemas";
 
 export function PeopleList({ people }: { people: Person[] }) {
   const [deleting, setDeleting] = useState<string | null>(null);

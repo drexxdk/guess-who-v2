@@ -9,16 +9,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-interface GameSession {
-  id: string;
-  game_code: string;
-  status: string;
-  groups?: {
-    id: string;
-    name: string;
-  };
-}
+import type { GameSessionWithGroup } from "@/lib/schemas";
 
 export default function GameStartedPage({
   params: paramsPromise,
@@ -30,7 +21,9 @@ export default function GameStartedPage({
   const groupId = params.id;
   const sessionId = params.sessionId;
 
-  const [gameSession, setGameSession] = useState<GameSession | null>(null);
+  const [gameSession, setGameSession] = useState<GameSessionWithGroup | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
 
   const loadGameSession = useCallback(async () => {
@@ -47,7 +40,7 @@ export default function GameStartedPage({
       return;
     }
 
-    setGameSession(session as GameSession);
+    setGameSession(session as GameSessionWithGroup);
     setLoading(false);
   }, [sessionId]);
 

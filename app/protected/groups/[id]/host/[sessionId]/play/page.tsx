@@ -8,6 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { use } from "react";
+import type { GameSessionWithGroup } from "@/lib/schemas";
 
 interface Player {
   id: string;
@@ -17,19 +18,6 @@ interface Player {
   missing: number;
   answered: boolean;
   isActive: boolean;
-}
-
-interface GameSession {
-  id: string;
-  game_code: string;
-  game_type: string;
-  status: string;
-  total_questions: number;
-  time_limit_seconds?: number;
-  options_count?: number;
-  groups: {
-    name: string;
-  };
 }
 
 export default function GameControlPage({
@@ -42,7 +30,9 @@ export default function GameControlPage({
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [gameSession, setGameSession] = useState<GameSession | null>(null);
+  const [gameSession, setGameSession] = useState<GameSessionWithGroup | null>(
+    null,
+  );
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameCode, setGameCode] = useState("");
 
@@ -87,7 +77,7 @@ export default function GameControlPage({
     const nameIndices = new Map<string, number>();
     const latestJoinRecordIdPerName = new Map<string, string>();
 
-    joinRecords.forEach((record: { id: string; player_name: string }) => {
+    joinRecords.forEach((record) => {
       const playerName = record.player_name || "Anonymous";
       nameCounts.set(playerName, (nameCounts.get(playerName) || 0) + 1);
       // Keep track of the latest (most recent) join record for each name
@@ -108,32 +98,26 @@ export default function GameControlPage({
     >();
 
     // First pass: create one player entry for each join record
-    joinRecords.forEach(
-      (joinRecord: {
-        id: string;
-        player_name: string;
-        is_active?: boolean;
-      }) => {
-        const playerName = joinRecord.player_name || "Anonymous";
-        const isDuplicate = nameCounts.get(playerName)! > 1;
+    joinRecords.forEach((joinRecord) => {
+      const playerName = joinRecord.player_name || "Anonymous";
+      const isDuplicate = nameCounts.get(playerName)! > 1;
 
-        const currentIndex = (nameIndices.get(playerName) || 0) + 1;
-        nameIndices.set(playerName, currentIndex);
+      const currentIndex = (nameIndices.get(playerName) || 0) + 1;
+      nameIndices.set(playerName, currentIndex);
 
-        const displayName = isDuplicate
-          ? `${playerName} (${currentIndex})`
-          : playerName;
+      const displayName = isDuplicate
+        ? `${playerName} (${currentIndex})`
+        : playerName;
 
-        playerStats.set(joinRecord.id, {
-          name: playerName,
-          correct: 0,
-          wrong: 0,
-          missing: 0,
-          isActive: joinRecord.is_active !== false,
-          displayName,
-        });
-      },
-    );
+      playerStats.set(joinRecord.id, {
+        name: playerName,
+        correct: 0,
+        wrong: 0,
+        missing: 0,
+        isActive: joinRecord.is_active !== false,
+        displayName,
+      });
+    });
 
     // Second pass: count answers for each player
     if (answers && answers.length > 0) {
@@ -151,39 +135,31 @@ export default function GameControlPage({
         })),
       );
 
-      answers.forEach(
-        (answer: {
-          player_name: string;
-          correct_option_id?: string;
-          is_correct?: boolean;
-          is_active?: boolean;
-          join_id?: string;
-        }) => {
-          const playerName = answer.player_name || "Anonymous";
+      answers.forEach((answer) => {
+        const playerName = answer.player_name || "Anonymous";
 
-          // Count actual answers (records where correct_option_id is NOT null)
-          if (answer.correct_option_id) {
-            console.log(
-              "Processing answer for",
-              playerName,
-              "with join_id:",
-              answer.join_id,
-              "has in stats:",
-              playerStats.has(answer.join_id || ""),
-            );
-            if (answer.join_id && playerStats.has(answer.join_id)) {
-              const stats = playerStats.get(answer.join_id)!;
-              if (answer.is_correct) {
-                stats.correct++;
-              } else {
-                stats.wrong++;
-              }
+        // Count actual answers (records where correct_option_id is NOT null)
+        if (answer.correct_option_id) {
+          console.log(
+            "Processing answer for",
+            playerName,
+            "with join_id:",
+            answer.join_id,
+            "has in stats:",
+            playerStats.has(answer.join_id || ""),
+          );
+          if (answer.join_id && playerStats.has(answer.join_id)) {
+            const stats = playerStats.get(answer.join_id)!;
+            if (answer.is_correct) {
+              stats.correct++;
             } else {
-              console.log("Answer skipped - join_id not found in playerStats");
+              stats.wrong++;
             }
+          } else {
+            console.log("Answer skipped - join_id not found in playerStats");
           }
-        },
-      );
+        }
+      });
     }
 
     console.log(
@@ -194,10 +170,11 @@ export default function GameControlPage({
       })),
     );
 
+    const totalQuestions = session.total_questions ?? 10;
     const activePlayers: Player[] = Array.from(playerStats.entries()).map(
       ([id, stats]) => {
         const total = stats.correct + stats.wrong;
-        const missing = Math.max(0, session.total_questions - total);
+        const missing = Math.max(0, totalQuestions - total);
 
         return {
           id,
@@ -205,7 +182,7 @@ export default function GameControlPage({
           correct: stats.correct,
           wrong: stats.wrong,
           missing: missing,
-          answered: total === session.total_questions,
+          answered: total === totalQuestions,
           isActive: stats.isActive,
         };
       },

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { PersonInsert, GenderType } from "@/lib/schemas";
 
 export function AddPersonForm({ groupId }: { groupId: string }) {
   const cropContainerRef = useRef<HTMLDivElement>(null);
@@ -361,19 +362,11 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
       }
 
       // Build the person object
-      interface PersonData {
-        group_id: string;
-        first_name: string;
-        last_name: string;
-        gender: "male" | "female" | "other";
-        image_url?: string;
-      }
-
-      const personData: PersonData = {
+      const personData: PersonInsert = {
         group_id: groupId,
         first_name: formData.first_name,
         last_name: formData.last_name,
-        gender: formData.gender,
+        gender: formData.gender as GenderType,
       };
 
       // Only include image_url if it has a value

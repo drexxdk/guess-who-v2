@@ -10,30 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-
-type GameType = "guess_name" | "guess_image";
-
-interface Person {
-  id: string;
-  first_name: string;
-  last_name: string;
-  image_url: string;
-  gender: string;
-}
+import type { Person, GameSession, GameType } from "@/lib/schemas";
 
 interface Question {
   person: Person;
   options: Person[];
-}
-
-interface GameSession {
-  id: string;
-  group_id: string;
-  game_type: GameType;
-  total_questions: number;
-  game_code: string;
-  status: string;
-  time_limit_seconds?: number;
 }
 
 export default function GamePlayPage() {
@@ -138,6 +119,11 @@ export default function GamePlayPage() {
   );
 
   const loadGame = useCallback(async () => {
+    // Guard against null values - early return if missing
+    if (!gameCode || !playerName) {
+      return;
+    }
+
     try {
       console.log("[loadGame] Starting loadGame");
       // Reset all game state at the start
@@ -152,10 +138,8 @@ export default function GamePlayPage() {
       const supabase = createClient();
 
       // Store game code and player name for "Play Again" feature
-      if (gameCode && playerName) {
-        sessionStorage.setItem("lastGameCode", gameCode);
-        sessionStorage.setItem("lastPlayerName", playerName);
-      }
+      sessionStorage.setItem("lastGameCode", gameCode);
+      sessionStorage.setItem("lastPlayerName", playerName);
 
       // Find game session by code (allow any status so player can rejoin and try again)
       const { data: session } = await supabase
@@ -196,17 +180,18 @@ export default function GamePlayPage() {
       }
 
       // Use options_count from game session (set when host started the game)
-      const optionsCount = session.options_count || 4;
+      const optionsCount = session.options_count ?? 4;
+      const totalQuestions = session.total_questions ?? 10;
 
       const generatedQuestions = generateQuestions(
         peopleData,
         session.game_type,
-        session.total_questions,
+        totalQuestions,
         optionsCount,
       );
       console.log(
         "[loadGame] generateQuestions called with",
-        session.total_questions,
+        totalQuestions,
         "questions, got",
         generatedQuestions.length,
         "back",
@@ -220,7 +205,7 @@ export default function GamePlayPage() {
         correct_option_id: string | null;
         selected_option_id: string | null;
         id: string;
-        response_time_ms: number;
+        response_time_ms: number | null;
       }> = [];
 
       if (!retry) {
@@ -234,12 +219,7 @@ export default function GamePlayPage() {
         if (allAnswers && allAnswers.length > 0) {
           // Filter answers that have been submitted (both correct_option_id and selected_option_id exist)
           answeredQuestions = allAnswers.filter(
-            (a: {
-              correct_option_id: string | null;
-              selected_option_id: string | null;
-              id: string;
-              response_time_ms: number;
-            }) => a.correct_option_id !== null && a.selected_option_id !== null,
+            (a) => a.correct_option_id !== null && a.selected_option_id !== null,
           );
 
           if (answeredQuestions.length > 0) {
@@ -265,7 +245,7 @@ export default function GamePlayPage() {
       );
       let initialTimeLeft = timeLimit;
 
-      if (storedStartTime && resumeFromQuestion < session.total_questions) {
+      if (storedStartTime && resumeFromQuestion < totalQuestions) {
         const elapsedMs = Date.now() - parseInt(storedStartTime);
         const elapsedSeconds = Math.floor(elapsedMs / 1000);
         initialTimeLeft = Math.max(0, timeLimit - elapsedSeconds);
@@ -300,7 +280,7 @@ export default function GamePlayPage() {
   }, [gameCode, playerName, generateQuestions, retry]);
 
   const finishGame = useCallback(async () => {
-    if (!gameSession) return;
+    if (!gameSession || !playerName) return;
 
     const supabase = createClient();
 

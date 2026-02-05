@@ -4,21 +4,18 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import type { Group } from "@/lib/schemas";
 
 interface GroupSettingsProps {
   groupId: string;
-  initialGroup: {
-    id: string;
-    name: string;
-    time_limit_seconds: number;
-    options_count: number;
-  };
+  initialGroup: Pick<
+    Group,
+    "id" | "name" | "time_limit_seconds" | "options_count"
+  >;
   peopleCount?: number;
-  onUpdate?: (updatedGroup: {
-    name: string;
-    time_limit_seconds: number;
-    options_count: number;
-  }) => void;
+  onUpdate?: (
+    updatedGroup: Pick<Group, "name" | "time_limit_seconds" | "options_count">,
+  ) => void;
   isEditing?: boolean;
   onEditChange?: (isEditing: boolean) => void;
 }
@@ -104,8 +101,8 @@ export function GroupSettings({
 
   const handleCancel = () => {
     setGroupName(initialGroup.name);
-    setTimeLimitSeconds(initialGroup.time_limit_seconds);
-    setOptionsCount(initialGroup.options_count);
+    setTimeLimitSeconds(initialGroup.time_limit_seconds ?? 30);
+    setOptionsCount(initialGroup.options_count ?? 4);
     setIsEditing(false);
     setError(null);
     if (onEditChange) {
