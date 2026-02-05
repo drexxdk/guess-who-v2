@@ -193,7 +193,12 @@ export default function GamePlayPage() {
       // Check how many questions the player has already answered to resume from the right question
       // Skip this if it's a retry (fresh start)
       let resumeFromQuestion = 0;
-      let answeredQuestions: Array<{ correct_option_id: string | null; selected_option_id: string | null; id: string; response_time_ms: number }> = [];
+      let answeredQuestions: Array<{
+        correct_option_id: string | null;
+        selected_option_id: string | null;
+        id: string;
+        response_time_ms: number;
+      }> = [];
 
       if (!retry) {
         const { data: allAnswers } = await supabase
@@ -206,8 +211,12 @@ export default function GamePlayPage() {
         if (allAnswers && allAnswers.length > 0) {
           // Filter answers that have been submitted (both correct_option_id and selected_option_id exist)
           answeredQuestions = allAnswers.filter(
-            (a: { correct_option_id: string | null; selected_option_id: string | null; id: string; response_time_ms: number }) =>
-              a.correct_option_id !== null && a.selected_option_id !== null,
+            (a: {
+              correct_option_id: string | null;
+              selected_option_id: string | null;
+              id: string;
+              response_time_ms: number;
+            }) => a.correct_option_id !== null && a.selected_option_id !== null,
           );
 
           if (answeredQuestions.length > 0) {
