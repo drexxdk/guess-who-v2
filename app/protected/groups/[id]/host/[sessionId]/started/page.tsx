@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { use } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { buttonVariants } from "@/components/ui/button";
@@ -10,8 +10,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { endGameSession } from "@/lib/game-utils";
-import { useAsync } from "@/lib/hooks/use-async";
 import { getGameSessionWithGroup } from "@/lib/queries";
+import { useLoading } from "@/lib/loading-context";
+import { LoadingLink } from "@/components/ui/loading-link";
 
 export default function GameStartedPage({
   params: paramsPromise,
@@ -22,15 +23,21 @@ export default function GameStartedPage({
   const router = useRouter();
   const groupId = params.id;
   const sessionId = params.sessionId;
+  const { setLoading } = useLoading();
+  const [gameSession, setGameSession] = useState<Awaited<ReturnType<typeof getGameSessionWithGroup>> | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   const loadGameSession = useCallback(async () => {
     const supabase = createClient();
-    return getGameSessionWithGroup(supabase, sessionId);
-  }, [sessionId]);
+    const data = await getGameSessionWithGroup(supabase, sessionId);
+    setGameSession(data);
+    setInitialized(true);
+    setLoading(false);
+  }, [sessionId, setLoading]);
 
-  const { data: gameSession, isLoading: loading } = useAsync(loadGameSession, {
-    deps: [sessionId],
-  });
+  useEffect(() => {
+    loadGameSession();
+  }, [loadGameSession]);
 
   async function cancelGame() {
     if (!gameSession) return;
@@ -39,11 +46,13 @@ export default function GameStartedPage({
     await endGameSession(supabase, gameSession.id);
 
     // Navigate back to group
+    setLoading(true);
     router.push(`/protected/groups/${groupId}/host`);
   }
 
-  if (loading) {
-    return <p>Loading...</p>;
+  // Show nothing until initialized (global loading overlay handles loading state)
+  if (!initialized) {
+    return null;
   }
 
   if (!gameSession) {
@@ -77,12 +86,12 @@ export default function GameStartedPage({
             >
               End Game
             </Button>
-            <Link
+            <LoadingLink
               href={`/protected/groups/${groupId}/host/${sessionId}/play`}
               className={buttonVariants({ className: "flex-1" })}
             >
               Go to Control Dashboard
-            </Link>
+            </LoadingLink>
           </div>
         </>
       </CardContent>

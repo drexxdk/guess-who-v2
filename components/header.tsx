@@ -7,7 +7,7 @@ interface HeaderProps {
 
 export function Header({ showAuth = true }: HeaderProps) {
   return (
-    <header className="bg-black py-2 px-8 flex justify-center sticky top-0 z-10">
+    <header className="bg-black h-[var(--header-height)] px-8 flex justify-center items-center sticky top-0 z-10">
       <div className="flex justify-between gap-2 items-center max-w-screen-lg w-full">
         <Link href="/">Guess Who</Link>
         {showAuth && <AuthButton />}

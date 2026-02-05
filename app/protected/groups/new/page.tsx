@@ -15,9 +15,11 @@ import {
 } from "@/components/ui/card";
 import { useFormState } from "@/lib/hooks/use-form-state";
 import { ErrorMessage } from "@/components/ui/error-message";
+import { useLoading } from "@/lib/loading-context";
 
 export default function NewGroupPage() {
   const router = useRouter();
+  const { setLoading } = useLoading();
   const { error, isLoading, execute, clearError } = useFormState();
   const [formData, setFormData] = useState({
     name: "",
@@ -26,6 +28,8 @@ export default function NewGroupPage() {
   });
 
   useEffect(() => {
+    // Reset loading state when page mounts
+    setLoading(false);
     // Reset form when component mounts
     setFormData({
       name: "",
@@ -33,7 +37,7 @@ export default function NewGroupPage() {
       options_count: 3,
     });
     clearError();
-  }, [clearError]);
+  }, [clearError, setLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +71,7 @@ export default function NewGroupPage() {
           time_limit_seconds: 15,
           options_count: 3,
         });
+        setLoading(true);
         router.push(`/protected/groups/${data.id}`);
         router.refresh();
       }

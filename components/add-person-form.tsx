@@ -9,9 +9,11 @@ import { Label } from "@/components/ui/label";
 import { ErrorMessage } from "@/components/ui/error-message";
 import type { PersonInsert, GenderType } from "@/lib/schemas";
 import { logError, getErrorMessage } from "@/lib/logger";
+import { useLoading } from "@/lib/loading-context";
 
 export function AddPersonForm({ groupId }: { groupId: string }) {
   const cropContainerRef = useRef<HTMLDivElement>(null);
+  const { setLoading: setGlobalLoading } = useLoading();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -334,6 +336,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
     }
 
     setLoading(true);
+    setGlobalLoading(true);
     setError(null);
 
     try {
@@ -408,6 +411,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
       setError("Error adding person: " + getErrorMessage(err));
     } finally {
       setLoading(false);
+      setGlobalLoading(false);
     }
   };
 

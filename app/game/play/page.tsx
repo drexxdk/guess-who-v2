@@ -14,7 +14,7 @@ import { logger, logError, getErrorMessage } from "@/lib/logger";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { Person, GameSession, GameType } from "@/lib/schemas";
-import { useGameLoading } from "../loading-context";
+import { useLoading } from "@/lib/loading-context";
 
 interface Question {
   person: Person;
@@ -31,7 +31,7 @@ export default function GamePlayPage() {
 
   const [loading, setLoadingState] = useState(false);
   const [initialized, setInitialized] = useState(false);
-  const { setLoading: setGlobalLoading } = useGameLoading();
+  const { setLoading: setGlobalLoading } = useLoading();
 
   // Sync local loading state with global loading context
   const setLoading = useCallback(

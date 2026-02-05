@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { createClient } from "@/lib/supabase/client";
 import { logError, getErrorMessage } from "@/lib/logger";
+import { useLoading } from "@/lib/loading-context";
 
 export function DeleteGroupButton({ groupId }: { groupId: string }) {
   const router = useRouter();
+  const { setLoading } = useLoading();
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,6 +64,7 @@ export function DeleteGroupButton({ groupId }: { groupId: string }) {
 
       if (error) throw error;
 
+      setLoading(true);
       router.push("/protected/groups");
       router.refresh();
     } catch (err: unknown) {

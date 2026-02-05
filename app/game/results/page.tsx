@@ -18,7 +18,7 @@ import {
   getPayloadNew,
 } from "@/lib/hooks/use-realtime";
 import { getGameSessionStatus, getPlayerJoinRecord } from "@/lib/queries";
-import { useGameLoading } from "../loading-context";
+import { useLoading } from "@/lib/loading-context";
 
 interface GameSessionStatus extends Record<string, unknown> {
   status: string;
@@ -29,7 +29,7 @@ export default function GameResultsPage() {
   const router = useRouter();
   const [gameEnded, setGameEnded] = useState<boolean | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
-  const { setLoading } = useGameLoading();
+  const { setLoading } = useLoading();
 
   // Reset navigation state when returning to this page
   useEffect(() => {

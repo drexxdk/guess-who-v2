@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { getActiveGameSessionByCode } from "@/lib/queries";
-import { useGameLoading } from "../loading-context";
+import { useLoading } from "@/lib/loading-context";
 
 export default function JoinGamePage() {
   const router = useRouter();
@@ -23,7 +23,7 @@ export default function JoinGamePage() {
   const [playerName, setPlayerName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { setLoading } = useGameLoading();
+  const { setLoading } = useLoading();
 
   // Reset loading state when returning to this page via back button or history navigation
   useEffect(() => {

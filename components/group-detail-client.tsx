@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { FaPencil } from "react-icons/fa6";
 import { PeopleList } from "@/components/people-list";
 import { AddPersonForm } from "@/components/add-person-form";
@@ -23,6 +23,8 @@ import {
   getPayloadNew,
   getPayloadOld,
 } from "@/lib/hooks/use-realtime";
+import { useLoading } from "@/lib/loading-context";
+import { LoadingLink } from "@/components/ui/loading-link";
 
 export function GroupDetailClient({
   groupData,
@@ -33,9 +35,15 @@ export function GroupDetailClient({
   initialPeople: Person[];
   groupId: string;
 }) {
+  const { setLoading } = useLoading();
   const [updatedGroupData, setUpdatedGroupData] = useState<Group>(groupData);
   const [people, setPeople] = useState<Person[]>(initialPeople);
   const [isEditingSettings, setIsEditingSettings] = useState(false);
+
+  // Reset loading state when component mounts
+  useEffect(() => {
+    setLoading(false);
+  }, [setLoading]);
 
   // Realtime event handlers
   const handleDelete = useCallback(
@@ -148,14 +156,14 @@ export function GroupDetailClient({
               onEditChange={setIsEditingSettings}
             />
             <div className="mt-6 space-y-2">
-              <Link
+              <LoadingLink
                 href={`/protected/groups/${updatedGroupData.id}/host`}
                 className={buttonVariants({
                   className: `w-full ${!hasEnoughPeople ? "opacity-50 pointer-events-none" : ""}`,
                 })}
               >
                 Start Game
-              </Link>
+              </LoadingLink>
               {!hasEnoughPeople && (
                 <p className="text-sm text-destructive text-center">
                   You need at least {updatedGroupData.options_count} people to

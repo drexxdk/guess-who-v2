@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/card";
 import { use } from "react";
 import { Badge } from "@/components/ui/badge";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { generateGameCode, endGameSession } from "@/lib/game-utils";
+import { useLoading } from "@/lib/loading-context";
 import type { Group, Person, GameSession, GameType } from "@/lib/schemas";
 import { logError } from "@/lib/logger";
 
@@ -26,7 +26,8 @@ export default function GameHostPage({
 }) {
   const { id: groupId } = use(params);
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const { setLoading } = useLoading();
+  const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [groupData, setGroupData] = useState<Group | null>(null);
   const [people, setPeople] = useState<Person[]>([]);
@@ -68,9 +69,10 @@ export default function GameHostPage({
     } catch (error) {
       logError("Error loading group data:", error);
     } finally {
+      setInitialized(true);
       setLoading(false);
     }
-  }, [groupId]);
+  }, [groupId, setLoading]);
 
   useEffect(() => {
     loadGroupData();
@@ -142,8 +144,9 @@ export default function GameHostPage({
     router.push(`/protected/groups/${groupId}/host/${session.id}/started`);
   };
 
-  if (loading) {
-    return <p>Loading...</p>;
+  // Show nothing until initialized (global loading overlay handles loading state)
+  if (!initialized) {
+    return null;
   }
 
   if (!groupData) {
@@ -185,11 +188,12 @@ export default function GameHostPage({
                 End Game
               </Button>
               <Button
-                onClick={() =>
+                onClick={() => {
+                  setLoading(true);
                   router.push(
                     `/protected/groups/${groupId}/host/${gameSession.id}/play`,
-                  )
-                }
+                  );
+                }}
                 className="flex-1"
               >
                 Go to Control Dashboard
@@ -309,17 +313,16 @@ export default function GameHostPage({
               <Button
                 variant="outline"
                 onClick={() => router.back()}
-                disabled={loading}
                 className="flex-1"
               >
                 Cancel
               </Button>
               <Button
                 onClick={startGame}
-                disabled={loading || !groupData || people.length < optionsCount}
+                disabled={!groupData || people.length < optionsCount}
                 className="flex-1"
               >
-                {loading ? "Starting..." : "Start Game"}
+                Start Game
               </Button>
             </div>
 
@@ -333,11 +336,6 @@ export default function GameHostPage({
           </>
         )}
       </CardContent>
-      {loading && (
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-          <LoadingSpinner />
-        </div>
-      )}
     </Card>
   );
 }

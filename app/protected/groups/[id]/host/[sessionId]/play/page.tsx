@@ -7,9 +7,10 @@ import { createClient } from "@/lib/supabase/client";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { endGameSession } from "@/lib/game-utils";
+import { useLoading } from "@/lib/loading-context";
+import { LoadingLink } from "@/components/ui/loading-link";
 import { logger } from "@/lib/logger";
 import { use } from "react";
 import type { GameSessionWithGroup } from "@/lib/schemas";
@@ -33,7 +34,8 @@ export default function GameControlPage({
   const params = use(paramsPromise);
   const sessionId = params.sessionId;
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const { setLoading } = useLoading();
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [gameSession, setGameSession] = useState<GameSessionWithGroup | null>(
     null,
@@ -64,7 +66,7 @@ export default function GameControlPage({
 
       if (!session) {
         setError("Game session not found!");
-        setLoading(false);
+        setIsLoading(false);
         return;
       }
 
@@ -221,9 +223,10 @@ export default function GameControlPage({
               },
             ],
       );
-      setLoading(false);
+      setIsLoading(false);
+      setLoading(false); // Reset global loading
     },
-    [sessionId],
+    [sessionId, setLoading],
   );
 
   // Initial load
@@ -328,24 +331,14 @@ export default function GameControlPage({
   }, [sessionId, loadGameSession]);
 
   const endGame = async () => {
+    setLoading(true);
     const supabase = createClient();
     await endGameSession(supabase, sessionId);
     router.push("/protected");
   };
 
-  if (loading) {
-    return (
-      <div className="grow flex flex-col gap-2 items-center justify-center p-4">
-        {error && (
-          <Card className="w-full max-w-md">
-            <CardContent>
-              <ErrorMessage message={error} size="lg" className="text-center" />
-            </CardContent>
-          </Card>
-        )}
-        {!error && <LoadingSpinner className="border-gray-900" />}
-      </div>
-    );
+  if (isLoading) {
+    return null; // Global loading overlay will show
   }
 
   if (!gameSession) {
@@ -403,7 +396,7 @@ export default function GameControlPage({
             <Button onClick={endGame} variant="destructive" className="flex-1">
               End Game
             </Button>
-            <Link
+            <LoadingLink
               href="/protected"
               className={buttonVariants({
                 variant: "outline",
@@ -411,7 +404,7 @@ export default function GameControlPage({
               })}
             >
               Back to Dashboard
-            </Link>
+            </LoadingLink>
           </div>
         </CardContent>
       </Card>
