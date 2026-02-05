@@ -35,7 +35,7 @@ export default function GameResultsPage() {
   useEffect(() => {
     setIsNavigating(false);
     setLoading(false);
-    
+
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
         setIsNavigating(false);
@@ -187,7 +187,7 @@ export default function GameResultsPage() {
 
         // Generate a new joinSessionId for the retry
         const newJoinSessionId = crypto.randomUUID();
-        
+
         // Redirect to play page with retry flag to force fresh start
         router.replace(
           `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${newJoinSessionId}&retry=true`,
@@ -287,8 +287,8 @@ export default function GameResultsPage() {
               </>
             ) : (
               <>
-                <Button 
-                  onClick={handlePlayAgain} 
+                <Button
+                  onClick={handlePlayAgain}
                   disabled={isNavigating}
                   className="w-full"
                 >

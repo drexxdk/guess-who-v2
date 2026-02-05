@@ -34,10 +34,13 @@ export default function GamePlayPage() {
   const { setLoading: setGlobalLoading } = useGameLoading();
 
   // Sync local loading state with global loading context
-  const setLoading = useCallback((value: boolean) => {
-    setLoadingState(value);
-    setGlobalLoading(value);
-  }, [setGlobalLoading]);
+  const setLoading = useCallback(
+    (value: boolean) => {
+      setLoadingState(value);
+      setGlobalLoading(value);
+    },
+    [setGlobalLoading],
+  );
   const [error, setError] = useState<string | null>(null);
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
   const [joinRecordId, setJoinRecordId] = useState<string | null>(null);
@@ -759,7 +762,9 @@ const RenderState = ({ state }: { state: StateUnion }) => {
         );
       }
       // Return empty div to maintain layout while global overlay shows spinner
-      return <div className="grow bg-gradient-to-br from-purple-500 to-pink-500" />;
+      return (
+        <div className="grow bg-gradient-to-br from-purple-500 to-pink-500" />
+      );
     case "waiting-for-start":
       return (
         <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
