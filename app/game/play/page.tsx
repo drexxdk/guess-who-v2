@@ -103,7 +103,7 @@ export default function GamePlayPage() {
       }
 
       setQuestions(questionList);
-      setTimeLeft(30); // Reset timer for first question
+      // Timer will be set from gameSession when it loads
     },
     [],
   );
@@ -115,7 +115,7 @@ export default function GamePlayPage() {
     setScore(0);
     setAnswered(false);
     setSelectedAnswer(null);
-    setTimeLeft(30);
+    setTimeLeft(30); // Will be overridden once gameSession loads
     setGameStarted(false);
 
     const supabase = createClient();
@@ -156,14 +156,8 @@ export default function GamePlayPage() {
       return;
     }
 
-    // Load group settings to get options_count
-    const { data: groupData } = await supabase
-      .from("groups")
-      .select("options_count")
-      .eq("id", session.group_id)
-      .single();
-
-    const optionsCount = groupData?.options_count || 4;
+    // Use options_count from game session (set when host started the game)
+    const optionsCount = session.options_count || 4;
 
     generateQuestions(
       peopleData,
@@ -172,6 +166,48 @@ export default function GamePlayPage() {
       optionsCount,
     );
 
+    // Check how many questions the player has already answered to resume from the right question
+    const { data: allAnswers } = await supabase
+      .from("game_answers")
+      .select("id, correct_option_id, selected_option_id, response_time_ms")
+      .eq("session_id", session.id)
+      .eq("player_name", playerName)
+      .order("id", { ascending: true });
+
+    let resumeFromQuestion = 0;
+    let answeredQuestions: typeof allAnswers = [];
+    
+    if (allAnswers && allAnswers.length > 0) {
+      // Filter answers that have been submitted (both correct_option_id and selected_option_id exist)
+      answeredQuestions = allAnswers.filter(
+        (a) => a.correct_option_id !== null && a.selected_option_id !== null
+      );
+      
+      if (answeredQuestions.length > 0) {
+        console.log("Player has answered", answeredQuestions.length, "questions, resuming from question", answeredQuestions.length);
+        resumeFromQuestion = answeredQuestions.length;
+        setCurrentQuestion(resumeFromQuestion);
+      }
+    }
+
+    // Set initial timer based on game session settings
+    const timeLimit = session.time_limit_seconds || 30;
+    
+    // Check if there's a stored question start time (from before reload)
+    const storedStartTime = sessionStorage.getItem(`questionStartTime_${gameCode}_${playerName}`);
+    let initialTimeLeft = timeLimit;
+    
+    if (storedStartTime && resumeFromQuestion < session.total_questions) {
+      const elapsedMs = Date.now() - parseInt(storedStartTime);
+      const elapsedSeconds = Math.floor(elapsedMs / 1000);
+      initialTimeLeft = Math.max(0, timeLimit - elapsedSeconds);
+      console.log("Resuming question with", initialTimeLeft, "seconds remaining");
+    } else {
+      // New question, store the start time
+      sessionStorage.setItem(`questionStartTime_${gameCode}_${playerName}`, Date.now().toString());
+    }
+    
+    setTimeLeft(initialTimeLeft);
     setLoading(false);
     setGameStarted(true);
   }, [gameCode, router, playerName, generateQuestions]);
@@ -230,7 +266,7 @@ export default function GamePlayPage() {
         correct_option_id: questions[currentQuestion].person.id,
         selected_option_id: answerId,
         is_correct: isCorrect,
-        response_time_ms: (30 - timeLeft) * 1000,
+        response_time_ms: Math.max(0, (gameSession.time_limit_seconds || 30) - timeLeft) * 1000,
         player_name: playerName,
         join_id: recordId,
       });
@@ -247,10 +283,13 @@ export default function GamePlayPage() {
           setCurrentQuestion(currentQuestion + 1);
           setSelectedAnswer(null);
           setAnswered(false);
-          setTimeLeft(30);
+          setTimeLeft(gameSession?.time_limit_seconds || 30);
           setLastAnswerCorrect(null);
+          // Store start time for the new question
+          sessionStorage.setItem(`questionStartTime_${gameCode}_${playerName}`, Date.now().toString());
         } else {
           // Game finished
+          sessionStorage.removeItem(`questionStartTime_${gameCode}_${playerName}`);
           finishGame();
         }
       }, 500);
@@ -274,12 +313,24 @@ export default function GamePlayPage() {
     }
   }, [gameCode, playerName]);
 
-  // Reset joinRecordId when joinSessionId changes (new join attempt)
+  // Reset joinRecordId when joinSessionId changes (new join attempt with new joinSessionId)
   useEffect(() => {
-    if (joinSessionId) {
+    const storedJoinSessionId = sessionStorage.getItem(`joinSessionId_${gameCode}_${playerName}`);
+    
+    if (joinSessionId && joinSessionId !== storedJoinSessionId) {
+      // joinSessionId changed, this is a new join attempt
+      console.log("New joinSessionId detected, resetting join record");
       setJoinRecordId(null);
+      sessionStorage.setItem(`joinSessionId_${gameCode}_${playerName}`, joinSessionId);
+    } else if (joinSessionId && joinSessionId === storedJoinSessionId) {
+      // Same joinSessionId, restore from storage if available
+      const storedJoinRecordId = sessionStorage.getItem(`joinRecordId_${gameCode}_${playerName}`);
+      if (storedJoinRecordId) {
+        console.log("Restored joinRecordId from storage:", storedJoinRecordId);
+        setJoinRecordId(storedJoinRecordId);
+      }
     }
-  }, [joinSessionId]);
+  }, [joinSessionId, gameCode, playerName]);
 
   // Handle join tracking separately - only once when player joins
   useEffect(() => {
@@ -297,33 +348,53 @@ export default function GamePlayPage() {
     const handlePlayerJoin = async () => {
       const supabase = createClient();
 
-      // Always create a new join record - each instance of the player is a new join
-      console.log("Creating new join tracking record:", {
-        session_id: gameSession.id,
-        player_name: playerName,
-      });
-      const { data: joinData, error: insertError } = await supabase
+      // Check if a join record already exists for this player in this session
+      const { data: existingJoins } = await supabase
         .from("game_answers")
-        .insert({
+        .select("id, created_at")
+        .eq("session_id", gameSession.id)
+        .eq("player_name", playerName)
+        .is("correct_option_id", null)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (existingJoins && existingJoins.length > 0) {
+        // Reuse the existing join record (player rejoining)
+        console.log("Player rejoining - using existing join record:", existingJoins[0].id);
+        setJoinRecordId(existingJoins[0].id);
+        sessionStorage.setItem(`joinRecordId_${gameCode}_${playerName}`, existingJoins[0].id);
+      } else {
+        // New join - create a new join tracking entry
+        console.log("Creating new join tracking record:", {
           session_id: gameSession.id,
           player_name: playerName,
-          is_correct: false,
-          response_time_ms: 0,
-          is_active: true,
-          // No correct_option_id for join tracking - this distinguishes it from answer records
-        })
-        .select("id");
-      if (insertError) {
-        console.error("Error inserting join tracking:", insertError);
-        console.error(
-          "Full error object:",
-          JSON.stringify(insertError, null, 2),
-        );
-      } else {
-        console.log("Join tracking inserted successfully");
-        const recordId = joinData?.[0]?.id;
-        console.log("Join record ID:", recordId);
-        setJoinRecordId(recordId || null);
+        });
+        const { data: joinData, error: insertError } = await supabase
+          .from("game_answers")
+          .insert({
+            session_id: gameSession.id,
+            player_name: playerName,
+            is_correct: false,
+            response_time_ms: 0,
+            is_active: true,
+            // No correct_option_id for join tracking - this distinguishes it from answer records
+          })
+          .select("id");
+        if (insertError) {
+          console.error("Error inserting join tracking:", insertError);
+          console.error(
+            "Full error object:",
+            JSON.stringify(insertError, null, 2),
+          );
+        } else {
+          console.log("Join tracking inserted successfully");
+          const recordId = joinData?.[0]?.id;
+          console.log("Join record ID:", recordId);
+          setJoinRecordId(recordId || null);
+          if (recordId) {
+            sessionStorage.setItem(`joinRecordId_${gameCode}_${playerName}`, recordId);
+          }
+        }
       }
     };
 
@@ -563,8 +634,10 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                       <CardTitle className="text-center text-2xl">
                         {state.gameType === "guess_name"
                           ? "Who is this?"
-                          : "Where is " +
+                          : "Who is " +
                             state.question.person.first_name +
+                            " " +
+                            state.question.person.last_name +
                             "?"}
                       </CardTitle>
                     </CardHeader>
@@ -601,11 +674,11 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                       let buttonVariant: "default" | "outline" = "outline";
 
                       if (state.answered) {
-                        if (isCorrect) {
+                        if (isCorrect && isSelected) {
                           buttonClass +=
                             " bg-green-500 hover:bg-green-500 text-white";
                           buttonVariant = "default";
-                        } else if (isSelected) {
+                        } else if (isSelected && !isCorrect) {
                           buttonClass +=
                             " bg-red-500 hover:bg-red-500 text-white";
                           buttonVariant = "default";

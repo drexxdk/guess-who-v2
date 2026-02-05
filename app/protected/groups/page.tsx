@@ -69,10 +69,9 @@ export default async function GroupsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>Time limit: {group.time_limit_seconds}s per question</p>
-                  <p>Options per question: {group.options_count}</p>
-                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Customize time limit and options when starting a game
+                </p>
                 <div className="flex gap-2 mt-4">
                   <Link
                     href={`/protected/groups/${group.id}`}

@@ -60,6 +60,8 @@ export default function GameHostPage({
   const [gameCode, setGameCode] = useState<string>("");
   const [selectedGameType, setSelectedGameType] =
     useState<GameType>("guess_name");
+  const [timeLimitSeconds, setTimeLimitSeconds] = useState<number>(30);
+  const [optionsCount, setOptionsCount] = useState<number>(4);
 
   const loadGroupData = useCallback(async () => {
     try {
@@ -84,6 +86,9 @@ export default function GameHostPage({
 
       setGroupData(groupInfo);
       setPeople(peopleData || []);
+      // Set default values from group settings
+      setTimeLimitSeconds(groupInfo.time_limit_seconds || 30);
+      setOptionsCount(groupInfo.options_count || 4);
     } catch (error) {
       console.error("Error loading group data:", error);
     } finally {
@@ -123,10 +128,9 @@ export default function GameHostPage({
   const startGame = async () => {
     if (!groupData) return;
 
-    const minPeopleRequired = groupData.options_count;
-    if (people.length < minPeopleRequired) {
+    if (people.length < optionsCount) {
       alert(
-        `You need at least ${minPeopleRequired} people (matching your options_count setting) to start a game!`,
+        `You need at least ${optionsCount} people to start a game with ${optionsCount} options!`,
       );
       return;
     }
@@ -140,16 +144,11 @@ export default function GameHostPage({
 
     if (!user) return;
 
-    // Mark any existing active sessions for this group as completed
-    await supabase
-      .from("game_sessions")
-      .update({ status: "completed" })
-      .eq("group_id", groupId)
-      .eq("status", "active");
+    // Allow multiple games to run simultaneously - don't mark existing sessions as completed
 
     const code = generateGameCode();
 
-    // Create game session
+    // Create game session with game-specific settings
     const { data: session, error } = await supabase
       .from("game_sessions")
       .insert({
@@ -159,6 +158,8 @@ export default function GameHostPage({
         total_questions: people.length,
         game_code: code,
         status: "active",
+        time_limit_seconds: timeLimitSeconds,
+        options_count: optionsCount,
       })
       .select()
       .single();
@@ -276,18 +277,37 @@ export default function GameHostPage({
 
             <div>
               <h3 className="text-lg font-semibold mb-4">Game Settings</h3>
-              <div className="space-y-2 text-sm">
-                <p>
-                  <span className="font-medium">Time per question:</span>{" "}
-                  {groupData.time_limit_seconds} seconds
-                </p>
-                <p>
-                  <span className="font-medium">Options per question:</span>{" "}
-                  {groupData.options_count}
-                </p>
-                <p>
-                  <span className="font-medium">Total questions:</span>{" "}
-                  {people.length}
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Time per question (seconds)</label>
+                  <div className="flex gap-2 mt-2 items-center">
+                    <input
+                      type="range"
+                      min="5"
+                      max="120"
+                      value={timeLimitSeconds}
+                      onChange={(e) => setTimeLimitSeconds(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <span className="text-sm font-medium w-12 text-right">{timeLimitSeconds}s</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Options per question</label>
+                  <div className="flex gap-2 mt-2 items-center">
+                    <input
+                      type="range"
+                      min="2"
+                      max={Math.min(people.length, 10)}
+                      value={optionsCount}
+                      onChange={(e) => setOptionsCount(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <span className="text-sm font-medium w-12 text-right">{optionsCount}</span>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium">Total questions:</span> {people.length}
                 </p>
               </div>
             </div>
@@ -305,7 +325,7 @@ export default function GameHostPage({
                 disabled={
                   loading ||
                   !groupData ||
-                  people.length < groupData.options_count
+                  people.length < optionsCount
                 }
                 className="flex-1"
               >
@@ -313,10 +333,9 @@ export default function GameHostPage({
               </Button>
             </div>
 
-            {groupData && people.length < groupData.options_count && (
+            {people.length < optionsCount && (
               <p className="text-sm text-destructive text-center">
-                You need at least {groupData.options_count} people to start a
-                game
+                You need at least {optionsCount} people to start a game
               </p>
             )}
           </>
