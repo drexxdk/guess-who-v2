@@ -99,7 +99,7 @@ export default function GameControlPage({
         nameCounts.set(playerName, (nameCounts.get(playerName) || 0) + 1);
       });
 
-      // Track unique players by their join record ID (one entry per join record)
+      // Track unique players by their join record's join_id (one entry per join record)
       const playerStats = new Map<
         string,
         {
@@ -109,6 +109,7 @@ export default function GameControlPage({
           missing: number;
           isActive: boolean;
           displayName: string;
+          dbId: string; // Database ID for presence tracking
         }
       >();
 
@@ -124,16 +125,19 @@ export default function GameControlPage({
           ? `${playerName} (${currentIndex})`
           : playerName;
 
-        // Check if player is active based on Presence (instant detection)
+        // Check if player is active based on Presence (uses database ID)
         const isActive = activeOnlineIds.has(joinRecord.id);
 
-        playerStats.set(joinRecord.id, {
+        // Use join_id as the key since answers reference this field
+        const joinId = joinRecord.join_id || joinRecord.id;
+        playerStats.set(joinId, {
           name: playerName,
           correct: 0,
           wrong: 0,
           missing: 0,
           isActive,
           displayName,
+          dbId: joinRecord.id,
         });
       });
 
@@ -190,12 +194,12 @@ export default function GameControlPage({
 
       const totalQuestions = session.total_questions ?? 10;
       const activePlayers: Player[] = Array.from(playerStats.entries()).map(
-        ([id, stats]) => {
+        ([, stats]) => {
           const total = stats.correct + stats.wrong;
           const missing = Math.max(0, totalQuestions - total);
 
           return {
-            id,
+            id: stats.dbId, // Use database ID for presence tracking
             name: stats.displayName,
             correct: stats.correct,
             wrong: stats.wrong,

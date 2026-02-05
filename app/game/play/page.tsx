@@ -217,7 +217,7 @@ export default function GamePlayPage() {
         if (retry === "true") {
           const { data: existingByName } = await supabase
             .from("game_answers")
-            .select("id, is_active")
+            .select("id, is_active, join_id")
             .eq("session_id", session.id)
             .eq("player_name", playerName)
             .is("correct_option_id", null)
@@ -232,11 +232,12 @@ export default function GamePlayPage() {
             );
             currentJoinRecordId = existingRecord.id;
 
-            // Update the join record to be active
+            // Update the join record to be active AND update join_id to match new joinSessionId
             await supabase
               .from("game_answers")
               .update({
                 is_active: true,
+                join_id: joinSessionId, // Update to new joinSessionId so answers match
                 updated_at: new Date().toISOString(),
               })
               .eq("id", existingRecord.id);
@@ -506,14 +507,7 @@ export default function GamePlayPage() {
 
   const handleAnswer = useCallback(
     async (answerId: string | null) => {
-      if (answered || !gameSession) return;
-
-      // Get join record ID from state or sessionStorage
-      const recordId = joinRecordId || sessionStorage.getItem("joinRecordId");
-      if (!recordId) {
-        logError("No join record ID available");
-        return;
-      }
+      if (answered || !gameSession || !joinSessionId) return;
 
       setAnswered(true);
       setSelectedAnswer(answerId);
@@ -529,7 +523,7 @@ export default function GamePlayPage() {
       const supabase = createClient();
       logger.log(
         "Saving answer with join_id:",
-        recordId,
+        joinSessionId,
         "is_correct:",
         isCorrect,
       );
@@ -541,7 +535,7 @@ export default function GamePlayPage() {
         response_time_ms:
           Math.max(0, (gameSession.time_limit_seconds || 30) - timeLeft) * 1000,
         player_name: playerName,
-        join_id: recordId,
+        join_id: joinSessionId,
       });
 
       if (error) {
@@ -581,7 +575,7 @@ export default function GamePlayPage() {
       timeLeft,
       playerName,
       finishGame,
-      joinRecordId,
+      joinSessionId,
     ],
   );
 
