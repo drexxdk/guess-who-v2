@@ -18,6 +18,7 @@ import {
   getPayloadNew,
 } from "@/lib/hooks/use-realtime";
 import { getGameSessionStatus, getPlayerJoinRecord } from "@/lib/queries";
+import { useGameLoading } from "../loading-context";
 
 interface GameSessionStatus extends Record<string, unknown> {
   status: string;
@@ -27,6 +28,33 @@ export default function GameResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [gameEnded, setGameEnded] = useState<boolean | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const { setLoading } = useGameLoading();
+
+  // Reset navigation state when returning to this page
+  useEffect(() => {
+    setIsNavigating(false);
+    setLoading(false);
+    
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        setIsNavigating(false);
+        setLoading(false);
+      }
+    };
+
+    const handlePopState = () => {
+      setIsNavigating(false);
+      setLoading(false);
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [setLoading]);
 
   const score = parseInt(searchParams?.get("score") || "0");
   const total = parseInt(searchParams?.get("total") || "0");
@@ -82,6 +110,10 @@ export default function GameResultsPage() {
   useRealtimeSubscription<GameSessionStatus>(realtimeConfig);
 
   const handlePlayAgain = async () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    setLoading(true);
+
     if (gameEnded) {
       // Game has been ended by host, send them back to join
       router.replace("/game/join");
@@ -153,15 +185,19 @@ export default function GameResultsPage() {
           "[handlePlayAgain] Redirecting to play page with retry flag",
         );
 
+        // Generate a new joinSessionId for the retry
+        const newJoinSessionId = crypto.randomUUID();
+        
         // Redirect to play page with retry flag to force fresh start
         router.replace(
-          `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&retry=true`,
+          `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${newJoinSessionId}&retry=true`,
         );
       } catch (err) {
         logError("Error in handlePlayAgain:", err);
         // Even if there's an error, still try to navigate with retry flag
+        const newJoinSessionId = crypto.randomUUID();
         router.replace(
-          `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&retry=true`,
+          `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${newJoinSessionId}&retry=true`,
         );
       }
     } else {
@@ -229,7 +265,12 @@ export default function GameResultsPage() {
                   <p className="text-sm font-medium">Game has ended</p>
                 </div>
                 <Button
-                  onClick={() => router.push("/game/join")}
+                  onClick={() => {
+                    setIsNavigating(true);
+                    setLoading(true);
+                    router.push("/game/join");
+                  }}
+                  disabled={isNavigating}
                   className="w-full"
                 >
                   Join New Game
@@ -246,7 +287,11 @@ export default function GameResultsPage() {
               </>
             ) : (
               <>
-                <Button onClick={handlePlayAgain} className="w-full">
+                <Button 
+                  onClick={handlePlayAgain} 
+                  disabled={isNavigating}
+                  className="w-full"
+                >
                   Play Again
                 </Button>
                 <Link

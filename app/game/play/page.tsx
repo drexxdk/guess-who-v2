@@ -14,6 +14,7 @@ import { logger, logError, getErrorMessage } from "@/lib/logger";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { Person, GameSession, GameType } from "@/lib/schemas";
+import { useGameLoading } from "../loading-context";
 
 interface Question {
   person: Person;
@@ -28,8 +29,15 @@ export default function GamePlayPage() {
   const joinSessionId = searchParams?.get("joinSessionId"); // Unique ID for this join instance
   const retry = searchParams?.get("retry"); // Flag to indicate this is a retry/fresh start
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoadingState] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const { setLoading: setGlobalLoading } = useGameLoading();
+
+  // Sync local loading state with global loading context
+  const setLoading = useCallback((value: boolean) => {
+    setLoadingState(value);
+    setGlobalLoading(value);
+  }, [setGlobalLoading]);
   const [error, setError] = useState<string | null>(null);
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
   const [joinRecordId, setJoinRecordId] = useState<string | null>(null);
@@ -48,11 +56,12 @@ export default function GamePlayPage() {
     const hasParams = gameCode && playerName;
 
     if (!hasParams) {
+      setGlobalLoading(false);
       router.replace("/game/join");
     } else {
       setInitialized(true);
     }
-  }, [gameCode, playerName, router]);
+  }, [gameCode, playerName, router, setGlobalLoading]);
 
   // Handle browser back button
   useEffect(() => {
@@ -739,16 +748,18 @@ type StateUnion =
 const RenderState = ({ state }: { state: StateUnion }) => {
   switch (state.type) {
     case "loading":
-      return (
-        <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
-          {state.error && (
+      // Global loading overlay handles spinner, only show error if present
+      if (state.error) {
+        return (
+          <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
             <Container>
               <ErrorMessage message={state.error} size="lg" />
             </Container>
-          )}
-          {!state.error && <LoadingSpinner />}
-        </div>
-      );
+          </div>
+        );
+      }
+      // Return empty div to maintain layout while global overlay shows spinner
+      return <div className="grow bg-gradient-to-br from-purple-500 to-pink-500" />;
     case "waiting-for-start":
       return (
         <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">

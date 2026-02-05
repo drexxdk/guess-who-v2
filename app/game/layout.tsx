@@ -1,6 +1,7 @@
 import { Header } from "@/components/header";
 import { LoadingOverlay } from "@/components/ui/loading-spinner";
 import { Suspense } from "react";
+import { GameLoadingWrapper } from "./loading-wrapper";
 
 export default function GameLayout({
   children,
@@ -11,7 +12,9 @@ export default function GameLayout({
     <main className="min-h-screen flex flex-col">
       <Header />
       <div className="flex-grow flex flex-col relative">
-        <Suspense fallback={<LoadingOverlay />}>{children}</Suspense>
+        <Suspense fallback={<LoadingOverlay />}>
+          <GameLoadingWrapper>{children}</GameLoadingWrapper>
+        </Suspense>
       </div>
     </main>
   );

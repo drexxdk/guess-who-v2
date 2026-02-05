@@ -28,7 +28,7 @@ export function LoadingSpinner({
 
 export function LoadingOverlay({ size = "lg" }: { size?: "sm" | "md" | "lg" }) {
   return (
-    <div className="absolute inset-0 flex items-center justify-center">
+    <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-50">
       <LoadingSpinner size={size} />
     </div>
   );

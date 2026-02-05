@@ -13,53 +13,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorMessage } from "@/components/ui/error-message";
-import { useMutation } from "@/lib/hooks/use-async";
 import { getActiveGameSessionByCode } from "@/lib/queries";
+import { useGameLoading } from "../loading-context";
 
 export default function JoinGamePage() {
   const router = useRouter();
   const [gameCode, setGameCode] = useState("");
   const [playerName, setPlayerName] = useState("");
-
-  const joinGame = useCallback(async () => {
-    const supabase = createClient();
-    const session = await getActiveGameSessionByCode(supabase, gameCode);
-
-    if (!session) {
-      throw new Error("Invalid game code or game is not active");
-    }
-
-    // Game code is valid, redirect to play page
-    // Use push so /game/join stays in history - back from play will return here
-    const joinSessionId = crypto.randomUUID();
-    router.push(
-      `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${joinSessionId}`,
-    );
-    
-    // Return a promise that never resolves to keep loading state active during navigation
-    // This prevents flicker as the join page stays in loading state until unmounted
-    return new Promise(() => {});
-  }, [gameCode, playerName, router]);
-
-  const { error, isLoading, execute, setError, reset } = useMutation(joinGame);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setLoading } = useGameLoading();
 
   // Reset loading state when returning to this page via back button or history navigation
   useEffect(() => {
     // Reset on mount in case we're returning from a navigation
-    reset();
+    setLoading(false);
+    setIsSubmitting(false);
     
     const handlePageShow = (event: PageTransitionEvent) => {
-      // persisted is true when the page is loaded from the back-forward cache
       if (event.persisted) {
-        reset();
+        setLoading(false);
+        setIsSubmitting(false);
       }
     };
 
-    // Also handle popstate for client-side navigation
     const handlePopState = () => {
-      reset();
+      setLoading(false);
+      setIsSubmitting(false);
     };
 
     window.addEventListener("pageshow", handlePageShow);
@@ -68,18 +49,40 @@ export default function JoinGamePage() {
       window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [reset]);
+  }, [setLoading]);
 
-  const handleJoin = async (e: React.FormEvent) => {
+  const handleJoin = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLoading) return;
+    if (isSubmitting) return;
+    
     setError(null);
-    await execute();
-  };
+    setIsSubmitting(true);
+    setLoading(true);
+
+    try {
+      const supabase = createClient();
+      const session = await getActiveGameSessionByCode(supabase, gameCode);
+
+      if (!session) {
+        throw new Error("Invalid game code or game is not active");
+      }
+
+      // Game code is valid, redirect to play page
+      const joinSessionId = crypto.randomUUID();
+      router.push(
+        `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${joinSessionId}`,
+      );
+      // Keep loading state active during navigation - will be reset on unmount or back navigation
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      setIsSubmitting(false);
+      setLoading(false);
+    }
+  }, [gameCode, playerName, router, isSubmitting, setLoading]);
 
   return (
     <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
-      <Card className="w-full max-w-md relative">
+      <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold">Join Game</CardTitle>
           <CardDescription>
@@ -96,7 +99,7 @@ export default function JoinGamePage() {
                 maxLength={6}
                 className="text-center text-2xl font-bold tracking-widest"
                 required
-                disabled={isLoading}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -107,7 +110,7 @@ export default function JoinGamePage() {
                 onChange={(e) => setPlayerName(e.target.value)}
                 maxLength={20}
                 required
-                disabled={isLoading}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -115,18 +118,13 @@ export default function JoinGamePage() {
 
             <Button
               type="submit"
-              disabled={isLoading || !gameCode || !playerName}
+              disabled={isSubmitting || !gameCode || !playerName}
               className="w-full text-lg py-6"
             >
-              {isLoading ? "Joining..." : "Join Game"}
+              {isSubmitting ? "Joining..." : "Join Game"}
             </Button>
           </form>
         </CardContent>
-        {isLoading && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <LoadingSpinner />
-          </div>
-        )}
       </Card>
     </div>
   );
