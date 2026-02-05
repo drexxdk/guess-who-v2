@@ -33,6 +33,7 @@ interface GameSession {
   total_questions: number;
   game_code: string;
   status: string;
+  time_limit_seconds?: number;
 }
 
 export default function GamePlayPage() {
@@ -324,6 +325,7 @@ export default function GamePlayPage() {
       playerName,
       finishGame,
       joinRecordId,
+      gameCode,
     ],
   );
 
@@ -331,7 +333,7 @@ export default function GamePlayPage() {
     if (gameCode && playerName) {
       loadGame();
     }
-  }, [gameCode, playerName]);
+  }, [gameCode, playerName, loadGame]);
 
   // Reset joinRecordId when joinSessionId changes (new join attempt with new joinSessionId)
   useEffect(() => {
@@ -435,7 +437,7 @@ export default function GamePlayPage() {
     };
 
     handlePlayerJoin();
-  }, [gameSession?.id, playerName, joinRecordId, joinSessionId]);
+  }, [gameSession?.id, playerName, joinRecordId, joinSessionId, gameCode]);
 
   // Mark player as left when they close the window or navigate away
   useEffect(() => {

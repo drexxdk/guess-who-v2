@@ -62,6 +62,7 @@ export default function GameHostPage({
     useState<GameType>("guess_name");
   const [timeLimitSeconds, setTimeLimitSeconds] = useState<number>(30);
   const [optionsCount, setOptionsCount] = useState<number>(4);
+  const [totalQuestions, setTotalQuestions] = useState<number>(1);
 
   const loadGroupData = useCallback(async () => {
     try {
@@ -89,6 +90,7 @@ export default function GameHostPage({
       // Set default values from group settings
       setTimeLimitSeconds(groupInfo.time_limit_seconds || 30);
       setOptionsCount(groupInfo.options_count || 4);
+      setTotalQuestions(Math.min((peopleData || []).length || 1, 10));
     } catch (error) {
       console.error("Error loading group data:", error);
     } finally {
@@ -155,7 +157,7 @@ export default function GameHostPage({
         user_id: user.id,
         group_id: groupId,
         game_type: selectedGameType,
-        total_questions: people.length,
+        total_questions: totalQuestions,
         game_code: code,
         status: "active",
         time_limit_seconds: timeLimitSeconds,
@@ -171,12 +173,8 @@ export default function GameHostPage({
       return;
     }
 
-    setGameSession(session);
-    setGameCode(code);
-    setLoading(false);
-
-    // Don't navigate away - stay on this page to show the code
-    // User can manually click to go to control page
+    // Navigate to game started screen
+    router.push(`/protected/groups/${groupId}/host/${session.id}/started`);
   };
 
   if (loading) {
@@ -223,7 +221,9 @@ export default function GameHostPage({
               </Button>
               <Button
                 onClick={() =>
-                  router.push(`/protected/game/play/${gameSession.id}`)
+                  router.push(
+                    `/protected/groups/${groupId}/host/${gameSession.id}/play`,
+                  )
                 }
                 className="flex-1"
               >
@@ -277,49 +277,66 @@ export default function GameHostPage({
 
             <div>
               <h3 className="text-lg font-semibold mb-4">Game Settings</h3>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <label className="text-sm font-medium">
-                    Time per question (seconds)
-                  </label>
-                  <div className="flex gap-2 mt-2 items-center">
-                    <input
-                      type="range"
-                      min="5"
-                      max="120"
-                      value={timeLimitSeconds}
-                      onChange={(e) =>
-                        setTimeLimitSeconds(Number(e.target.value))
-                      }
-                      className="flex-1"
-                    />
-                    <span className="text-sm font-medium w-12 text-right">
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="text-sm font-medium">
+                      Time per question (seconds)
+                    </label>
+                    <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
                       {timeLimitSeconds}s
                     </span>
                   </div>
+                  <input
+                    type="range"
+                    min="5"
+                    max="120"
+                    step="1"
+                    value={timeLimitSeconds}
+                    onChange={(e) =>
+                      setTimeLimitSeconds(Number(e.target.value))
+                    }
+                    className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">
-                    Options per question
-                  </label>
-                  <div className="flex gap-2 mt-2 items-center">
-                    <input
-                      type="range"
-                      min="2"
-                      max={Math.min(people.length, 10)}
-                      value={optionsCount}
-                      onChange={(e) => setOptionsCount(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <span className="text-sm font-medium w-12 text-right">
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="text-sm font-medium">
+                      Options per question
+                    </label>
+                    <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
                       {optionsCount}
                     </span>
                   </div>
+                  <input
+                    type="range"
+                    min="2"
+                    max={Math.min(people.length, 10)}
+                    step="1"
+                    value={optionsCount}
+                    onChange={(e) => setOptionsCount(Number(e.target.value))}
+                    className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  <span className="font-medium">Total questions:</span>{" "}
-                  {people.length}
-                </p>
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="text-sm font-medium">
+                      Amount of questions
+                    </label>
+                    <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
+                      {totalQuestions}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max={people.length}
+                    step="1"
+                    value={totalQuestions}
+                    onChange={(e) => setTotalQuestions(Number(e.target.value))}
+                    className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                </div>
               </div>
             </div>
 

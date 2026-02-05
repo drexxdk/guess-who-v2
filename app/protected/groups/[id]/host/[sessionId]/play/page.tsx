@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -38,11 +39,12 @@ interface GameSession {
 }
 
 export default function GameControlPage({
-  params,
+  params: paramsPromise,
 }: {
-  params: Promise<{ sessionId: string }>;
+  params: Promise<{ id: string; sessionId: string }>;
 }) {
-  const { sessionId } = use(params);
+  const params = use(paramsPromise);
+  const sessionId = params.sessionId;
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
@@ -191,7 +193,7 @@ export default function GameControlPage({
 
     console.log(
       "Final player stats:",
-      Array.from(playerStats.entries()).map(([id, stats]) => ({
+      Array.from(playerStats.entries()).map(([, stats]) => ({
         name: stats.displayName,
         isActive: stats.isActive,
       })),
@@ -223,8 +225,11 @@ export default function GameControlPage({
             {
               id: "1",
               name: "Waiting for players...",
-              score: 0,
+              correct: 0,
+              wrong: 0,
+              missing: 0,
               answered: false,
+              isActive: false,
             },
           ],
     );
@@ -253,9 +258,11 @@ export default function GameControlPage({
         (payload) => {
           console.log("🔔 REAL-TIME UPDATE RECEIVED:", payload);
           // Only reload if it's for this session
+          const newData = payload.new as Record<string, unknown> | null;
+          const oldData = payload.old as Record<string, unknown> | null;
           if (
-            payload.new?.session_id === sessionId ||
-            payload.old?.session_id === sessionId
+            newData?.session_id === sessionId ||
+            oldData?.session_id === sessionId
           ) {
             console.log("✅ Update is for this session, reloading...");
             loadGameSession();
@@ -400,13 +407,15 @@ export default function GameControlPage({
               >
                 End Game
               </Button>
-              <Button
-                onClick={() => router.push("/protected")}
-                variant="outline"
-                className="w-full"
+              <Link
+                href="/protected"
+                className={buttonVariants({
+                  variant: "outline",
+                  className: "w-full",
+                })}
               >
                 Back to Dashboard
-              </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>

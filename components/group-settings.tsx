@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface GroupSettingsProps {
@@ -14,19 +13,43 @@ interface GroupSettingsProps {
     time_limit_seconds: number;
     options_count: number;
   };
+  peopleCount?: number;
+  onUpdate?: (updatedGroup: {
+    name: string;
+    time_limit_seconds: number;
+    options_count: number;
+  }) => void;
+  isEditing?: boolean;
+  onEditChange?: (isEditing: boolean) => void;
 }
 
-export function GroupSettings({ groupId, initialGroup }: GroupSettingsProps) {
-  const [isEditing, setIsEditing] = useState(false);
+export function GroupSettings({
+  groupId,
+  initialGroup,
+  peopleCount = 4,
+  onUpdate,
+  isEditing: externalIsEditing = false,
+  onEditChange,
+}: GroupSettingsProps) {
+  const [isEditing, setIsEditing] = useState(externalIsEditing);
+  const [groupName, setGroupName] = useState<string>(initialGroup.name);
   const [timeLimitSeconds, setTimeLimitSeconds] = useState<number>(
     Number(initialGroup.time_limit_seconds) || 30,
   );
   const [optionsCount, setOptionsCount] = useState<number>(
     Number(initialGroup.options_count) || 4,
   );
+  const [totalQuestions, setTotalQuestions] = useState<number>(
+    Math.min(peopleCount, 10),
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Sync external isEditing prop with local state
+  useEffect(() => {
+    setIsEditing(externalIsEditing);
+  }, [externalIsEditing]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -39,6 +62,7 @@ export function GroupSettings({ groupId, initialGroup }: GroupSettingsProps) {
       const { error: updateError } = await supabase
         .from("groups")
         .update({
+          name: groupName,
           time_limit_seconds: timeLimitSeconds,
           options_count: optionsCount,
         })
@@ -48,6 +72,20 @@ export function GroupSettings({ groupId, initialGroup }: GroupSettingsProps) {
 
       setSuccess(true);
       setIsEditing(false);
+
+      // Call the onUpdate callback to sync parent component
+      if (onUpdate) {
+        onUpdate({
+          name: groupName,
+          time_limit_seconds: timeLimitSeconds,
+          options_count: optionsCount,
+        });
+      }
+
+      // Notify parent that edit mode is closed
+      if (onEditChange) {
+        onEditChange(false);
+      }
 
       // Clear success message after 2 seconds
       setTimeout(() => setSuccess(false), 2000);
@@ -59,38 +97,86 @@ export function GroupSettings({ groupId, initialGroup }: GroupSettingsProps) {
   };
 
   const handleCancel = () => {
+    setGroupName(initialGroup.name);
     setTimeLimitSeconds(initialGroup.time_limit_seconds);
     setOptionsCount(initialGroup.options_count);
     setIsEditing(false);
     setError(null);
+    if (onEditChange) {
+      onEditChange(false);
+    }
   };
 
   if (isEditing) {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="time-limit">Time limit per question (seconds)</Label>
-          <Input
-            id="time-limit"
-            type="number"
-            min="5"
-            max="120"
-            value={String(timeLimitSeconds)}
-            onChange={(e) =>
-              setTimeLimitSeconds(parseInt(e.target.value) || 30)
-            }
+      <div className="space-y-6">
+        <div>
+          <Label htmlFor="group-name">Group name</Label>
+          <input
+            id="group-name"
+            type="text"
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm mt-1"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="options-count">Options per question</Label>
-          <Input
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <Label htmlFor="time-limit">Default time limit per question</Label>
+            <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
+              {timeLimitSeconds}s
+            </span>
+          </div>
+          <input
+            id="time-limit"
+            type="range"
+            min="5"
+            max="120"
+            step="1"
+            value={timeLimitSeconds}
+            onChange={(e) =>
+              setTimeLimitSeconds(parseInt(e.target.value) || 30)
+            }
+            className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+          />
+        </div>
+
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <Label htmlFor="options-count">Default options per question</Label>
+            <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
+              {optionsCount}
+            </span>
+          </div>
+          <input
             id="options-count"
-            type="number"
+            type="range"
             min="2"
-            max="4"
-            value={String(optionsCount)}
+            max={Math.min(peopleCount, 10)}
+            step="1"
+            value={optionsCount}
             onChange={(e) => setOptionsCount(parseInt(e.target.value) || 4)}
+            className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+          />
+        </div>
+
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <Label htmlFor="total-questions">Default amount of questions</Label>
+            <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
+              {totalQuestions}
+            </span>
+          </div>
+          <input
+            id="total-questions"
+            type="range"
+            min="1"
+            max={peopleCount}
+            step="1"
+            value={totalQuestions}
+            onChange={(e) => setTotalQuestions(parseInt(e.target.value) || 1)}
+            className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
           />
         </div>
 
@@ -114,25 +200,32 @@ export function GroupSettings({ groupId, initialGroup }: GroupSettingsProps) {
   }
 
   return (
-    <div className="space-y-2">
-      <p className="text-sm">
-        <span className="font-medium">Time limit:</span> {timeLimitSeconds}{" "}
-        seconds
-      </p>
-      <p className="text-sm">
-        <span className="font-medium">Options per question:</span>{" "}
-        {optionsCount}
-      </p>
+    <div className="space-y-3">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-medium">
+          Default time limit per question
+        </span>
+        <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
+          {timeLimitSeconds}s
+        </span>
+      </div>
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-medium">
+          Default options per question
+        </span>
+        <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
+          {optionsCount}
+        </span>
+      </div>
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-medium">Default amount of questions</span>
+        <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
+          {totalQuestions}
+        </span>
+      </div>
       {success && (
         <p className="text-sm text-green-600">Settings saved successfully!</p>
       )}
-      <Button
-        onClick={() => setIsEditing(true)}
-        variant="outline"
-        className="mt-2"
-      >
-        Edit Settings
-      </Button>
     </div>
   );
 }

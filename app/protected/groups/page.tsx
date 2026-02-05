@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -42,8 +42,8 @@ export default async function GroupsPage() {
             Create and manage your groups of people
           </p>
         </div>
-        <Link href="/protected/groups/new">
-          <Button>Create New Group</Button>
+        <Link href="/protected/groups/new" className={buttonVariants()}>
+          Create New Group
         </Link>
       </div>
 
@@ -53,8 +53,11 @@ export default async function GroupsPage() {
             <p className="text-muted-foreground mb-4">
               You haven&apos;t created any groups yet
             </p>
-            <Link href="/protected/groups/new">
-              <Button>Create Your First Group</Button>
+            <Link
+              href="/protected/groups/new"
+              className={buttonVariants({ className: "w-full" })}
+            >
+              Create Your First Group
             </Link>
           </CardContent>
         </Card>
@@ -75,17 +78,18 @@ export default async function GroupsPage() {
                 <div className="flex gap-2 mt-4">
                   <Link
                     href={`/protected/groups/${group.id}`}
-                    className="flex-1"
+                    className={buttonVariants({
+                      variant: "outline",
+                      className: "flex-1",
+                    })}
                   >
-                    <Button variant="outline" className="w-full">
-                      Manage
-                    </Button>
+                    Manage
                   </Link>
                   <Link
                     href={`/protected/groups/${group.id}/host`}
-                    className="flex-1"
+                    className={buttonVariants({ className: "flex-1" })}
                   >
-                    <Button className="w-full">Start Game</Button>
+                    Start Game
                   </Link>
                 </div>
               </CardContent>

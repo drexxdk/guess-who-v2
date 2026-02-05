@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 interface GameSession {
   id: string;
@@ -17,6 +16,8 @@ interface GameSession {
   game_type: string;
   status: string;
   total_questions: number;
+  time_limit_seconds?: number;
+  options_count?: number;
   groups: {
     id: string;
     name: string;
@@ -65,37 +66,45 @@ export default async function ProtectedPage() {
                 className="hover:shadow-lg transition-shadow"
               >
                 <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-base">
-                        {session.groups?.name || "Unknown Group"}
-                      </CardTitle>
-                      <CardDescription className="text-sm">
-                        {session.game_type === "guess_name"
-                          ? "Guess the Name"
-                          : "Guess the Face"}
-                      </CardDescription>
-                    </div>
-                    <Badge variant="default" className="text-xs">
-                      Active
-                    </Badge>
-                  </div>
+                  <CardTitle className="text-base">
+                    {session.game_type === "guess_name"
+                      ? "Guess the Name"
+                      : "Guess the Face"}
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground mb-1">
-                      Game Code
-                    </p>
-                    <Badge
-                      variant="outline"
-                      className="text-xl px-4 py-1 font-mono"
-                    >
-                      {session.game_code}
-                    </Badge>
+                <CardContent className="space-y-3 flex flex-col">
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="p-2 bg-muted rounded">
+                      <p className="text-muted-foreground">Group</p>
+                      <p className="font-semibold">
+                        {session.groups?.name || "Unknown"}
+                      </p>
+                    </div>
+                    <div className="p-2 bg-muted rounded">
+                      <p className="text-muted-foreground">Code</p>
+                      <p className="font-semibold font-mono">
+                        {session.game_code}
+                      </p>
+                    </div>
+                    <div className="p-2 bg-muted rounded">
+                      <p className="text-muted-foreground">Time Limit</p>
+                      <p className="font-semibold">
+                        {session.time_limit_seconds || 30}s
+                      </p>
+                    </div>
+                    <div className="p-2 bg-muted rounded">
+                      <p className="text-muted-foreground">Options</p>
+                      <p className="font-semibold">
+                        {session.options_count || 4}
+                      </p>
+                    </div>
                   </div>
 
-                  <Link href={`/protected/game/play/${session.id}`}>
-                    <Button className="w-full">Open Game</Button>
+                  <Link
+                    href={`/protected/groups/${session.groups?.id}/host/${session.id}/play`}
+                    className={buttonVariants()}
+                  >
+                    Open Game
                   </Link>
                 </CardContent>
               </Card>
@@ -113,8 +122,8 @@ export default async function ProtectedPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/protected/groups">
-              <Button className="w-full">Go to My Groups</Button>
+            <Link href="/protected/groups" className={buttonVariants()}>
+              Go to My Groups
             </Link>
           </CardContent>
         </Card>
@@ -125,10 +134,11 @@ export default async function ProtectedPage() {
             <CardDescription>Enter a game code to play</CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/game/join">
-              <Button className="w-full" variant="outline">
-                Join Game
-              </Button>
+            <Link
+              href="/game/join"
+              className={buttonVariants({ variant: "outline" })}
+            >
+              Join Game
             </Link>
           </CardContent>
         </Card>

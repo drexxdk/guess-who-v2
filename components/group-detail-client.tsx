@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { GroupSettings } from "@/components/group-settings";
@@ -43,7 +44,10 @@ export function GroupDetailClient({
   initialPeople: Person[];
   groupId: string;
 }) {
+  const [updatedGroupData, setUpdatedGroupData] =
+    useState<GroupData>(groupData);
   const [people, setPeople] = useState<Person[]>(initialPeople);
+  const [isEditingSettings, setIsEditingSettings] = useState(false);
 
   // Watch for changes to people in this group
   useEffect(() => {
@@ -112,30 +116,61 @@ export function GroupDetailClient({
     };
   }, [groupId]);
 
-  const hasEnoughPeople = people.length >= groupData.options_count;
+  const hasEnoughPeople = people.length >= updatedGroupData.options_count;
+
+  const handleGroupUpdate = (updated: {
+    name: string;
+    time_limit_seconds: number;
+    options_count: number;
+  }) => {
+    setUpdatedGroupData((prev) => ({
+      ...prev,
+      ...updated,
+    }));
+  };
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
       <div>
         <Card>
           <CardHeader>
-            <CardTitle>{groupData.name}</CardTitle>
-            <CardDescription>
-              {people.length} people in this group
-            </CardDescription>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle>{updatedGroupData.name}</CardTitle>
+                <CardDescription>
+                  {people.length} people in this group
+                </CardDescription>
+              </div>
+              <Button
+                onClick={() => setIsEditingSettings(true)}
+                variant="outline"
+              >
+                Edit Settings
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <GroupSettings groupId={groupId} initialGroup={groupData} />
+            <GroupSettings
+              groupId={groupId}
+              initialGroup={updatedGroupData}
+              peopleCount={people.length}
+              onUpdate={handleGroupUpdate}
+              isEditing={isEditingSettings}
+              onEditChange={setIsEditingSettings}
+            />
             <div className="mt-6 space-y-2">
-              <Link href={`/protected/groups/${groupData.id}/host`}>
-                <Button className="w-full" disabled={!hasEnoughPeople}>
-                  Start Game
-                </Button>
+              <Link
+                href={`/protected/groups/${updatedGroupData.id}/host`}
+                className={buttonVariants({
+                  className: `w-full ${!hasEnoughPeople ? "opacity-50 pointer-events-none" : ""}`,
+                })}
+              >
+                Start Game
               </Link>
               {!hasEnoughPeople && (
                 <p className="text-sm text-destructive text-center">
-                  You need at least {groupData.options_count} people to start a
-                  game
+                  You need at least {updatedGroupData.options_count} people to
+                  start a game
                 </p>
               )}
               <DeleteGroupButton groupId={groupId} />
