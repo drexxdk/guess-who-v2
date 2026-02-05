@@ -176,15 +176,20 @@ export default function GamePlayPage() {
 
     let resumeFromQuestion = 0;
     let answeredQuestions: typeof allAnswers = [];
-    
+
     if (allAnswers && allAnswers.length > 0) {
       // Filter answers that have been submitted (both correct_option_id and selected_option_id exist)
       answeredQuestions = allAnswers.filter(
-        (a) => a.correct_option_id !== null && a.selected_option_id !== null
+        (a) => a.correct_option_id !== null && a.selected_option_id !== null,
       );
-      
+
       if (answeredQuestions.length > 0) {
-        console.log("Player has answered", answeredQuestions.length, "questions, resuming from question", answeredQuestions.length);
+        console.log(
+          "Player has answered",
+          answeredQuestions.length,
+          "questions, resuming from question",
+          answeredQuestions.length,
+        );
         resumeFromQuestion = answeredQuestions.length;
         setCurrentQuestion(resumeFromQuestion);
       }
@@ -192,21 +197,30 @@ export default function GamePlayPage() {
 
     // Set initial timer based on game session settings
     const timeLimit = session.time_limit_seconds || 30;
-    
+
     // Check if there's a stored question start time (from before reload)
-    const storedStartTime = sessionStorage.getItem(`questionStartTime_${gameCode}_${playerName}`);
+    const storedStartTime = sessionStorage.getItem(
+      `questionStartTime_${gameCode}_${playerName}`,
+    );
     let initialTimeLeft = timeLimit;
-    
+
     if (storedStartTime && resumeFromQuestion < session.total_questions) {
       const elapsedMs = Date.now() - parseInt(storedStartTime);
       const elapsedSeconds = Math.floor(elapsedMs / 1000);
       initialTimeLeft = Math.max(0, timeLimit - elapsedSeconds);
-      console.log("Resuming question with", initialTimeLeft, "seconds remaining");
+      console.log(
+        "Resuming question with",
+        initialTimeLeft,
+        "seconds remaining",
+      );
     } else {
       // New question, store the start time
-      sessionStorage.setItem(`questionStartTime_${gameCode}_${playerName}`, Date.now().toString());
+      sessionStorage.setItem(
+        `questionStartTime_${gameCode}_${playerName}`,
+        Date.now().toString(),
+      );
     }
-    
+
     setTimeLeft(initialTimeLeft);
     setLoading(false);
     setGameStarted(true);
@@ -266,7 +280,8 @@ export default function GamePlayPage() {
         correct_option_id: questions[currentQuestion].person.id,
         selected_option_id: answerId,
         is_correct: isCorrect,
-        response_time_ms: Math.max(0, (gameSession.time_limit_seconds || 30) - timeLeft) * 1000,
+        response_time_ms:
+          Math.max(0, (gameSession.time_limit_seconds || 30) - timeLeft) * 1000,
         player_name: playerName,
         join_id: recordId,
       });
@@ -286,10 +301,15 @@ export default function GamePlayPage() {
           setTimeLeft(gameSession?.time_limit_seconds || 30);
           setLastAnswerCorrect(null);
           // Store start time for the new question
-          sessionStorage.setItem(`questionStartTime_${gameCode}_${playerName}`, Date.now().toString());
+          sessionStorage.setItem(
+            `questionStartTime_${gameCode}_${playerName}`,
+            Date.now().toString(),
+          );
         } else {
           // Game finished
-          sessionStorage.removeItem(`questionStartTime_${gameCode}_${playerName}`);
+          sessionStorage.removeItem(
+            `questionStartTime_${gameCode}_${playerName}`,
+          );
           finishGame();
         }
       }, 500);
@@ -315,16 +335,23 @@ export default function GamePlayPage() {
 
   // Reset joinRecordId when joinSessionId changes (new join attempt with new joinSessionId)
   useEffect(() => {
-    const storedJoinSessionId = sessionStorage.getItem(`joinSessionId_${gameCode}_${playerName}`);
-    
+    const storedJoinSessionId = sessionStorage.getItem(
+      `joinSessionId_${gameCode}_${playerName}`,
+    );
+
     if (joinSessionId && joinSessionId !== storedJoinSessionId) {
       // joinSessionId changed, this is a new join attempt
       console.log("New joinSessionId detected, resetting join record");
       setJoinRecordId(null);
-      sessionStorage.setItem(`joinSessionId_${gameCode}_${playerName}`, joinSessionId);
+      sessionStorage.setItem(
+        `joinSessionId_${gameCode}_${playerName}`,
+        joinSessionId,
+      );
     } else if (joinSessionId && joinSessionId === storedJoinSessionId) {
       // Same joinSessionId, restore from storage if available
-      const storedJoinRecordId = sessionStorage.getItem(`joinRecordId_${gameCode}_${playerName}`);
+      const storedJoinRecordId = sessionStorage.getItem(
+        `joinRecordId_${gameCode}_${playerName}`,
+      );
       if (storedJoinRecordId) {
         console.log("Restored joinRecordId from storage:", storedJoinRecordId);
         setJoinRecordId(storedJoinRecordId);
@@ -360,9 +387,15 @@ export default function GamePlayPage() {
 
       if (existingJoins && existingJoins.length > 0) {
         // Reuse the existing join record (player rejoining)
-        console.log("Player rejoining - using existing join record:", existingJoins[0].id);
+        console.log(
+          "Player rejoining - using existing join record:",
+          existingJoins[0].id,
+        );
         setJoinRecordId(existingJoins[0].id);
-        sessionStorage.setItem(`joinRecordId_${gameCode}_${playerName}`, existingJoins[0].id);
+        sessionStorage.setItem(
+          `joinRecordId_${gameCode}_${playerName}`,
+          existingJoins[0].id,
+        );
       } else {
         // New join - create a new join tracking entry
         console.log("Creating new join tracking record:", {
@@ -392,7 +425,10 @@ export default function GamePlayPage() {
           console.log("Join record ID:", recordId);
           setJoinRecordId(recordId || null);
           if (recordId) {
-            sessionStorage.setItem(`joinRecordId_${gameCode}_${playerName}`, recordId);
+            sessionStorage.setItem(
+              `joinRecordId_${gameCode}_${playerName}`,
+              recordId,
+            );
           }
         }
       }

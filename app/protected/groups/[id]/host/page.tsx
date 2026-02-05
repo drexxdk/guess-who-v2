@@ -279,21 +279,29 @@ export default function GameHostPage({
               <h3 className="text-lg font-semibold mb-4">Game Settings</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">Time per question (seconds)</label>
+                  <label className="text-sm font-medium">
+                    Time per question (seconds)
+                  </label>
                   <div className="flex gap-2 mt-2 items-center">
                     <input
                       type="range"
                       min="5"
                       max="120"
                       value={timeLimitSeconds}
-                      onChange={(e) => setTimeLimitSeconds(Number(e.target.value))}
+                      onChange={(e) =>
+                        setTimeLimitSeconds(Number(e.target.value))
+                      }
                       className="flex-1"
                     />
-                    <span className="text-sm font-medium w-12 text-right">{timeLimitSeconds}s</span>
+                    <span className="text-sm font-medium w-12 text-right">
+                      {timeLimitSeconds}s
+                    </span>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Options per question</label>
+                  <label className="text-sm font-medium">
+                    Options per question
+                  </label>
                   <div className="flex gap-2 mt-2 items-center">
                     <input
                       type="range"
@@ -303,11 +311,14 @@ export default function GameHostPage({
                       onChange={(e) => setOptionsCount(Number(e.target.value))}
                       className="flex-1"
                     />
-                    <span className="text-sm font-medium w-12 text-right">{optionsCount}</span>
+                    <span className="text-sm font-medium w-12 text-right">
+                      {optionsCount}
+                    </span>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  <span className="font-medium">Total questions:</span> {people.length}
+                  <span className="font-medium">Total questions:</span>{" "}
+                  {people.length}
                 </p>
               </div>
             </div>
@@ -322,11 +333,7 @@ export default function GameHostPage({
               </Button>
               <Button
                 onClick={startGame}
-                disabled={
-                  loading ||
-                  !groupData ||
-                  people.length < optionsCount
-                }
+                disabled={loading || !groupData || people.length < optionsCount}
                 className="flex-1"
               >
                 {loading ? "Starting..." : "Start Game"}

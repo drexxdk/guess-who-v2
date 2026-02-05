@@ -316,8 +316,14 @@ export default function GameControlPage({
               <p className="text-sm text-muted-foreground mb-2">Game Code</p>
               <Badge className="text-4xl px-8 py-4 font-mono">{gameCode}</Badge>
               <div className="mt-4 space-y-1 text-sm">
-                <p><span className="font-medium">Time limit:</span> {gameSession.time_limit_seconds || 30}s</p>
-                <p><span className="font-medium">Options:</span> {gameSession.options_count || 4}</p>
+                <p>
+                  <span className="font-medium">Time limit:</span>{" "}
+                  {gameSession.time_limit_seconds || 30}s
+                </p>
+                <p>
+                  <span className="font-medium">Options:</span>{" "}
+                  {gameSession.options_count || 4}
+                </p>
               </div>
             </div>
           </div>
