@@ -3,6 +3,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { LoadingOverlay } from "@/components/ui/loading-spinner";
 import { Suspense } from "react";
 import { LoadingProvider } from "@/lib/loading-context";
+import { ErrorBoundaryWrapper } from "@/components/error-boundary-wrapper";
 
 export default function ProtectedLayout({
   children,
@@ -14,12 +15,14 @@ export default function ProtectedLayout({
       <Header />
       <div className="flex-grow flex flex-col relative">
         <LoadingProvider>
-          <div className="p-8">
-            <div className="w-full mx-auto max-w-screen-lg">
-              <Breadcrumbs />
-              <Suspense fallback={<LoadingOverlay />}>{children}</Suspense>
+          <ErrorBoundaryWrapper>
+            <div className="p-8">
+              <div className="w-full mx-auto max-w-screen-lg">
+                <Breadcrumbs />
+                <Suspense fallback={<LoadingOverlay />}>{children}</Suspense>
+              </div>
             </div>
-          </div>
+          </ErrorBoundaryWrapper>
         </LoadingProvider>
       </div>
     </main>

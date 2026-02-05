@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import toast from "react-hot-toast";
 import { getErrorMessage } from "@/lib/logger";
+import { sanitizeGroupName, validateLength } from "@/lib/security";
 import type { Group } from "@/lib/schemas";
 
 interface GroupSettingsProps {
@@ -41,8 +43,6 @@ export function GroupSettings({
     Math.min(peopleCount, 10),
   );
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   // Sync external isEditing prop with local state
   useEffect(() => {
@@ -56,9 +56,20 @@ export function GroupSettings({
   }, [peopleCount]);
 
   const handleSave = async () => {
+    // Sanitize and validate group name
+    const sanitizedName = sanitizeGroupName(groupName);
+    
+    if (!sanitizedName) {
+      toast.error("Please enter a group name");
+      return;
+    }
+
+    if (!validateLength(sanitizedName, 100, 1)) {
+      toast.error("Group name must be between 1 and 100 characters");
+      return;
+    }
+
     setIsSaving(true);
-    setError(null);
-    setSuccess(false);
 
     try {
       const supabase = createClient();
@@ -66,7 +77,7 @@ export function GroupSettings({
       const { error: updateError } = await supabase
         .from("groups")
         .update({
-          name: groupName,
+          name: sanitizedName,
           time_limit_seconds: timeLimitSeconds,
           options_count: optionsCount,
         })
@@ -74,13 +85,15 @@ export function GroupSettings({
 
       if (updateError) throw updateError;
 
-      setSuccess(true);
+      // Update local state with sanitized name
+      setGroupName(sanitizedName);
+      toast.success("Settings saved!");
       setIsEditing(false);
 
       // Call the onUpdate callback to sync parent component
       if (onUpdate) {
         onUpdate({
-          name: groupName,
+          name: sanitizedName,
           time_limit_seconds: timeLimitSeconds,
           options_count: optionsCount,
         });
@@ -90,11 +103,8 @@ export function GroupSettings({
       if (onEditChange) {
         onEditChange(false);
       }
-
-      // Clear success message after 2 seconds
-      setTimeout(() => setSuccess(false), 2000);
     } catch (err) {
-      setError(getErrorMessage(err));
+      toast.error(getErrorMessage(err));
     } finally {
       setIsSaving(false);
     }
@@ -105,7 +115,6 @@ export function GroupSettings({
     setTimeLimitSeconds(initialGroup.time_limit_seconds ?? 30);
     setOptionsCount(initialGroup.options_count ?? 4);
     setIsEditing(false);
-    setError(null);
     if (onEditChange) {
       onEditChange(false);
     }
@@ -184,8 +193,6 @@ export function GroupSettings({
           />
         </div>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
-
         <div className="flex gap-2">
           <Button onClick={handleSave} disabled={isSaving} className="flex-1">
             {isSaving ? "Saving..." : "Save"}
@@ -227,9 +234,6 @@ export function GroupSettings({
           {totalQuestions}
         </span>
       </div>
-      {success && (
-        <p className="text-sm text-green-600">Settings saved successfully!</p>
-      )}
     </div>
   );
 }

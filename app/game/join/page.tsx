@@ -16,6 +16,7 @@ import {
 import { ErrorMessage } from "@/components/ui/error-message";
 import { getActiveGameSessionByCode } from "@/lib/queries";
 import { useLoading } from "@/lib/loading-context";
+import { sanitizeGameCode, sanitizeName, validateLength } from "@/lib/security";
 
 export default function JoinGamePage() {
   const router = useRouter();
@@ -55,13 +56,27 @@ export default function JoinGamePage() {
     e.preventDefault();
     if (isSubmitting) return;
     
+    // Sanitize inputs
+    const sanitizedCode = sanitizeGameCode(gameCode);
+    const sanitizedName = sanitizeName(playerName);
+
+    if (!sanitizedCode || sanitizedCode.length !== 6) {
+      setError("Please enter a valid 6-character game code");
+      return;
+    }
+
+    if (!sanitizedName || !validateLength(sanitizedName, 50, 1)) {
+      setError("Please enter a valid name (1-50 characters)");
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
     setLoading(true);
 
     try {
       const supabase = createClient();
-      const session = await getActiveGameSessionByCode(supabase, gameCode);
+      const session = await getActiveGameSessionByCode(supabase, sanitizedCode);
 
       if (!session) {
         throw new Error("Invalid game code or game is not active");
@@ -70,7 +85,7 @@ export default function JoinGamePage() {
       // Game code is valid, redirect to play page
       const joinSessionId = crypto.randomUUID();
       router.push(
-        `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${joinSessionId}`,
+        `/game/play?code=${sanitizedCode}&name=${encodeURIComponent(sanitizedName)}&joinSessionId=${joinSessionId}`,
       );
       // Keep loading state active during navigation - will be reset on unmount or back navigation
     } catch (err) {

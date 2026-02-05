@@ -1,18 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ErrorMessage } from "@/components/ui/error-message";
+import toast from "react-hot-toast";
 import { createClient } from "@/lib/supabase/client";
 import { logError, getErrorMessage } from "@/lib/logger";
-import { useLoading } from "@/lib/loading-context";
+import { useNavigate } from "@/lib/hooks/use-navigate";
 
 export function DeleteGroupButton({ groupId }: { groupId: string }) {
-  const router = useRouter();
-  const { setLoading } = useLoading();
+  const { push, refresh } = useNavigate();
   const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleDeleteGroup = async () => {
     if (
@@ -64,28 +61,24 @@ export function DeleteGroupButton({ groupId }: { groupId: string }) {
 
       if (error) throw error;
 
-      setLoading(true);
-      router.push("/protected/groups");
-      router.refresh();
+      toast.success("Group deleted successfully");
+      push("/protected/groups");
+      refresh();
     } catch (err: unknown) {
-      setError("Error deleting group: " + getErrorMessage(err));
+      toast.error("Error deleting group: " + getErrorMessage(err));
     } finally {
       setDeleting(false);
     }
   };
 
   return (
-    <>
-      <Button
-        variant="destructive"
-        onClick={handleDeleteGroup}
-        disabled={deleting}
-        className="w-full"
-      >
-        {deleting ? "Deleting Group..." : "Delete Group"}
-      </Button>
-
-      <ErrorMessage message={error} className="mt-2" />
-    </>
+    <Button
+      variant="destructive"
+      onClick={handleDeleteGroup}
+      disabled={deleting}
+      className="w-full"
+    >
+      {deleting ? "Deleting Group..." : "Delete Group"}
+    </Button>
   );
 }

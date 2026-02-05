@@ -2,6 +2,7 @@ import { Header } from "@/components/header";
 import { LoadingOverlay } from "@/components/ui/loading-spinner";
 import { Suspense } from "react";
 import { LoadingProvider } from "@/lib/loading-context";
+import { ErrorBoundaryWrapper } from "@/components/error-boundary-wrapper";
 
 export default function GameLayout({
   children,
@@ -13,7 +14,9 @@ export default function GameLayout({
       <Header />
       <div className="flex-grow flex flex-col relative">
         <Suspense fallback={<LoadingOverlay />}>
-          <LoadingProvider>{children}</LoadingProvider>
+          <LoadingProvider>
+            <ErrorBoundaryWrapper>{children}</ErrorBoundaryWrapper>
+          </LoadingProvider>
         </Suspense>
       </div>
     </main>

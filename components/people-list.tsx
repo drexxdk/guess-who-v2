@@ -6,14 +6,13 @@ import { FaTrash } from "react-icons/fa6";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ErrorMessage } from "@/components/ui/error-message";
+import toast from "react-hot-toast";
 import { deletePersonImage } from "@/lib/game-utils";
 import { getErrorMessage } from "@/lib/logger";
 import type { Person } from "@/lib/schemas";
 
 export function PeopleList({ people }: { people: Person[] }) {
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async (personId: string, imageUrl: string | null) => {
     if (!confirm("Are you sure you want to delete this person?")) return;
@@ -38,9 +37,10 @@ export function PeopleList({ people }: { people: Person[] }) {
 
       if (error) throw error;
 
+      toast.success("Person deleted");
       // Let real-time subscription handle the removal
     } catch (err: unknown) {
-      setError(getErrorMessage(err));
+      toast.error(getErrorMessage(err));
     } finally {
       setDeleting(null);
     }
@@ -96,8 +96,6 @@ export function PeopleList({ people }: { people: Person[] }) {
           </Card>
         ))}
       </div>
-
-      <ErrorMessage message={error} className="mt-3" />
     </>
   );
 }

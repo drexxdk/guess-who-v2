@@ -1,7 +1,29 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { hasEnvVars } from "../utils";
+import { checkRateLimit, getRateLimitHeaders, RATE_LIMITS } from "../security";
 import type { Database } from "@/lib/database.types";
+
+/**
+ * Get client identifier for rate limiting
+ * Uses IP address with fallback to a default value
+ */
+function getClientIdentifier(request: NextRequest): string {
+  // Try various headers for the real IP (when behind proxy/CDN)
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    // x-forwarded-for can contain multiple IPs, take the first one
+    return forwardedFor.split(",")[0].trim();
+  }
+
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) {
+    return realIp;
+  }
+
+  // Fallback - in development or when no proxy
+  return request.headers.get("x-vercel-ip") || "anonymous";
+}
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -12,6 +34,38 @@ export async function updateSession(request: NextRequest) {
   // once you setup the project.
   if (!hasEnvVars) {
     return supabaseResponse;
+  }
+
+  // Apply rate limiting to API routes
+  const pathname = request.nextUrl.pathname;
+  if (pathname.startsWith("/api/") || pathname.startsWith("/auth/")) {
+    const clientId = getClientIdentifier(request);
+    const isAuthRoute = pathname.startsWith("/auth/");
+    const rateLimitConfig = isAuthRoute ? RATE_LIMITS.auth : RATE_LIMITS.api;
+
+    const rateLimitResult = checkRateLimit(clientId, rateLimitConfig);
+
+    if (!rateLimitResult.success) {
+      return new NextResponse(
+        JSON.stringify({
+          error: "Too many requests",
+          retryAfter: rateLimitResult.resetInSeconds,
+        }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            ...getRateLimitHeaders(rateLimitResult),
+          },
+        },
+      );
+    }
+
+    // Add rate limit headers to successful responses
+    const headers = getRateLimitHeaders(rateLimitResult);
+    for (const [key, value] of Object.entries(headers)) {
+      supabaseResponse.headers.set(key, value);
+    }
   }
 
   // With Fluid compute, don't put this client in a global environment

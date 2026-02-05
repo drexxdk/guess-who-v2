@@ -6,16 +6,16 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ErrorMessage } from "@/components/ui/error-message";
+import toast from "react-hot-toast";
 import type { PersonInsert, GenderType } from "@/lib/schemas";
 import { logError, getErrorMessage } from "@/lib/logger";
 import { useLoading } from "@/lib/loading-context";
+import { sanitizeName, validateLength } from "@/lib/security";
 
 export function AddPersonForm({ groupId }: { groupId: string }) {
   const cropContainerRef = useRef<HTMLDivElement>(null);
   const { setLoading: setGlobalLoading } = useLoading();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [preview, setPreview] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -51,18 +51,16 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
     // Check file type
     const validTypes = ["image/jpeg", "image/png"];
     if (!validTypes.includes(file.type)) {
-      setError("Please select a JPEG or PNG image");
+      toast.error("Please select a JPEG or PNG image");
       return;
     }
 
     // Check file size (max 1 MB)
     const maxSize = 1024 * 1024; // 1 MB in bytes
     if (file.size > maxSize) {
-      setError("File size must be less than 1 MB");
+      toast.error("File size must be less than 1 MB");
       return;
     }
-
-    setError(null);
 
     // Read image and show cropper
     const reader = new FileReader();
@@ -329,15 +327,22 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields
-    if (!formData.first_name.trim() || !formData.last_name.trim()) {
-      setError("Please enter first and last name");
+    // Sanitize and validate inputs
+    const firstName = sanitizeName(formData.first_name);
+    const lastName = sanitizeName(formData.last_name);
+
+    if (!firstName || !lastName) {
+      toast.error("Please enter first and last name");
+      return;
+    }
+
+    if (!validateLength(firstName, 50, 1) || !validateLength(lastName, 50, 1)) {
+      toast.error("Names must be between 1 and 50 characters");
       return;
     }
 
     setLoading(true);
     setGlobalLoading(true);
-    setError(null);
 
     try {
       const supabase = createClient();
@@ -370,11 +375,11 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
         imageUrl = publicUrlData.publicUrl;
       }
 
-      // Build the person object
+      // Build the person object with sanitized values
       const personData: PersonInsert = {
         group_id: groupId,
-        first_name: formData.first_name,
-        last_name: formData.last_name,
+        first_name: firstName,
+        last_name: lastName,
         gender: formData.gender,
       };
 
@@ -405,10 +410,11 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
       setOriginalImage("");
       setShowCropper(false);
 
+      toast.success(`${formData.first_name} ${formData.last_name} added!`);
       // Let real-time subscription handle the update
     } catch (err: unknown) {
       logError(err);
-      setError("Error adding person: " + getErrorMessage(err));
+      toast.error("Error adding person: " + getErrorMessage(err));
     } finally {
       setLoading(false);
       setGlobalLoading(false);
@@ -669,8 +675,6 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
             </div>
           )}
         </div>
-
-        <ErrorMessage message={error} />
 
         <div className="flex gap-2">
           <Button
