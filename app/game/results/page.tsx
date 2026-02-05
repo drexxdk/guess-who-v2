@@ -17,13 +17,13 @@ export default function GameResultsPage() {
   const router = useRouter();
   const [gameEnded, setGameEnded] = useState<boolean | null>(null);
 
-  const score = parseInt(searchParams.get("score") || "0");
-  const total = parseInt(searchParams.get("total") || "0");
-  const sessionId = searchParams.get("session") || "";
+  const score = parseInt(searchParams?.get("score") || "0");
+  const total = parseInt(searchParams?.get("total") || "0");
+  const sessionId = searchParams?.get("session") || "";
   const gameCode =
-    searchParams.get("code") || sessionStorage.getItem("lastGameCode") || "";
+    searchParams?.get("code") || sessionStorage.getItem("lastGameCode") || "";
   const playerName =
-    searchParams.get("name") || sessionStorage.getItem("lastPlayerName") || "";
+    searchParams?.get("name") || sessionStorage.getItem("lastPlayerName") || "";
   const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
 
   useEffect(() => {

@@ -25,10 +25,13 @@ export default function JoinGamePage() {
 
     setLoading(true);
 
+    // Generate a unique session ID for this join so each join creates a new component instance
+    const joinSessionId = crypto.randomUUID();
+
     // For now, redirect to a game page
     // In production, you'd verify the game code exists
     router.push(
-      `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}`,
+      `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${joinSessionId}`,
     );
 
     // Reset loading after a short delay to handle fast back navigation

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
+import { markPlayerAsLeft } from "@/app/actions/mark-player-left";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,11 +38,13 @@ interface GameSession {
 export default function GamePlayPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const gameCode = searchParams.get("code");
-  const playerName = searchParams.get("name");
+  const gameCode = searchParams?.get("code");
+  const playerName = searchParams?.get("name");
+  const joinSessionId = searchParams?.get("joinSessionId"); // Unique ID for this join instance
 
   const [loading, setLoading] = useState(true);
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
+  const [joinRecordId, setJoinRecordId] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -139,23 +142,6 @@ export default function GamePlayPage() {
 
     setGameSession(session);
 
-    // Delete any previous answers by this player in this session to give them a fresh start
-    if (playerName) {
-      await supabase
-        .from("game_answers")
-        .delete()
-        .eq("session_id", session.id)
-        .eq("player_name", playerName);
-
-      // Create a lightweight tracking entry
-      await supabase.from("game_answers").insert({
-        session_id: session.id,
-        player_name: playerName,
-        is_correct: false,
-        response_time_ms: 0,
-      });
-    }
-
     // Load people from the group
     const { data: peopleData, error: peopleError } = await supabase
       .from("people")
@@ -214,6 +200,13 @@ export default function GamePlayPage() {
     async (answerId: string | null) => {
       if (answered || !gameSession) return;
 
+      // Get join record ID from state or sessionStorage
+      const recordId = joinRecordId || sessionStorage.getItem("joinRecordId");
+      if (!recordId) {
+        console.error("No join record ID available");
+        return;
+      }
+
       setAnswered(true);
       setSelectedAnswer(answerId);
 
@@ -226,14 +219,22 @@ export default function GamePlayPage() {
 
       // Save answer to database
       const supabase = createClient();
-      await supabase.from("game_answers").insert({
+      console.log("Saving answer with join_id:", recordId, "is_correct:", isCorrect);
+      const { error } = await supabase.from("game_answers").insert({
         session_id: gameSession.id,
-        student_id: questions[currentQuestion].person.id,
-        selected_student_id: answerId,
+        correct_option_id: questions[currentQuestion].person.id,
+        selected_option_id: answerId,
         is_correct: isCorrect,
         response_time_ms: (30 - timeLeft) * 1000,
         player_name: playerName,
+        join_id: recordId,
       });
+      
+      if (error) {
+        console.error("Error saving answer:", error);
+      } else {
+        console.log("Answer saved successfully");
+      }
 
       // Move to next question after animation completes
       setTimeout(() => {
@@ -258,6 +259,7 @@ export default function GamePlayPage() {
       timeLeft,
       playerName,
       finishGame,
+      joinRecordId,
     ],
   );
 
@@ -265,7 +267,77 @@ export default function GamePlayPage() {
     if (gameCode && playerName) {
       loadGame();
     }
-  }, [gameCode, playerName, loadGame]);
+  }, [gameCode, playerName]);
+
+  // Reset joinRecordId when joinSessionId changes (new join attempt)
+  useEffect(() => {
+    if (joinSessionId) {
+      setJoinRecordId(null);
+    }
+  }, [joinSessionId]);
+
+  // Handle join tracking separately - only once when player joins
+  useEffect(() => {
+    if (!gameSession?.id || !playerName) return;
+    
+    // Check if this component instance has already created a join record (for React Strict Mode)
+    if (joinRecordId) {
+      console.log("Join record already created for this instance:", joinRecordId);
+      return;
+    }
+    
+    const handlePlayerJoin = async () => {
+      const supabase = createClient();
+
+      // Always create a new join record - each instance of the player is a new join
+      console.log("Creating new join tracking record:", {
+        session_id: gameSession.id,
+        player_name: playerName,
+      });
+      const { data: joinData, error: insertError } = await supabase
+        .from("game_answers")
+        .insert({
+          session_id: gameSession.id,
+          player_name: playerName,
+          is_correct: false,
+          response_time_ms: 0,
+          is_active: true,
+          // No correct_option_id for join tracking - this distinguishes it from answer records
+        })
+        .select("id");
+      if (insertError) {
+        console.error("Error inserting join tracking:", insertError);
+        console.error(
+          "Full error object:",
+          JSON.stringify(insertError, null, 2),
+        );
+      } else {
+        console.log("Join tracking inserted successfully");
+        const recordId = joinData?.[0]?.id;
+        console.log("Join record ID:", recordId);
+        setJoinRecordId(recordId || null);
+      }
+    };
+
+    handlePlayerJoin();
+  }, [gameSession?.id, playerName, joinRecordId, joinSessionId]);
+
+  // Mark player as left when they close the window or navigate away
+  useEffect(() => {
+    if (!gameSession?.id || !playerName) return;
+
+    const handlePlayerLeft = async () => {
+      console.log("Player leaving game:", playerName);
+      const result = await markPlayerAsLeft(gameSession.id, playerName);
+      console.log("Mark player as left result:", result);
+    };
+
+    window.addEventListener("beforeunload", handlePlayerLeft);
+    return () => {
+      window.removeEventListener("beforeunload", handlePlayerLeft);
+      handlePlayerLeft();
+    };
+  }, [gameSession?.id, playerName]);
 
   // Watch for session status changes (when host ends game)
   useEffect(() => {

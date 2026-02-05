@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,11 @@ import { use } from "react";
 interface Player {
   id: string;
   name: string;
-  score: number;
+  correct: number;
+  wrong: number;
+  missing: number;
   answered: boolean;
+  isActive: boolean;
 }
 
 interface GameSession {
@@ -44,34 +47,7 @@ export default function GameControlPage({
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameCode, setGameCode] = useState("");
 
-  useEffect(() => {
-    loadGameSession();
-    // Set up real-time subscription for players
-    const supabase = createClient();
-
-    const channel = supabase
-      .channel(`game:${sessionId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "game_answers",
-          filter: `session_id=eq.${sessionId}`,
-        },
-        () => {
-          // Reload game data when answers come in
-          loadGameSession();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [sessionId]);
-
-  const loadGameSession = async () => {
+  const loadGameSession = useCallback(async () => {
     const supabase = createClient();
 
     // Get game session
@@ -96,49 +72,133 @@ export default function GameControlPage({
       .select("*")
       .eq("session_id", sessionId);
 
-    // Track unique players by player_name
+    console.log("Fetched game_answers for sessionId", sessionId, ":", answers);
+    console.log(
+      "Raw is_active values:",
+      answers?.map((a) => ({
+        name: a.player_name,
+        correct_option_id: a.correct_option_id,
+        is_active: a.is_active,
+      })),
+    );
+
+    // Count occurrences of each player name (only join records where correct_option_id is null)
+    const joinRecords = answers?.filter((a) => !a.correct_option_id) || [];
+    const nameCounts = new Map<string, number>();
+    const nameIndices = new Map<string, number>();
+    const latestJoinRecordIdPerName = new Map<string, string>();
+
+    joinRecords.forEach((record: { id: string; player_name: string }) => {
+      const playerName = record.player_name || "Anonymous";
+      nameCounts.set(playerName, (nameCounts.get(playerName) || 0) + 1);
+      // Keep track of the latest (most recent) join record for each name
+      latestJoinRecordIdPerName.set(playerName, record.id);
+    });
+
+    // Track unique players by their join record ID (one entry per join record)
     const playerStats = new Map<
       string,
-      { name: string; score: number; totalAnswered: number }
+      {
+        name: string;
+        correct: number;
+        wrong: number;
+        missing: number;
+        isActive: boolean;
+        displayName: string;
+      }
     >();
 
+    // First pass: create one player entry for each join record
+    joinRecords.forEach(
+      (joinRecord: {
+        id: string;
+        player_name: string;
+        is_active?: boolean;
+      }) => {
+        const playerName = joinRecord.player_name || "Anonymous";
+        const isDuplicate = nameCounts.get(playerName)! > 1;
+
+        const currentIndex = (nameIndices.get(playerName) || 0) + 1;
+        nameIndices.set(playerName, currentIndex);
+
+        const displayName = isDuplicate
+          ? `${playerName} (${currentIndex})`
+          : playerName;
+
+        playerStats.set(joinRecord.id, {
+          name: playerName,
+          correct: 0,
+          wrong: 0,
+          missing: 0,
+          isActive: joinRecord.is_active !== false,
+          displayName,
+        });
+      },
+    );
+
+    // Second pass: count answers for each player
     if (answers && answers.length > 0) {
+      const joinIds = Array.from(playerStats.keys());
+      console.log("Available join IDs in playerStats:", joinIds);
+      
+      const answerRecords = answers.filter(a => a.correct_option_id);
+      console.log("Answer records found:", answerRecords.length);
+      console.log("Answer records join_ids:", answerRecords.map(a => ({ join_id: a.join_id, is_correct: a.is_correct, player_name: a.player_name })));
+      
       answers.forEach(
         (answer: {
           player_name: string;
-          student_id?: string;
+          correct_option_id?: string;
           is_correct?: boolean;
+          is_active?: boolean;
+          join_id?: string;
         }) => {
           const playerName = answer.player_name || "Anonymous";
 
-          if (!playerStats.has(playerName)) {
-            playerStats.set(playerName, {
-              name: playerName,
-              score: 0,
-              totalAnswered: 0,
-            });
-          }
-
-          // Only count actual answers (not join records)
-          if (answer.student_id) {
-            const stats = playerStats.get(playerName)!;
-            stats.totalAnswered++;
-            if (answer.is_correct) {
-              stats.score++;
+          // Count actual answers (records where correct_option_id is NOT null)
+          if (answer.correct_option_id) {
+            console.log("Processing answer for", playerName, "with join_id:", answer.join_id, "has in stats:", playerStats.has(answer.join_id || ""));
+            if (answer.join_id && playerStats.has(answer.join_id)) {
+              const stats = playerStats.get(answer.join_id)!;
+              if (answer.is_correct) {
+                stats.correct++;
+              } else {
+                stats.wrong++;
+              }
+            } else {
+              console.log("Answer skipped - join_id not found in playerStats");
             }
           }
         },
       );
     }
 
-    const activePlayers: Player[] = Array.from(playerStats.entries()).map(
-      ([id, stats]) => ({
-        id,
-        name: stats.name,
-        score: stats.score,
-        answered: stats.totalAnswered === session.total_questions,
-      }),
+    console.log(
+      "Final player stats:",
+      Array.from(playerStats.entries()).map(([id, stats]) => ({
+        name: stats.displayName,
+        isActive: stats.isActive,
+      })),
     );
+
+    const activePlayers: Player[] = Array.from(playerStats.entries()).map(
+      ([id, stats]) => {
+        const total = stats.correct + stats.wrong;
+        const missing = Math.max(0, session.total_questions - total);
+        
+        return {
+          id,
+          name: stats.displayName,
+          correct: stats.correct,
+          wrong: stats.wrong,
+          missing: missing,
+          answered: total === session.total_questions,
+          isActive: stats.isActive,
+        };
+      },
+    );
+
+    console.log("Active players found:", activePlayers);
 
     setPlayers(
       activePlayers.length > 0
@@ -153,7 +213,56 @@ export default function GameControlPage({
           ],
     );
     setLoading(false);
-  };
+  }, [sessionId, router]);
+
+  // Initial load
+  useEffect(() => {
+    loadGameSession();
+  }, [loadGameSession]);
+
+  // Set up real-time subscription for players
+  useEffect(() => {
+    console.log("Setting up subscription for sessionId:", sessionId);
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel(`game:${sessionId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "game_answers",
+        },
+        (payload) => {
+          console.log("🔔 REAL-TIME UPDATE RECEIVED:", payload);
+          // Only reload if it's for this session
+          if (
+            payload.new?.session_id === sessionId ||
+            payload.old?.session_id === sessionId
+          ) {
+            console.log("✅ Update is for this session, reloading...");
+            loadGameSession();
+          }
+        },
+      )
+      .subscribe((status, err) => {
+        console.log("📡 Subscription status:", status);
+        if (err) {
+          console.error("❌ Subscription error:", err);
+        }
+        if (status === "SUBSCRIBED") {
+          console.log("✅ Successfully subscribed to game_answers");
+        }
+      });
+
+    console.log("Subscription channel created:", channel);
+
+    return () => {
+      console.log("Cleaning up subscription for sessionId:", sessionId);
+      supabase.removeChannel(channel);
+    };
+  }, [sessionId, loadGameSession]);
 
   const endGame = async () => {
     const supabase = createClient();
@@ -211,12 +320,28 @@ export default function GameControlPage({
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-3 h-3 rounded-full ${
-                        player.answered ? "bg-green-500" : "bg-gray-300"
+                        player.isActive ? "bg-green-500" : "bg-gray-300"
                       }`}
                     />
                     <span className="font-medium">{player.name}</span>
                   </div>
-                  <Badge variant="secondary">{player.score} pts</Badge>
+                  <div className="text-sm text-muted-foreground space-x-2">
+                    {player.correct > 0 && (
+                      <Badge variant="default" className="bg-green-600">
+                        {player.correct} correct
+                      </Badge>
+                    )}
+                    {player.wrong > 0 && (
+                      <Badge variant="destructive">
+                        {player.wrong} wrong
+                      </Badge>
+                    )}
+                    {player.missing > 0 && (
+                      <Badge variant="secondary">
+                        {player.missing} missing
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

@@ -7,7 +7,7 @@ export function Breadcrumbs() {
   const pathname = usePathname();
 
   // Remove /protected prefix and split into segments
-  const pathSegments = pathname
+  const pathSegments = (pathname || "")
     .replace(/^\/protected\/?/, "")
     .split("/")
     .filter(Boolean);
