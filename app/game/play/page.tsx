@@ -491,10 +491,10 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                     {state.gameType === "guess_name" && (
                       <CardContent>
                         <div className="flex justify-center">
-                          <div className="relative w-full max-w-64 aspect-square rounded-lg overflow-hidden border-4 border-gray-200">
+                          <div className=" aspect-square rounded-lg border-4 border-gray-200">
                             <Image
-                              width={200}
-                              height={200}
+                              width={256}
+                              height={256}
                               key={`person-image-${state.currentQuestion}-${state.question.person.id}`}
                               src={
                                 state.question.person.image_url ||
