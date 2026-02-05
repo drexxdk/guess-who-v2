@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -37,9 +37,38 @@ export default function JoinGamePage() {
     router.push(
       `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${joinSessionId}`,
     );
+    
+    // Return a promise that never resolves to keep loading state active during navigation
+    // This prevents flicker as the join page stays in loading state until unmounted
+    return new Promise(() => {});
   }, [gameCode, playerName, router]);
 
-  const { error, isLoading, execute, setError } = useMutation(joinGame);
+  const { error, isLoading, execute, setError, reset } = useMutation(joinGame);
+
+  // Reset loading state when returning to this page via back button or history navigation
+  useEffect(() => {
+    // Reset on mount in case we're returning from a navigation
+    reset();
+    
+    const handlePageShow = (event: PageTransitionEvent) => {
+      // persisted is true when the page is loaded from the back-forward cache
+      if (event.persisted) {
+        reset();
+      }
+    };
+
+    // Also handle popstate for client-side navigation
+    const handlePopState = () => {
+      reset();
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [reset]);
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();

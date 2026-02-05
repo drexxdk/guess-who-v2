@@ -28,7 +28,8 @@ export default function GamePlayPage() {
   const joinSessionId = searchParams?.get("joinSessionId"); // Unique ID for this join instance
   const retry = searchParams?.get("retry"); // Flag to indicate this is a retry/fresh start
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
   const [joinRecordId, setJoinRecordId] = useState<string | null>(null);
@@ -47,9 +48,9 @@ export default function GamePlayPage() {
     const hasParams = gameCode && playerName;
 
     if (!hasParams) {
-      setLoading(false);
-      setError(null);
       router.replace("/game/join");
+    } else {
+      setInitialized(true);
     }
   }, [gameCode, playerName, router]);
 
@@ -639,8 +640,8 @@ export default function GamePlayPage() {
     }
   }, [timeLeft, answered, questions.length, handleAnswer]);
 
-  // If we don't have valid params, return empty while redirecting
-  if (!gameCode || !playerName) {
+  // If we don't have valid params or not initialized yet, return empty while redirecting
+  if (!gameCode || !playerName || !initialized) {
     return null;
   }
 
