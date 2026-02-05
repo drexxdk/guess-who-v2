@@ -18,7 +18,11 @@ import { GroupSettings } from "@/components/group-settings";
 import { DeleteGroupButton } from "@/components/delete-group-button";
 import type { Group, Person } from "@/lib/schemas";
 import { logger } from "@/lib/logger";
-import { useMultiRealtimeSubscription } from "@/lib/hooks/use-realtime";
+import {
+  useMultiRealtimeSubscription,
+  getPayloadNew,
+  getPayloadOld,
+} from "@/lib/hooks/use-realtime";
 
 export function GroupDetailClient({
   groupData,
@@ -34,31 +38,43 @@ export function GroupDetailClient({
   const [isEditingSettings, setIsEditingSettings] = useState(false);
 
   // Realtime event handlers
-  const handleDelete = useCallback((payload: { old: Record<string, unknown> }) => {
-    const deletedId = (payload.old as { id: string }).id;
-    logger.log("DELETE event received for person:", deletedId);
-    setPeople((prev) => prev.filter((p) => p.id !== deletedId));
-  }, []);
+  const handleDelete = useCallback(
+    (payload: Parameters<typeof getPayloadOld<Person>>[0]) => {
+      const oldData = getPayloadOld<Person>(payload);
+      if (!oldData?.id) return;
+      logger.log("DELETE event received for person:", oldData.id);
+      setPeople((prev) => prev.filter((p) => p.id !== oldData.id));
+    },
+    [],
+  );
 
-  const handleInsert = useCallback((payload: { new: Record<string, unknown> }) => {
-    logger.log("INSERT event received:", payload.new);
-    setPeople((prev) =>
-      [...prev, payload.new as Person].sort((a, b) =>
-        a.first_name.localeCompare(b.first_name),
-      ),
-    );
-  }, []);
+  const handleInsert = useCallback(
+    (payload: Parameters<typeof getPayloadNew<Person>>[0]) => {
+      const newPerson = getPayloadNew<Person>(payload);
+      if (!newPerson?.id) return;
+      logger.log("INSERT event received:", newPerson);
+      setPeople((prev) =>
+        [...prev, newPerson].sort((a, b) =>
+          a.first_name.localeCompare(b.first_name),
+        ),
+      );
+    },
+    [],
+  );
 
-  const handleUpdate = useCallback((payload: { new: Record<string, unknown> }) => {
-    logger.log("UPDATE event received:", payload.new);
-    setPeople((prev) =>
-      prev
-        .map((p) =>
-          p.id === (payload.new as Person).id ? (payload.new as Person) : p,
-        )
-        .sort((a, b) => a.first_name.localeCompare(b.first_name)),
-    );
-  }, []);
+  const handleUpdate = useCallback(
+    (payload: Parameters<typeof getPayloadNew<Person>>[0]) => {
+      const updatedPerson = getPayloadNew<Person>(payload);
+      if (!updatedPerson?.id) return;
+      logger.log("UPDATE event received:", updatedPerson);
+      setPeople((prev) =>
+        prev
+          .map((p) => (p.id === updatedPerson.id ? updatedPerson : p))
+          .sort((a, b) => a.first_name.localeCompare(b.first_name)),
+      );
+    },
+    [],
+  );
 
   // Watch for changes to people in this group
   const realtimeConfig = useMemo(

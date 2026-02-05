@@ -222,7 +222,8 @@ export default function GamePlayPage() {
         if (allAnswers && allAnswers.length > 0) {
           // Filter answers that have been submitted (both correct_option_id and selected_option_id exist)
           answeredQuestions = allAnswers.filter(
-            (a) => a.correct_option_id !== null && a.selected_option_id !== null,
+            (a) =>
+              a.correct_option_id !== null && a.selected_option_id !== null,
           );
 
           if (answeredQuestions.length > 0) {
@@ -429,16 +430,17 @@ export default function GamePlayPage() {
         .order("created_at", { ascending: false })
         .limit(1);
 
-      if (existingJoins && existingJoins.length > 0) {
+      const [existingJoin] = existingJoins ?? [];
+      if (existingJoin) {
         // Reuse the existing join record (player rejoining)
         logger.log(
           "Player rejoining - using existing join record:",
-          existingJoins[0].id,
+          existingJoin.id,
         );
-        setJoinRecordId(existingJoins[0].id);
+        setJoinRecordId(existingJoin.id);
         sessionStorage.setItem(
           `joinRecordId_${gameCode}_${playerName}`,
-          existingJoins[0].id,
+          existingJoin.id,
         );
       } else {
         // New join - create a new join tracking entry
@@ -459,15 +461,13 @@ export default function GamePlayPage() {
           .select("id");
         if (insertError) {
           logError("Error inserting join tracking:", insertError);
-          logError(
-            "Full error object:",
-            JSON.stringify(insertError, null, 2),
-          );
+          logError("Full error object:", JSON.stringify(insertError, null, 2));
         } else {
           logger.log("Join tracking inserted successfully");
-          const recordId = joinData?.[0]?.id;
+          const [joinRecord] = joinData ?? [];
+          const recordId = joinRecord?.id;
           logger.log("Join record ID:", recordId);
-          setJoinRecordId(recordId || null);
+          setJoinRecordId(recordId ?? null);
           if (recordId) {
             sessionStorage.setItem(
               `joinRecordId_${gameCode}_${playerName}`,
@@ -523,8 +523,8 @@ export default function GamePlayPage() {
           filter: `id=eq.${sessionId}`,
         },
         async (payload) => {
-          const updatedSession = payload.new as GameSession;
-          if (updatedSession.status === "completed") {
+          const updatedSession = payload.new as { status?: string } | null;
+          if (updatedSession?.status === "completed") {
             // Game ended by host - get actual score from database and redirect to results
             const { data: answers, error: queryError } = await supabase
               .from("game_answers")

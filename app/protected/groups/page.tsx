@@ -68,7 +68,7 @@ export default async function GroupsPage() {
               <CardHeader>
                 <CardTitle>{group.name}</CardTitle>
                 <CardDescription>
-                  {group.people?.[0]?.count || 0} people
+                  {group.people?.at(0)?.count ?? 0} people
                 </CardDescription>
               </CardHeader>
               <CardContent>

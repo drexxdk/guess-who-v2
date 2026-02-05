@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { endGameSession } from "@/lib/game-utils";
+import { gameSessionWithGroupSchema } from "@/lib/schemas";
 import type { GameSessionWithGroup } from "@/lib/schemas";
 
 export default function GameStartedPage({
@@ -40,7 +41,10 @@ export default function GameStartedPage({
       return;
     }
 
-    setGameSession(session as GameSessionWithGroup);
+    const parsed = gameSessionWithGroupSchema.safeParse(session);
+    if (parsed.success) {
+      setGameSession(parsed.data);
+    }
     setLoading(false);
   }, [sessionId]);
 

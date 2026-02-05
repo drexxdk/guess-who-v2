@@ -35,10 +35,14 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
     mouseX: 0,
     mouseY: 0,
   });
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    first_name: string;
+    last_name: string;
+    gender: GenderType;
+  }>({
     first_name: "",
     last_name: "",
-    gender: "other" as "male" | "female" | "other",
+    gender: "other",
   });
 
   const handleImageSelect = (file: File) => {
@@ -368,7 +372,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
         group_id: groupId,
         first_name: formData.first_name,
         last_name: formData.last_name,
-        gender: formData.gender as GenderType,
+        gender: formData.gender,
       };
 
       // Only include image_url if it has a value

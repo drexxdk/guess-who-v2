@@ -234,12 +234,11 @@ export default function GameControlPage({
         (payload) => {
           logger.log("🔔 REAL-TIME UPDATE RECEIVED:", payload);
           // Only reload if it's for this session
-          const newData = payload.new as Record<string, unknown> | null;
-          const oldData = payload.old as Record<string, unknown> | null;
-          if (
-            newData?.session_id === sessionId ||
-            oldData?.session_id === sessionId
-          ) {
+          const newSessionId = (payload.new as { session_id?: string } | null)
+            ?.session_id;
+          const oldSessionId = (payload.old as { session_id?: string } | null)
+            ?.session_id;
+          if (newSessionId === sessionId || oldSessionId === sessionId) {
             logger.log("✅ Update is for this session, reloading...");
             loadGameSession();
           }
@@ -376,15 +375,25 @@ export default function GameControlPage({
                 </div>
                 <div className="text-sm text-muted-foreground space-x-2 shrink-0">
                   {player.correct > 0 && (
-                    <Badge variant="default" className="bg-green-600">
+                    <Badge
+                      variant="default"
+                      className="bg-green-600 hover:bg-green-600"
+                    >
                       {player.correct} correct
                     </Badge>
                   )}
                   {player.wrong > 0 && (
-                    <Badge variant="destructive">{player.wrong} wrong</Badge>
+                    <Badge
+                      variant="destructive"
+                      className="hover:bg-destructive"
+                    >
+                      {player.wrong} wrong
+                    </Badge>
                   )}
                   {player.missing > 0 && (
-                    <Badge variant="secondary">{player.missing} missing</Badge>
+                    <Badge variant="secondary" className="hover:bg-secondary">
+                      {player.missing} missing
+                    </Badge>
                   )}
                 </div>
               </div>

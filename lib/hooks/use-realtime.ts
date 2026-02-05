@@ -2,9 +2,37 @@
 
 import { useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import type {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from "@supabase/supabase-js";
 
 type PostgresChangeEvent = "INSERT" | "UPDATE" | "DELETE" | "*";
+
+// Re-export the payload type for consumers
+export type { RealtimePostgresChangesPayload };
+
+// Helper to safely extract typed data from payload.new
+export function getPayloadNew<T extends Record<string, unknown>>(
+  payload: RealtimePostgresChangesPayload<T>,
+): T | undefined {
+  const data = payload.new;
+  if (data && typeof data === "object" && Object.keys(data).length > 0) {
+    return data as T;
+  }
+  return undefined;
+}
+
+// Helper to safely extract typed data from payload.old
+export function getPayloadOld<T extends Record<string, unknown>>(
+  payload: RealtimePostgresChangesPayload<T>,
+): Partial<T> | undefined {
+  const data = payload.old;
+  if (data && typeof data === "object" && Object.keys(data).length > 0) {
+    return data as Partial<T>;
+  }
+  return undefined;
+}
 
 interface SubscriptionConfig<T extends Record<string, unknown>> {
   channelName: string;
@@ -24,7 +52,14 @@ export function useRealtimeSubscription<T extends Record<string, unknown>>(
     if (!config) return;
 
     const supabase = createClient();
-    const { channelName, table, schema = "public", event = "*", filter, onEvent } = config;
+    const {
+      channelName,
+      table,
+      schema = "public",
+      event = "*",
+      filter,
+      onEvent,
+    } = config;
 
     const channel = supabase.channel(channelName);
 
@@ -44,9 +79,13 @@ export function useRealtimeSubscription<T extends Record<string, unknown>>(
     }
 
     channel
-      .on("postgres_changes", subscriptionConfig, (payload) => {
-        onEvent(payload as RealtimePostgresChangesPayload<T>);
-      })
+      .on(
+        "postgres_changes",
+        subscriptionConfig,
+        onEvent as (
+          payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
+        ) => void,
+      )
       .subscribe();
 
     channelRef.current = channel;
@@ -103,9 +142,13 @@ export function useMultiRealtimeSubscription<T extends Record<string, unknown>>(
         subscriptionConfig.filter = filter;
       }
 
-      channel = channel.on("postgres_changes", subscriptionConfig, (payload) => {
-        onEvent(payload as RealtimePostgresChangesPayload<T>);
-      });
+      channel = channel.on(
+        "postgres_changes",
+        subscriptionConfig,
+        onEvent as (
+          payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
+        ) => void,
+      );
     }
 
     channel.subscribe();

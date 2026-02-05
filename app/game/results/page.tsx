@@ -13,7 +13,14 @@ import {
 } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { logger, logError } from "@/lib/logger";
-import { useRealtimeSubscription } from "@/lib/hooks/use-realtime";
+import {
+  useRealtimeSubscription,
+  getPayloadNew,
+} from "@/lib/hooks/use-realtime";
+
+interface GameSessionStatus extends Record<string, unknown> {
+  status: string;
+}
 
 export default function GameResultsPage() {
   const searchParams = useSearchParams();
@@ -57,9 +64,11 @@ export default function GameResultsPage() {
 
   // Watch for game session status changes
   const handleSessionUpdate = useCallback(
-    (payload: { new: Record<string, unknown> }) => {
-      const updatedSession = payload.new as { status: string };
-      setGameEnded(updatedSession.status === "completed");
+    (payload: Parameters<typeof getPayloadNew<GameSessionStatus>>[0]) => {
+      const newData = getPayloadNew<GameSessionStatus>(payload);
+      if (newData?.status) {
+        setGameEnded(newData.status === "completed");
+      }
     },
     [],
   );
@@ -78,7 +87,7 @@ export default function GameResultsPage() {
     [sessionId, handleSessionUpdate],
   );
 
-  useRealtimeSubscription<{ status: string }>(realtimeConfig);
+  useRealtimeSubscription<GameSessionStatus>(realtimeConfig);
 
   const handlePlayAgain = async () => {
     if (gameEnded) {
@@ -104,7 +113,8 @@ export default function GameResultsPage() {
           .order("created_at", { ascending: false })
           .limit(1);
 
-        const joinRecordId = joinRecords?.[0]?.id;
+        const [joinRecord] = joinRecords ?? [];
+        const joinRecordId = joinRecord?.id;
         logger.log("[handlePlayAgain] Found join record:", joinRecordId);
 
         // Delete only the actual answers (not the join tracking record)
