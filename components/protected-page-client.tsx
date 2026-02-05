@@ -12,7 +12,9 @@ interface ProtectedPageClientProps {
   activeSessions: GameSessionWithGroup[];
 }
 
-export function ProtectedPageClient({ activeSessions }: ProtectedPageClientProps) {
+export function ProtectedPageClient({
+  activeSessions,
+}: ProtectedPageClientProps) {
   const { setLoading } = useLoading();
 
   // Reset loading state when page mounts

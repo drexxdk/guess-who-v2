@@ -24,7 +24,9 @@ export default function GameStartedPage({
   const groupId = params.id;
   const sessionId = params.sessionId;
   const { setLoading } = useLoading();
-  const [gameSession, setGameSession] = useState<Awaited<ReturnType<typeof getGameSessionWithGroup>> | null>(null);
+  const [gameSession, setGameSession] = useState<Awaited<
+    ReturnType<typeof getGameSessionWithGroup>
+  > | null>(null);
   const [initialized, setInitialized] = useState(false);
 
   const loadGameSession = useCallback(async () => {
