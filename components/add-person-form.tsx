@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 export function AddPersonForm({ groupId }: { groupId: string }) {
   const cropContainerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [preview, setPreview] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -41,16 +42,18 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
     // Check file type
     const validTypes = ["image/jpeg", "image/png"];
     if (!validTypes.includes(file.type)) {
-      alert("Please select a JPEG or PNG image");
+      setError("Please select a JPEG or PNG image");
       return;
     }
 
     // Check file size (max 1 MB)
     const maxSize = 1024 * 1024; // 1 MB in bytes
     if (file.size > maxSize) {
-      alert("File size must be less than 1 MB");
+      setError("File size must be less than 1 MB");
       return;
     }
+
+    setError(null);
 
     // Read image and show cropper
     const reader = new FileReader();
@@ -319,11 +322,12 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
 
     // Validate required fields
     if (!formData.first_name.trim() || !formData.last_name.trim()) {
-      alert("Please enter first and last name");
+      setError("Please enter first and last name");
       return;
     }
 
     setLoading(true);
+    setError(null);
 
     try {
       const supabase = createClient();
@@ -403,289 +407,297 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
     } catch (err: unknown) {
       console.error(err);
       const errorMessage = err instanceof Error ? err.message : String(err);
-      alert("Error adding person: " + errorMessage);
+      setError("Error adding person: " + errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="first_name">First Name</Label>
-          <Input
-            id="first_name"
-            value={formData.first_name}
-            onChange={(e) =>
-              setFormData({ ...formData, first_name: e.target.value })
-            }
-            autoComplete="one-time-code"
-            data-1p-ignore
-            data-lpignore="true"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="last_name">Last Name</Label>
-          <Input
-            id="last_name"
-            value={formData.last_name}
-            onChange={(e) =>
-              setFormData({ ...formData, last_name: e.target.value })
-            }
-            autoComplete="one-time-code"
-            data-1p-ignore
-            data-lpignore="true"
-            required
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="gender">Gender</Label>
-        <select
-          id="gender"
-          value={formData.gender}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              gender: e.target.value as "male" | "female" | "other",
-            })
-          }
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          required
-        >
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Photo</Label>
-
-        {showCropper ? (
+    <>
+      <form onSubmit={handleSubmit} className="space-y-4 relative">
+        <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <p className="text-sm text-gray-600">
-              Drag to move • Drag corners to resize
-            </p>
-            <div
-              ref={cropContainerRef}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              style={{
-                position: "relative",
-                width: "100%",
-                maxWidth: "400px",
-                margin: "0 auto",
-                aspectRatio:
-                  imageDimensions.width / imageDimensions.height || "1",
-                overflow: "hidden",
-                backgroundColor: "#f0f0f0",
-                borderRadius: "8px",
-                cursor: resizingCorner
-                  ? "pointer"
-                  : draggingBox
-                    ? "grabbing"
-                    : "grab",
-              }}
-            >
-              <Image
-                src={originalImage}
-                alt="Crop"
-                fill
-                style={{
-                  objectFit: "contain",
-                }}
-              />
-
-              {/* Darkened overlay areas */}
-              {/* Top */}
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: `${(cropY / imageDimensions.height) * 100}%`,
-                  backgroundColor: "rgba(0, 0, 0, 0.5)",
-                  pointerEvents: "none",
-                }}
-              />
-              {/* Bottom */}
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: `${((imageDimensions.height - cropY - cropSize) / imageDimensions.height) * 100}%`,
-                  backgroundColor: "rgba(0, 0, 0, 0.5)",
-                  pointerEvents: "none",
-                }}
-              />
-              {/* Left */}
-              <div
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  top: `${(cropY / imageDimensions.height) * 100}%`,
-                  bottom: `${((imageDimensions.height - cropY - cropSize) / imageDimensions.height) * 100}%`,
-                  width: `${(cropX / imageDimensions.width) * 100}%`,
-                  backgroundColor: "rgba(0, 0, 0, 0.5)",
-                  pointerEvents: "none",
-                }}
-              />
-              {/* Right */}
-              <div
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  top: `${(cropY / imageDimensions.height) * 100}%`,
-                  bottom: `${((imageDimensions.height - cropY - cropSize) / imageDimensions.height) * 100}%`,
-                  width: `${((imageDimensions.width - cropX - cropSize) / imageDimensions.width) * 100}%`,
-                  backgroundColor: "rgba(0, 0, 0, 0.5)",
-                  pointerEvents: "none",
-                }}
-              />
-
-              {/* Crop box with border and handles */}
-              <div
-                onMouseDown={handleCropBoxMouseDown}
-                style={{
-                  position: "absolute",
-                  left: `${(cropX / imageDimensions.width) * 100}%`,
-                  top: `${(cropY / imageDimensions.height) * 100}%`,
-                  width: `${(cropSize / imageDimensions.width) * 100}%`,
-                  height: `${(cropSize / imageDimensions.height) * 100}%`,
-                  border: "2px solid white",
-                  boxSizing: "border-box",
-                }}
-              >
-                {/* Corner resize handles */}
-                {["tl", "tr", "bl", "br"].map((corner) => (
-                  <div
-                    key={corner}
-                    onMouseDown={(e) => handleResizeMouseDown(e, corner)}
-                    style={{
-                      position: "absolute",
-                      width: "14px",
-                      height: "14px",
-                      backgroundColor: "white",
-                      border: "2px solid #333",
-                      borderRadius: "50%",
-                      cursor:
-                        corner === "tl" || corner === "br"
-                          ? "nwse-resize"
-                          : "nesw-resize",
-                      ...(corner === "tl" && {
-                        top: "-7px",
-                        left: "-7px",
-                      }),
-                      ...(corner === "tr" && {
-                        top: "-7px",
-                        right: "-7px",
-                      }),
-                      ...(corner === "bl" && {
-                        bottom: "-7px",
-                        left: "-7px",
-                      }),
-                      ...(corner === "br" && {
-                        bottom: "-7px",
-                        right: "-7px",
-                      }),
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="flex gap-2 mt-3">
-              <Button type="button" onClick={applyCrop} className="flex-1">
-                ✓ Use This Crop
-              </Button>
-              <Button
-                type="button"
-                onClick={cancelCrop}
-                variant="outline"
-                className="flex-1"
-              >
-                ✕ Change Image
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-            className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
-              dragActive
-                ? "border-primary bg-primary/5"
-                : "border-muted-foreground/25 hover:border-muted-foreground/50"
-            }`}
-          >
-            <input
-              type="file"
-              accept="image/jpeg,image/png"
-              onChange={handleFileInputChange}
-              disabled={loading}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            <Label htmlFor="first_name">First Name</Label>
+            <Input
+              id="first_name"
+              value={formData.first_name}
+              onChange={(e) =>
+                setFormData({ ...formData, first_name: e.target.value })
+              }
+              autoComplete="one-time-code"
+              data-1p-ignore
+              data-lpignore="true"
+              required
             />
-            {preview ? (
-              <div className="space-y-3">
-                <div className="relative w-40 h-40 mx-auto">
-                  <img
-                    src={preview}
-                    alt="Preview"
-                    className="w-full h-full object-cover rounded-lg"
-                  />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="last_name">Last Name</Label>
+            <Input
+              id="last_name"
+              value={formData.last_name}
+              onChange={(e) =>
+                setFormData({ ...formData, last_name: e.target.value })
+              }
+              autoComplete="one-time-code"
+              data-1p-ignore
+              data-lpignore="true"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="gender">Gender</Label>
+          <select
+            id="gender"
+            value={formData.gender}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                gender: e.target.value as "male" | "female" | "other",
+              })
+            }
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            required
+          >
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Photo</Label>
+
+          {showCropper ? (
+            <div className="space-y-2">
+              <p className="text-sm text-gray-600">
+                Drag to move • Drag corners to resize
+              </p>
+              <div
+                ref={cropContainerRef}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                style={{
+                  position: "relative",
+                  width: "100%",
+                  aspectRatio:
+                    imageDimensions.width / imageDimensions.height || "1",
+                  overflow: "hidden",
+                  backgroundColor: "#f0f0f0",
+                  borderRadius: "8px",
+                  cursor: resizingCorner
+                    ? "pointer"
+                    : draggingBox
+                      ? "grabbing"
+                      : "grab",
+                }}
+              >
+                <Image
+                  src={originalImage}
+                  alt="Crop"
+                  fill
+                  style={{
+                    objectFit: "contain",
+                  }}
+                />
+
+                {/* Darkened overlay areas */}
+                {/* Top */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: `${(cropY / imageDimensions.height) * 100}%`,
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    pointerEvents: "none",
+                  }}
+                />
+                {/* Bottom */}
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: `${((imageDimensions.height - cropY - cropSize) / imageDimensions.height) * 100}%`,
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    pointerEvents: "none",
+                  }}
+                />
+                {/* Left */}
+                <div
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    top: `${(cropY / imageDimensions.height) * 100}%`,
+                    bottom: `${((imageDimensions.height - cropY - cropSize) / imageDimensions.height) * 100}%`,
+                    width: `${(cropX / imageDimensions.width) * 100}%`,
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    pointerEvents: "none",
+                  }}
+                />
+                {/* Right */}
+                <div
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    top: `${(cropY / imageDimensions.height) * 100}%`,
+                    bottom: `${((imageDimensions.height - cropY - cropSize) / imageDimensions.height) * 100}%`,
+                    width: `${((imageDimensions.width - cropX - cropSize) / imageDimensions.width) * 100}%`,
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    pointerEvents: "none",
+                  }}
+                />
+
+                {/* Crop box with border and handles */}
+                <div
+                  onMouseDown={handleCropBoxMouseDown}
+                  style={{
+                    position: "absolute",
+                    left: `${(cropX / imageDimensions.width) * 100}%`,
+                    top: `${(cropY / imageDimensions.height) * 100}%`,
+                    width: `${(cropSize / imageDimensions.width) * 100}%`,
+                    height: `${(cropSize / imageDimensions.height) * 100}%`,
+                    border: "2px solid white",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  {/* Corner resize handles */}
+                  {["tl", "tr", "bl", "br"].map((corner) => (
+                    <div
+                      key={corner}
+                      onMouseDown={(e) => handleResizeMouseDown(e, corner)}
+                      style={{
+                        position: "absolute",
+                        width: "14px",
+                        height: "14px",
+                        backgroundColor: "white",
+                        border: "2px solid #333",
+                        borderRadius: "50%",
+                        cursor:
+                          corner === "tl" || corner === "br"
+                            ? "nwse-resize"
+                            : "nesw-resize",
+                        ...(corner === "tl" && {
+                          top: "-7px",
+                          left: "-7px",
+                        }),
+                        ...(corner === "tr" && {
+                          top: "-7px",
+                          right: "-7px",
+                        }),
+                        ...(corner === "bl" && {
+                          bottom: "-7px",
+                          left: "-7px",
+                        }),
+                        ...(corner === "br" && {
+                          bottom: "-7px",
+                          right: "-7px",
+                        }),
+                      }}
+                    />
+                  ))}
                 </div>
-                <p className="text-sm font-medium">Image ready</p>
-                <p className="text-xs text-muted-foreground">
-                  Click or drag to replace
-                </p>
               </div>
-            ) : (
-              <div className="space-y-2 py-8">
-                <p className="text-sm font-medium">
-                  Drag and drop an image here
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  or click to select from your device
-                </p>
+
+              <div className="flex gap-2 mt-3">
+                <Button type="button" onClick={applyCrop} className="flex-1">
+                  ✓ Use This Crop
+                </Button>
+                <Button
+                  type="button"
+                  onClick={cancelCrop}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  ✕ Change Image
+                </Button>
               </div>
-            )}
+            </div>
+          ) : (
+            <div
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+                dragActive
+                  ? "border-primary bg-primary/5"
+                  : "border-muted-foreground/25 hover:border-muted-foreground/50"
+              }`}
+            >
+              <input
+                type="file"
+                accept="image/jpeg,image/png"
+                onChange={handleFileInputChange}
+                disabled={loading}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              {preview ? (
+                <div className="space-y-3">
+                  <div className="relative mx-auto">
+                    <Image
+                      src={preview}
+                      alt="Preview"
+                      width={500}
+                      height={500}
+                      className="object-cover rounded-lg"
+                    />
+                  </div>
+                  <p className="text-sm font-medium">Image ready</p>
+                  <p className="text-xs text-muted-foreground">
+                    Click or drag to replace
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2 py-8">
+                  <p className="text-sm font-medium">
+                    Drag and drop an image here
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    or click to select from your device
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {error && (
+          <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+            {error}
           </div>
         )}
-      </div>
 
-      <div className="flex gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleReset}
-          disabled={loading}
-          className="flex-1"
-        >
-          Reset
-        </Button>
-        <Button
-          type="submit"
-          disabled={
-            loading ||
-            !formData.first_name.trim() ||
-            !formData.last_name.trim() ||
-            !selectedFile
-          }
-          className="flex-1"
-        >
-          {loading ? "Adding..." : "Add Person"}
-        </Button>
-      </div>
-    </form>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleReset}
+            disabled={loading}
+            className="flex-1"
+          >
+            Reset
+          </Button>
+          <Button
+            type="submit"
+            disabled={
+              loading ||
+              !formData.first_name.trim() ||
+              !formData.last_name.trim() ||
+              !selectedFile
+            }
+            className="flex-1"
+          >
+            {loading ? "Adding..." : "Add Person"}
+          </Button>
+        </div>
+      </form>
+    </>
   );
 }

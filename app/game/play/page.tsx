@@ -44,6 +44,7 @@ export default function GamePlayPage() {
   const retry = searchParams?.get("retry"); // Flag to indicate this is a retry/fresh start
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
   const [joinRecordId, setJoinRecordId] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -56,6 +57,13 @@ export default function GamePlayPage() {
     null,
   );
 
+  // Validate required search params and redirect if missing
+  useEffect(() => {
+    if (searchParams && !gameCode && !playerName) {
+      router.replace("/game/join");
+    }
+  }, [searchParams, gameCode, playerName, router]);
+
   const generateQuestions = useCallback(
     (
       allPeople: Person[],
@@ -64,7 +72,7 @@ export default function GamePlayPage() {
       optionsCount: number,
     ): Question[] => {
       if (allPeople.length < 2) {
-        alert("Not enough people in this group to play!");
+        setError("Not enough people in this group to play!");
         return [];
       }
 
@@ -141,9 +149,8 @@ export default function GamePlayPage() {
 
       if (!session) {
         console.error("Game session not found for code:", gameCode);
-        alert("Game not found!");
+        setError("Game not found!");
         setLoading(false);
-        router.push("/game/join");
         return;
       }
 
@@ -166,9 +173,8 @@ export default function GamePlayPage() {
 
       if (!peopleData || peopleData.length === 0) {
         console.error("No people found in group");
-        alert("This group has no people! Add people to the group first.");
+        setError("This group has no people! Add people to the group first.");
         setLoading(false);
-        router.push("/game/join");
         return;
       }
 
@@ -268,33 +274,50 @@ export default function GamePlayPage() {
       // Don't set gameStarted here - let the useEffect below handle it when questions are ready
     } catch (error) {
       console.error("Error loading game:", error);
-      alert(
+      setError(
         "Error loading game: " +
           (error instanceof Error ? error.message : "Unknown error"),
       );
       setLoading(false);
     }
-  }, [gameCode, router, playerName, generateQuestions, retry]);
+  }, [gameCode, playerName, generateQuestions, retry]);
 
   const finishGame = useCallback(async () => {
     if (!gameSession) return;
 
     const supabase = createClient();
 
+    // Query the database to get the actual count of correct answers
+    // This is more reliable than using the score state variable
+    const { data: answers, error: queryError } = await supabase
+      .from("game_answers")
+      .select("is_correct")
+      .eq("session_id", gameSession.id)
+      .eq("player_name", playerName)
+      .not("correct_option_id", "is", null); // Exclude join tracking records
+
+    if (queryError) {
+      console.error("Error querying answers:", queryError);
+    }
+
+    // Count correct answers from the database
+    const actualScore =
+      answers?.filter((answer) => answer.is_correct).length || 0;
+
     // Save final score but don't mark session as completed
     // The session will only be marked complete when the host clicks "End Game"
     await supabase
       .from("game_sessions")
       .update({
-        score,
+        score: actualScore,
       })
       .eq("id", gameSession.id);
 
-    // Redirect to results page
+    // Redirect to results page with the actual score from database
     router.push(
-      `/game/results?session=${gameSession.id}&score=${score}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || "")}&gameCode=${gameSession.game_code}`,
+      `/game/results?session=${gameSession.id}&score=${actualScore}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || "")}&gameCode=${gameSession.game_code}`,
     );
-  }, [gameSession, score, questions.length, router, playerName]);
+  }, [gameSession, questions.length, router, playerName]);
 
   const handleAnswer = useCallback(
     async (answerId: string | null) => {
@@ -502,12 +525,27 @@ export default function GamePlayPage() {
           table: "game_sessions",
           filter: `id=eq.${sessionId}`,
         },
-        (payload) => {
+        async (payload) => {
           const updatedSession = payload.new as GameSession;
           if (updatedSession.status === "completed") {
-            // Game ended by host - redirect to results
+            // Game ended by host - get actual score from database and redirect to results
+            const { data: answers, error: queryError } = await supabase
+              .from("game_answers")
+              .select("is_correct")
+              .eq("session_id", sessionId)
+              .eq("player_name", playerName)
+              .not("correct_option_id", "is", null); // Exclude join tracking records
+
+            if (queryError) {
+              console.error("Error querying answers:", queryError);
+            }
+
+            // Count correct answers from the database
+            const actualScore =
+              answers?.filter((answer) => answer.is_correct).length || 0;
+
             router.push(
-              `/game/results?session=${sessionId}&score=${score}&total=${questions.length}&code=${gameCode}&name=${encodeURIComponent(playerName || "")}`,
+              `/game/results?session=${sessionId}&score=${actualScore}&total=${questions.length}&code=${gameCode}&name=${encodeURIComponent(playerName || "")}`,
             );
           }
         },
@@ -519,11 +557,10 @@ export default function GamePlayPage() {
     };
   }, [
     gameSession?.id,
+    gameSession?.game_code,
     playerName,
-    score,
     questions.length,
     router,
-    gameSession?.game_code,
   ]);
 
   useEffect(() => {
@@ -540,9 +577,9 @@ export default function GamePlayPage() {
     <RenderState
       state={
         loading
-          ? { type: "loading" }
+          ? { type: "loading", error }
           : !questions || questions.length === 0
-            ? { type: "waiting-for-start" }
+            ? { type: "waiting-for-start", error }
             : !questions[currentQuestion]
               ? { type: "loading-question" }
               : {
@@ -594,10 +631,12 @@ interface State {
 
 interface LoadingState extends State {
   type: "loading";
+  error?: string | null;
 }
 
 interface WaitingForStartState extends State {
   type: "waiting-for-start";
+  error?: string | null;
 }
 
 interface LoadingQuestionState extends State {
@@ -630,16 +669,29 @@ const RenderState = ({ state }: { state: StateUnion }) => {
     case "loading":
       return (
         <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
-          <Container>
-            <Message text="Loading game..." />
-          </Container>
+          {state.error && (
+            <Container>
+              <div className="p-4 bg-red-100 text-red-700 rounded-lg">
+                {state.error}
+              </div>
+            </Container>
+          )}
+          {!state.error && (
+            <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+          )}
         </div>
       );
     case "waiting-for-start":
       return (
         <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
           <Container>
-            <Message text="Waiting for game to start..." />
+            {state.error ? (
+              <div className="p-4 bg-red-100 text-red-700 rounded-lg">
+                {state.error}
+              </div>
+            ) : (
+              <Message text="Waiting for game to start..." />
+            )}
           </Container>
         </div>
       );

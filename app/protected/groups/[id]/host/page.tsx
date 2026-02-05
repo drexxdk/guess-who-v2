@@ -54,6 +54,7 @@ export default function GameHostPage({
   const { id: groupId } = use(params);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [groupData, setGroupData] = useState<GroupData | null>(null);
   const [people, setPeople] = useState<Person[]>([]);
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
@@ -131,27 +132,32 @@ export default function GameHostPage({
     if (!groupData) return;
 
     if (people.length < optionsCount) {
-      alert(
+      setError(
         `You need at least ${optionsCount} people to start a game with ${optionsCount} options!`,
       );
       return;
     }
 
     setLoading(true);
+    setError(null);
     const supabase = createClient();
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) return;
+    if (!user) {
+      setError("User not authenticated");
+      setLoading(false);
+      return;
+    }
 
     // Allow multiple games to run simultaneously - don't mark existing sessions as completed
 
     const code = generateGameCode();
 
     // Create game session with game-specific settings
-    const { data: session, error } = await supabase
+    const { data: session, error: createError } = await supabase
       .from("game_sessions")
       .insert({
         user_id: user.id,
@@ -166,9 +172,9 @@ export default function GameHostPage({
       .select()
       .single();
 
-    if (error) {
-      console.error(error);
-      alert("Failed to create game session");
+    if (createError) {
+      console.error(createError);
+      setError("Failed to create game session");
       setLoading(false);
       return;
     }
@@ -344,6 +350,7 @@ export default function GameHostPage({
               <Button
                 variant="outline"
                 onClick={() => router.back()}
+                disabled={loading}
                 className="flex-1"
               >
                 Cancel
@@ -357,7 +364,13 @@ export default function GameHostPage({
               </Button>
             </div>
 
-            {people.length < optionsCount && (
+            {error && (
+              <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            {people.length < optionsCount && !error && (
               <p className="text-sm text-destructive text-center">
                 You need at least {optionsCount} people to start a game
               </p>
@@ -365,6 +378,11 @@ export default function GameHostPage({
           </>
         )}
       </CardContent>
+      {loading && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
     </Card>
   );
 }

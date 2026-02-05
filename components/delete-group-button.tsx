@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 export function DeleteGroupButton({ groupId }: { groupId: string }) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDeleteGroup = async () => {
     if (
@@ -63,20 +64,28 @@ export function DeleteGroupButton({ groupId }: { groupId: string }) {
       router.refresh();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      alert("Error deleting group: " + errorMessage);
+      setError("Error deleting group: " + errorMessage);
     } finally {
       setDeleting(false);
     }
   };
 
   return (
-    <Button
-      variant="destructive"
-      onClick={handleDeleteGroup}
-      disabled={deleting}
-      className="w-full"
-    >
-      {deleting ? "Deleting Group..." : "Delete Group"}
-    </Button>
+    <>
+      <Button
+        variant="destructive"
+        onClick={handleDeleteGroup}
+        disabled={deleting}
+        className="w-full"
+      >
+        {deleting ? "Deleting Group..." : "Delete Group"}
+      </Button>
+
+      {error && (
+        <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm mt-2">
+          {error}
+        </div>
+      )}
+    </>
   );
 }

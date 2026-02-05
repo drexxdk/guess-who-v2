@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,6 +18,7 @@ export default function JoinGamePage() {
   const [gameCode, setGameCode] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,18 +26,40 @@ export default function JoinGamePage() {
     if (loading) return;
 
     setLoading(true);
+    setError(null);
 
-    // Generate a unique session ID for this join so each join creates a new component instance
-    const joinSessionId = crypto.randomUUID();
+    try {
+      const supabase = createClient();
 
-    // For now, redirect to a game page
-    // In production, you'd verify the game code exists
-    router.push(
-      `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${joinSessionId}`,
-    );
+      // Verify the game code exists and get the session
+      const { data: sessions, error: queryError } = await supabase
+        .from("game_sessions")
+        .select("id, status")
+        .eq("game_code", gameCode)
+        .eq("status", "active")
+        .limit(1);
 
-    // Reset loading after a short delay to handle fast back navigation
-    setTimeout(() => setLoading(false), 1000);
+      if (queryError) {
+        throw new Error("Failed to verify game code");
+      }
+
+      if (!sessions || sessions.length === 0) {
+        setError("Invalid game code or game is not active");
+        setLoading(false);
+        return;
+      }
+
+      // Game code is valid, redirect to play page
+      const joinSessionId = crypto.randomUUID();
+      router.push(
+        `/game/play?code=${gameCode}&name=${encodeURIComponent(playerName)}&joinSessionId=${joinSessionId}`,
+      );
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
+      setError(errorMessage);
+      setLoading(false);
+    }
   };
 
   return (
@@ -57,6 +81,7 @@ export default function JoinGamePage() {
                 maxLength={6}
                 className="text-center text-2xl font-bold tracking-widest"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -67,8 +92,15 @@ export default function JoinGamePage() {
                 onChange={(e) => setPlayerName(e.target.value)}
                 maxLength={20}
                 required
+                disabled={loading}
               />
             </div>
+
+            {error && (
+              <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
 
             <Button
               type="submit"
@@ -79,6 +111,11 @@ export default function JoinGamePage() {
             </Button>
           </form>
         </CardContent>
+        {loading && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
       </Card>
     </div>
   );

@@ -47,6 +47,7 @@ export default function GameControlPage({
   const sessionId = params.sessionId;
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameCode, setGameCode] = useState("");
@@ -62,8 +63,8 @@ export default function GameControlPage({
       .single();
 
     if (!session) {
-      alert("Game session not found!");
-      router.push("/protected");
+      setError("Game session not found!");
+      setLoading(false);
       return;
     }
 
@@ -298,8 +299,35 @@ export default function GameControlPage({
     router.push("/protected");
   };
 
-  if (loading || !gameSession) {
-    return <p>Loading...</p>;
+  if (loading) {
+    return (
+      <div className="grow flex flex-col gap-2 items-center justify-center p-4">
+        {error && (
+          <Card className="w-full max-w-md">
+            <CardContent className="pt-6">
+              <div className="p-4 bg-red-100 text-red-700 rounded-lg text-center">
+                {error}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        {!error && (
+          <div className="w-16 h-16 border-4 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+        )}
+      </div>
+    );
+  }
+
+  if (!gameSession) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardContent className="pt-6">
+          <div className="p-4 bg-red-100 text-red-700 rounded-lg text-center">
+            {error || "Game session not found"}
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

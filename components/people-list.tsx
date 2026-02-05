@@ -17,6 +17,7 @@ type Person = {
 
 export function PeopleList({ people }: { people: Person[] }) {
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async (personId: string, imageUrl: string | null) => {
     if (!confirm("Are you sure you want to delete this person?")) return;
@@ -70,7 +71,7 @@ export function PeopleList({ people }: { people: Person[] }) {
       // Let real-time subscription handle the removal
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      alert(errorMessage);
+      setError(errorMessage);
     } finally {
       setDeleting(null);
     }
@@ -85,45 +86,53 @@ export function PeopleList({ people }: { people: Person[] }) {
   }
 
   return (
-    <div className="space-y-3">
-      {people.map((person) => (
-        <Card key={person.id} className="p-4">
-          <div className="flex items-center gap-4">
-            {person.image_url ? (
-              <Image
-                src={person.image_url}
-                alt={`${person.first_name} ${person.last_name}`}
-                width={48}
-                height={48}
-                className="object-cover"
-              />
-            ) : (
-              <div className="w-12 h-12 bg-muted flex items-center justify-center">
-                <span className="text-lg font-semibold">
-                  {person.first_name[0]}
-                  {person.last_name[0]}
-                </span>
+    <>
+      <div className="space-y-3">
+        {people.map((person) => (
+          <Card key={person.id} className="p-4">
+            <div className="flex items-center gap-4">
+              {person.image_url ? (
+                <Image
+                  src={person.image_url}
+                  alt={`${person.first_name} ${person.last_name}`}
+                  width={48}
+                  height={48}
+                  className="object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-muted flex items-center justify-center">
+                  <span className="text-lg font-semibold">
+                    {person.first_name[0]}
+                    {person.last_name[0]}
+                  </span>
+                </div>
+              )}
+              <div className="flex-1">
+                <p className="font-medium">
+                  {person.first_name} {person.last_name}
+                </p>
+                <p className="text-sm text-muted-foreground capitalize">
+                  {person.gender}
+                </p>
               </div>
-            )}
-            <div className="flex-1">
-              <p className="font-medium">
-                {person.first_name} {person.last_name}
-              </p>
-              <p className="text-sm text-muted-foreground capitalize">
-                {person.gender}
-              </p>
+              <Button
+                variant="destructive"
+                onClick={() => handleDelete(person.id, person.image_url)}
+                disabled={deleting === person.id}
+                size="icon"
+              >
+                <FaTrash className="w-4 h-4" />
+              </Button>
             </div>
-            <Button
-              variant="destructive"
-              onClick={() => handleDelete(person.id, person.image_url)}
-              disabled={deleting === person.id}
-              size="icon"
-            >
-              <FaTrash className="w-4 h-4" />
-            </Button>
-          </div>
-        </Card>
-      ))}
-    </div>
+          </Card>
+        ))}
+      </div>
+
+      {error && (
+        <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm mt-3">
+          {error}
+        </div>
+      )}
+    </>
   );
 }
