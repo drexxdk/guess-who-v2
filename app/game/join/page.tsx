@@ -26,22 +26,30 @@ export default function JoinGamePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setLoading } = useLoading();
 
-  // Reset loading state when returning to this page via back button or history navigation
+  // Reset loading state and form when returning to this page via back button or history navigation
   useEffect(() => {
     // Reset on mount in case we're returning from a navigation
     setLoading(false);
     setIsSubmitting(false);
+    setError(null);
+    // Reset form fields for a fresh start
+    setGameCode("");
+    setPlayerName("");
     
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
         setLoading(false);
         setIsSubmitting(false);
+        setError(null);
+        setGameCode("");
+        setPlayerName("");
       }
     };
 
     const handlePopState = () => {
       setLoading(false);
       setIsSubmitting(false);
+      setError(null);
     };
 
     window.addEventListener("pageshow", handlePageShow);

@@ -63,7 +63,54 @@ export default function GameResultsPage() {
     searchParams?.get("code") || sessionStorage.getItem("lastGameCode") || "";
   const playerName =
     searchParams?.get("name") || sessionStorage.getItem("lastPlayerName") || "";
+  const joinRecordId = searchParams?.get("joinRecordId") || "";
   const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
+
+  // Track presence on results page so host still sees player as active
+  useEffect(() => {
+    if (!sessionId || !joinRecordId || !playerName) return;
+
+    const supabase = createClient();
+    const channelName = `presence:game:${sessionId}`;
+
+    logger.log(
+      "Setting up presence tracking on results page for player:",
+      playerName,
+      "joinRecordId:",
+      joinRecordId,
+    );
+
+    const channel = supabase.channel(channelName, {
+      config: {
+        presence: {
+          key: joinRecordId,
+        },
+      },
+    });
+
+    channel
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState();
+        logger.log("Results page presence sync:", state);
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await channel.track({
+            joinRecordId,
+            playerName,
+            status: "finished",
+            online_at: new Date().toISOString(),
+          });
+          logger.log("Results page presence tracked successfully");
+        }
+      });
+
+    return () => {
+      logger.log("Cleaning up results page presence for player:", playerName);
+      channel.untrack();
+      supabase.removeChannel(channel);
+    };
+  }, [sessionId, joinRecordId, playerName]);
 
   // Check initial game session status
   useEffect(() => {

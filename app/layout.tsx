@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { Suspense } from "react";
 import { Toaster } from "react-hot-toast";
+import { SWRProvider } from "@/components/providers/swr-provider";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -50,7 +51,9 @@ export default function RootLayout({
             },
           }}
         />
-        <Suspense>{children}</Suspense>
+        <SWRProvider>
+          <Suspense>{children}</Suspense>
+        </SWRProvider>
       </body>
     </html>
   );

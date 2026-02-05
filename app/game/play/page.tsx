@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
@@ -32,6 +32,21 @@ export default function GamePlayPage() {
   const [loading, setLoadingState] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const { setLoading: setGlobalLoading } = useLoading();
+  
+  // Ref to prevent double execution of loadGame (React StrictMode)
+  const isLoadingGameRef = useRef(false);
+  const hasLoadedRef = useRef(false);
+  const lastJoinSessionIdRef = useRef<string | null>(null);
+  
+  // Reset refs when joinSessionId changes (new game session)
+  useEffect(() => {
+    if (joinSessionId && joinSessionId !== lastJoinSessionIdRef.current) {
+      // New session - reset the loading guards
+      hasLoadedRef.current = false;
+      isLoadingGameRef.current = false;
+      lastJoinSessionIdRef.current = joinSessionId;
+    }
+  }, [joinSessionId]);
 
   // Sync local loading state with global loading context
   const setLoading = useCallback(
@@ -141,6 +156,20 @@ export default function GamePlayPage() {
       return;
     }
 
+    // Prevent double execution (React StrictMode or rapid re-renders)
+    if (isLoadingGameRef.current) {
+      logger.log("[loadGame] Already loading, skipping duplicate call");
+      return;
+    }
+    
+    // For the same joinSessionId, only load once
+    if (hasLoadedRef.current && !retry) {
+      logger.log("[loadGame] Already loaded for this session, skipping");
+      return;
+    }
+
+    isLoadingGameRef.current = true;
+
     try {
       logger.log("[loadGame] Starting loadGame");
       // Reset all game state at the start
@@ -185,36 +214,71 @@ export default function GamePlayPage() {
       let currentJoinRecordId: string | null = null;
 
       if (joinSessionId) {
-        // Check if this specific join instance already has a record
-        const { data: existingJoins } = await supabase
-          .from("game_answers")
-          .select("id, is_active")
-          .eq("session_id", session.id)
-          .eq("join_session_id", joinSessionId)
-          .is("correct_option_id", null)
-          .limit(1);
+        // If this is a retry, look for existing join record by player name first
+        if (retry === "true") {
+          const { data: existingByName } = await supabase
+            .from("game_answers")
+            .select("id, is_active")
+            .eq("session_id", session.id)
+            .eq("player_name", playerName)
+            .is("correct_option_id", null)
+            .order("created_at", { ascending: false })
+            .limit(1);
 
-        const [existingJoin] = existingJoins ?? [];
-        if (existingJoin) {
-          logger.log(
-            "Player rejoining - using existing join record:",
-            existingJoin.id,
-          );
-          currentJoinRecordId = existingJoin.id;
+          const [existingRecord] = existingByName ?? [];
+          if (existingRecord) {
+            logger.log(
+              "Player retrying - reusing existing join record:",
+              existingRecord.id,
+            );
+            currentJoinRecordId = existingRecord.id;
 
-          // Re-mark as active if needed
-          if (!existingJoin.is_active) {
+            // Update the join record to be active
             await supabase
               .from("game_answers")
-              .update({ is_active: true })
-              .eq("id", existingJoin.id);
+              .update({ 
+                is_active: true, 
+                updated_at: new Date().toISOString()
+              })
+              .eq("id", existingRecord.id);
           }
-        } else {
+        }
+
+        // If not a retry or no existing record found, check by join_id (joinSessionId stored as join_id)
+        if (!currentJoinRecordId) {
+          const { data: existingJoins } = await supabase
+            .from("game_answers")
+            .select("id, is_active")
+            .eq("session_id", session.id)
+            .eq("join_id", joinSessionId)
+            .is("correct_option_id", null)
+            .limit(1);
+
+          const [existingJoin] = existingJoins ?? [];
+          if (existingJoin) {
+            logger.log(
+              "Player rejoining - using existing join record:",
+              existingJoin.id,
+            );
+            currentJoinRecordId = existingJoin.id;
+
+            // Re-mark as active if needed
+            if (!existingJoin.is_active) {
+              await supabase
+                .from("game_answers")
+                .update({ is_active: true })
+                .eq("id", existingJoin.id);
+            }
+          }
+        }
+
+        // Only create a new record if we didn't find an existing one
+        if (!currentJoinRecordId) {
           // Create new join record - database has unique constraint to prevent duplicates
           logger.log("Creating new join tracking record:", {
             session_id: session.id,
             player_name: playerName,
-            join_session_id: joinSessionId,
+            join_id: joinSessionId,
           });
           const { data: joinData, error: insertError } = await supabase
             .from("game_answers")
@@ -224,7 +288,7 @@ export default function GamePlayPage() {
               is_correct: false,
               response_time_ms: 0,
               is_active: true,
-              join_session_id: joinSessionId,
+              join_id: joinSessionId,
             })
             .select("id");
 
@@ -238,7 +302,7 @@ export default function GamePlayPage() {
                 .from("game_answers")
                 .select("id")
                 .eq("session_id", session.id)
-                .eq("join_session_id", joinSessionId)
+                .eq("join_id", joinSessionId)
                 .is("correct_option_id", null)
                 .limit(1);
               const [raceJoin] = raceJoins ?? [];
@@ -310,12 +374,12 @@ export default function GamePlayPage() {
       }> = [];
 
       if (!retry && joinSessionId) {
-        // Query by join_session_id to support multiple players with same name
+        // Query by join_id to support multiple players with same name
         const { data: allAnswers } = await supabase
           .from("game_answers")
           .select("id, correct_option_id, selected_option_id, response_time_ms")
           .eq("session_id", session.id)
-          .eq("join_session_id", joinSessionId)
+          .eq("join_id", joinSessionId)
           .order("id", { ascending: true });
 
         if (allAnswers && allAnswers.length > 0) {
@@ -371,13 +435,16 @@ export default function GamePlayPage() {
       // Ensure all state updates are batched before marking game as started
       setTimeLeft(initialTimeLeft);
       setLoading(false);
+      hasLoadedRef.current = true;
       // Don't set gameStarted here - let the useEffect below handle it when questions are ready
     } catch (error) {
       logError("Error loading game:", error);
       setError("Error loading game: " + getErrorMessage(error));
       setLoading(false);
+    } finally {
+      isLoadingGameRef.current = false;
     }
-  }, [gameCode, playerName, generateQuestions, retry, joinSessionId]);
+  }, [gameCode, playerName, generateQuestions, retry, joinSessionId, setLoading]);
 
   const finishGame = useCallback(async () => {
     if (!gameSession || !playerName || !joinSessionId) return;
@@ -386,12 +453,12 @@ export default function GamePlayPage() {
 
     // Query the database to get the actual count of correct answers
     // This is more reliable than using the score state variable
-    // Use join_session_id to support multiple players with same name
+    // Use join_id to support multiple players with same name
     const { data: answers, error: queryError } = await supabase
       .from("game_answers")
       .select("is_correct")
       .eq("session_id", gameSession.id)
-      .eq("join_session_id", joinSessionId)
+      .eq("join_id", joinSessionId)
       .not("correct_option_id", "is", null); // Exclude join tracking records
 
     if (queryError) {
@@ -411,11 +478,14 @@ export default function GamePlayPage() {
       })
       .eq("id", gameSession.id);
 
+    // Get join record ID from state or sessionStorage
+    const recordId = joinRecordId || sessionStorage.getItem(`joinRecordId_${gameSession.game_code}_${joinSessionId || playerName}`);
+
     // Redirect to results page with the actual score from database
     router.replace(
-      `/game/results?session=${gameSession.id}&score=${actualScore}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || "")}&gameCode=${gameSession.game_code}`,
+      `/game/results?session=${gameSession.id}&score=${actualScore}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || "")}&gameCode=${gameSession.game_code}&joinRecordId=${recordId || ""}`,
     );
-  }, [gameSession, questions.length, router, playerName, joinSessionId]);
+  }, [gameSession, questions.length, router, playerName, joinSessionId, joinRecordId]);
 
   const handleAnswer = useCallback(
     async (answerId: string | null) => {
@@ -606,12 +676,12 @@ export default function GamePlayPage() {
           const updatedSession = payload.new as { status?: string } | null;
           if (updatedSession?.status === "completed") {
             // Game ended by host - get actual score from database and redirect to results
-            // Use join_session_id to support multiple players with same name
+            // Use join_id to support multiple players with same name
             const { data: answers, error: queryError } = await supabase
               .from("game_answers")
               .select("is_correct")
               .eq("session_id", sessionId)
-              .eq("join_session_id", joinSessionId)
+              .eq("join_id", joinSessionId)
               .not("correct_option_id", "is", null); // Exclude join tracking records
 
             if (queryError) {
@@ -622,8 +692,11 @@ export default function GamePlayPage() {
             const actualScore =
               answers?.filter((answer) => answer.is_correct).length || 0;
 
+            // Get join record ID
+            const recordId = joinRecordId || sessionStorage.getItem(`joinRecordId_${gameCode}_${joinSessionId || playerName}`);
+
             router.replace(
-              `/game/results?session=${sessionId}&score=${actualScore}&total=${questions.length}&code=${gameCode}&name=${encodeURIComponent(playerName || "")}`,
+              `/game/results?session=${sessionId}&score=${actualScore}&total=${questions.length}&code=${gameCode}&name=${encodeURIComponent(playerName || "")}&joinRecordId=${recordId || ""}`,
             );
           }
         },
