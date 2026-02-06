@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { GroupDetailClient } from "@/components/group-detail-client";
+import type { Group } from "@/lib/schemas";
 
 export default async function GroupDetailPage({
   params,
@@ -39,7 +40,7 @@ export default async function GroupDetailPage({
 
   return (
     <GroupDetailClient
-      groupData={groupData}
+      groupData={groupData as unknown as Group}
       initialPeople={people || []}
       groupId={id}
     />

@@ -47,6 +47,7 @@ export const groupSchema = z.object({
   creator_id: z.string().uuid(),
   time_limit_seconds: z.number().nullable(),
   options_count: z.number().nullable(),
+  enable_timer: z.boolean().nullable(),
   created_at: z.string().nullable(),
   updated_at: z.string().nullable(),
 });
@@ -55,6 +56,7 @@ export const groupInsertSchema = groupSchema.omit({ id: true }).extend({
   id: z.string().uuid().optional(),
   time_limit_seconds: z.number().optional().nullable(),
   options_count: z.number().optional().nullable(),
+  enable_timer: z.boolean().optional().nullable(),
   created_at: z.string().optional().nullable(),
   updated_at: z.string().optional().nullable(),
 });
@@ -121,6 +123,7 @@ export const gameSessionSchema = z.object({
   total_questions: z.number().nullable(),
   time_limit_seconds: z.number().nullable(),
   options_count: z.number().nullable(),
+  enable_timer: z.boolean().nullable(),
   started_at: z.string().nullable(),
   completed_at: z.string().nullable(),
 });
@@ -135,6 +138,7 @@ export const gameSessionInsertSchema = gameSessionSchema
     total_questions: z.number().optional().nullable(),
     time_limit_seconds: z.number().optional().nullable(),
     options_count: z.number().optional().nullable(),
+    enable_timer: z.boolean().optional().nullable(),
     user_id: z.string().uuid().optional().nullable(),
     started_at: z.string().optional().nullable(),
     completed_at: z.string().optional().nullable(),

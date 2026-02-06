@@ -93,9 +93,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </svg>
         )}
         {loading && (
-          <span className="sr-only">
-            {loadingText || "Loading..."}
-          </span>
+          <span className="sr-only">{loadingText || "Loading..."}</span>
         )}
         {loading && loadingText ? loadingText : children}
       </button>

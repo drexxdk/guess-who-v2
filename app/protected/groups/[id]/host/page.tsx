@@ -35,6 +35,7 @@ export default function GameHostPage({
   const [gameCode, setGameCode] = useState<string>("");
   const [selectedGameType, setSelectedGameType] =
     useState<GameType>("guess_name");
+  const [enableTimer, setEnableTimer] = useState<boolean>(true);
   const [timeLimitSeconds, setTimeLimitSeconds] = useState<number>(30);
   const [optionsCount, setOptionsCount] = useState<number>(4);
   const [totalQuestions, setTotalQuestions] = useState<number>(1);
@@ -60,11 +61,14 @@ export default function GameHostPage({
 
       if (peopleError) throw peopleError;
 
-      setGroupData(groupInfo);
+      // Cast to Group type to include enable_timer field (for backward compatibility with DB)
+      const group = groupInfo as unknown as Group;
+      setGroupData(group);
       setPeople(peopleData || []);
       // Set default values from group settings
-      setTimeLimitSeconds(groupInfo.time_limit_seconds || 30);
-      setOptionsCount(groupInfo.options_count || 4);
+      setEnableTimer(group.enable_timer ?? true);
+      setTimeLimitSeconds(group.time_limit_seconds || 30);
+      setOptionsCount(group.options_count || 4);
       setTotalQuestions(Math.min((peopleData || []).length || 1, 10));
     } catch (error) {
       logError("Error loading group data:", error);
@@ -129,6 +133,7 @@ export default function GameHostPage({
         status: "active",
         time_limit_seconds: timeLimitSeconds,
         options_count: optionsCount,
+        enable_timer: enableTimer,
       })
       .select()
       .single();
@@ -165,19 +170,19 @@ export default function GameHostPage({
     <div className="w-full max-w-2xl mx-auto space-y-6">
       <Card className="border-blue-200 bg-blue-50">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-gray-900">
             <span className="text-2xl">💡</span>
             Icebreaker Tips for Hosts
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-gray-700">
             Make everyone feel comfortable and set the right tone
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ul className="space-y-2 text-sm">
+          <ul className="space-y-2 text-sm text-gray-900">
             {icebreakerTips.map((tip, index) => (
               <li key={index} className="flex gap-2">
-                <span className="text-blue-600 font-bold">{index + 1}.</span>
+                <span className="text-gray-900 font-bold">{index + 1}.</span>
                 <span>{tip}</span>
               </li>
             ))}
@@ -283,27 +288,44 @@ export default function GameHostPage({
               <div>
                 <h3 className="text-lg font-semibold mb-4">Game Settings</h3>
                 <div className="space-y-6">
-                  <div>
-                    <div className="flex justify-between items-center mb-3">
-                      <label className="text-sm font-medium">
-                        Time per question (seconds)
-                      </label>
-                      <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
-                        {timeLimitSeconds}s
-                      </span>
-                    </div>
+                  <div className="flex items-center space-x-2">
                     <input
-                      type="range"
-                      min="5"
-                      max="120"
-                      step="1"
-                      value={timeLimitSeconds}
-                      onChange={(e) =>
-                        setTimeLimitSeconds(Number(e.target.value))
-                      }
-                      className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                      id="enable-timer-host"
+                      type="checkbox"
+                      checked={enableTimer}
+                      onChange={(e) => setEnableTimer(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer"
                     />
+                    <label
+                      htmlFor="enable-timer-host"
+                      className="text-sm font-medium leading-none cursor-pointer"
+                    >
+                      Enable countdown timer
+                    </label>
                   </div>
+                  {enableTimer && (
+                    <div>
+                      <div className="flex justify-between items-center mb-3">
+                        <label className="text-sm font-medium">
+                          Time per question (seconds)
+                        </label>
+                        <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
+                          {timeLimitSeconds}s
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="5"
+                        max="120"
+                        step="1"
+                        value={timeLimitSeconds}
+                        onChange={(e) =>
+                          setTimeLimitSeconds(Number(e.target.value))
+                        }
+                        className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                      />
+                    </div>
+                  )}
                   <div>
                     <div className="flex justify-between items-center mb-3">
                       <label className="text-sm font-medium">

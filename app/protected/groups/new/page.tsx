@@ -25,6 +25,7 @@ export default function NewGroupPage() {
     name: "",
     time_limit_seconds: 15,
     options_count: 3,
+    enable_timer: true,
   });
 
   useEffect(() => {
@@ -35,6 +36,7 @@ export default function NewGroupPage() {
       name: "",
       time_limit_seconds: 15,
       options_count: 3,
+      enable_timer: true,
     });
     clearError();
   }, [clearError, setLoading]);
@@ -59,6 +61,7 @@ export default function NewGroupPage() {
           creator_id: user.id,
           time_limit_seconds: formData.time_limit_seconds,
           options_count: formData.options_count,
+          enable_timer: formData.enable_timer,
         })
         .select()
         .single();
@@ -69,6 +72,7 @@ export default function NewGroupPage() {
         setFormData({
           name: "",
           time_limit_seconds: 15,
+          enable_timer: true,
           options_count: 3,
         });
         setLoading(true);
@@ -101,6 +105,24 @@ export default function NewGroupPage() {
               }
               required
             />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              id="enable-timer"
+              type="checkbox"
+              checked={formData.enable_timer}
+              onChange={(e) =>
+                setFormData({ ...formData, enable_timer: e.target.checked })
+              }
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer"
+            />
+            <Label
+              htmlFor="enable-timer"
+              className="text-sm font-medium leading-none cursor-pointer"
+            >
+              Enable countdown timer
+            </Label>
           </div>
 
           <div className="space-y-2">

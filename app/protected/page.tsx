@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProtectedPageClient } from "@/components/protected-page-client";
+import type { GameSessionWithGroup } from "@/lib/schemas";
 
 export default async function ProtectedPage() {
   const supabase = await createClient();
@@ -24,5 +25,10 @@ export default async function ProtectedPage() {
 
   const activeSessions = sessions || [];
 
-  return <ProtectedPageClient activeSessions={activeSessions} />;
+  // Cast to GameSessionWithGroup[] to include enable_timer field (for backward compatibility with DB)
+  return (
+    <ProtectedPageClient
+      activeSessions={activeSessions as unknown as GameSessionWithGroup[]}
+    />
+  );
 }

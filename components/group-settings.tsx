@@ -13,11 +13,14 @@ interface GroupSettingsProps {
   groupId: string;
   initialGroup: Pick<
     Group,
-    "id" | "name" | "time_limit_seconds" | "options_count"
+    "id" | "name" | "time_limit_seconds" | "options_count" | "enable_timer"
   >;
   peopleCount?: number;
   onUpdate?: (
-    updatedGroup: Pick<Group, "name" | "time_limit_seconds" | "options_count">,
+    updatedGroup: Pick<
+      Group,
+      "name" | "time_limit_seconds" | "options_count" | "enable_timer"
+    >,
   ) => void;
   isEditing?: boolean;
   onEditChange?: (isEditing: boolean) => void;
@@ -38,6 +41,9 @@ export function GroupSettings({
   );
   const [optionsCount, setOptionsCount] = useState<number>(
     Number(initialGroup.options_count) || 4,
+  );
+  const [enableTimer, setEnableTimer] = useState<boolean>(
+    initialGroup.enable_timer ?? true,
   );
   const [totalQuestions, setTotalQuestions] = useState<number>(
     Math.min(peopleCount, 10),
@@ -80,6 +86,7 @@ export function GroupSettings({
           name: sanitizedName,
           time_limit_seconds: timeLimitSeconds,
           options_count: optionsCount,
+          enable_timer: enableTimer,
         })
         .eq("id", groupId);
 
@@ -96,6 +103,7 @@ export function GroupSettings({
           name: sanitizedName,
           time_limit_seconds: timeLimitSeconds,
           options_count: optionsCount,
+          enable_timer: enableTimer,
         });
       }
 
@@ -114,6 +122,7 @@ export function GroupSettings({
     setGroupName(initialGroup.name);
     setTimeLimitSeconds(initialGroup.time_limit_seconds ?? 30);
     setOptionsCount(initialGroup.options_count ?? 4);
+    setEnableTimer(initialGroup.enable_timer ?? true);
     setIsEditing(false);
     if (onEditChange) {
       onEditChange(false);
@@ -132,6 +141,22 @@ export function GroupSettings({
             onChange={(e) => setGroupName(e.target.value)}
             className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm mt-1"
           />
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <input
+            id="enable-timer"
+            type="checkbox"
+            checked={enableTimer}
+            onChange={(e) => setEnableTimer(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer"
+          />
+          <Label
+            htmlFor="enable-timer"
+            className="text-sm font-medium leading-none cursor-pointer"
+          >
+            Enable countdown timer
+          </Label>
         </div>
 
         <div>
@@ -212,6 +237,12 @@ export function GroupSettings({
 
   return (
     <div className="space-y-3">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-medium">Countdown timer</span>
+        <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
+          {enableTimer ? "Enabled" : "Disabled"}
+        </span>
+      </div>
       <div className="flex justify-between items-center">
         <span className="text-sm font-medium">
           Default time limit per question

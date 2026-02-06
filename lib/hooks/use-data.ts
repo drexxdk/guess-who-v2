@@ -28,7 +28,8 @@ async function fetchGroups(): Promise<Group[]> {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data || [];
+  // Cast to Group[] to include enable_timer field (for backward compatibility with DB)
+  return (data || []) as unknown as Group[];
 }
 
 async function fetchGroup(id: string): Promise<Group | null> {
@@ -43,7 +44,8 @@ async function fetchGroup(id: string): Promise<Group | null> {
     if (error.code === "PGRST116") return null;
     throw error;
   }
-  return data;
+  // Cast to Group to include enable_timer field (for backward compatibility with DB)
+  return data as unknown as Group;
 }
 
 async function fetchPeopleByGroup(groupId: string): Promise<Person[]> {

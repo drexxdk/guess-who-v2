@@ -203,7 +203,8 @@ export default function GamePlayPage() {
         return;
       }
 
-      setGameSession(session);
+      // Cast to GameSession type to include enable_timer field (for backward compatibility with DB)
+      setGameSession(session as unknown as GameSession);
 
       // Always clear any leftover data to start fresh
       // This ensures clean state when player rejoins/tries again
@@ -744,14 +745,26 @@ export default function GamePlayPage() {
   ]);
 
   useEffect(() => {
-    // Only run timer if we have questions loaded and active
-    if (questions.length > 0 && timeLeft > 0 && !answered) {
+    // Only run timer if we have questions loaded and active AND timer is enabled
+    const timerEnabled = gameSession?.enable_timer !== false;
+    if (questions.length > 0 && timeLeft > 0 && !answered && timerEnabled) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && !answered && questions.length > 0) {
+    } else if (
+      timeLeft === 0 &&
+      !answered &&
+      questions.length > 0 &&
+      timerEnabled
+    ) {
       handleAnswer(null);
     }
-  }, [timeLeft, answered, questions.length, handleAnswer]);
+  }, [
+    timeLeft,
+    answered,
+    questions.length,
+    handleAnswer,
+    gameSession?.enable_timer,
+  ]);
 
   // If we don't have valid params or not initialized yet, return empty while redirecting
   if (!gameCode || !playerName || !initialized) {
@@ -780,6 +793,7 @@ export default function GamePlayPage() {
                   answered,
                   handleAnswer,
                   lastAnswerCorrect,
+                  gameSession: gameSession!,
                 }
       }
     />
@@ -841,6 +855,7 @@ interface ActiveState extends State {
   answered: boolean;
   handleAnswer: (answerId: string | null) => void;
   lastAnswerCorrect: boolean | null;
+  gameSession: GameSession;
 }
 
 // Component for active game state with keyboard shortcuts
@@ -867,8 +882,10 @@ function ActiveGameState({ state }: { state: ActiveState }) {
     >
       {/* Screen reader announcements */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
-        Question {state.currentQuestion + 1} of {state.questions.length}. Time remaining: {state.timeLeft} seconds. 
-        {state.answered && (state.lastAnswerCorrect ? "Correct! " : "Incorrect. ")}
+        Question {state.currentQuestion + 1} of {state.questions.length}. Time
+        remaining: {state.timeLeft} seconds.
+        {state.answered &&
+          (state.lastAnswerCorrect ? "Correct! " : "Incorrect. ")}
         Current score: {state.score} out of {state.questions.length}.
       </div>
       <Container className="flex flex-col gap-6 my-auto">
@@ -893,16 +910,18 @@ function ActiveGameState({ state }: { state: ActiveState }) {
               </div>
             </div>
           </div>
-          <div className="text-white bg-black/40 rounded-full p-2 border border-white/30 inline-flex">
-            <CircularProgress
-              value={state.timeLeft}
-              max={30}
-              size={80}
-              strokeWidth={6}
-            >
-              <span className="text-2xl font-bold">{state.timeLeft}</span>
-            </CircularProgress>
-          </div>
+          {state.gameSession.enable_timer !== false && (
+            <div className="text-white bg-black/40 rounded-full p-2 border border-white/30 inline-flex">
+              <CircularProgress
+                value={state.timeLeft}
+                max={30}
+                size={80}
+                strokeWidth={6}
+              >
+                <span className="text-2xl font-bold">{state.timeLeft}</span>
+              </CircularProgress>
+            </div>
+          )}
         </div>
 
         <AnimatePresence mode="popLayout">

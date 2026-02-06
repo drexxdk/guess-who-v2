@@ -66,7 +66,8 @@ export default function GameControlPage({
         return;
       }
 
-      setGameSession(session as GameSessionWithGroup);
+      // Cast to GameSessionWithGroup type to include enable_timer field (for backward compatibility with DB)
+      setGameSession(session as unknown as GameSessionWithGroup);
       setGameCode(session.game_code || "N/A");
 
       // Get all unique players who have joined (even if they haven't answered yet)
