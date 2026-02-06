@@ -5,6 +5,8 @@ import { FaTrash } from "react-icons/fa6";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { OptimizedAvatar } from "@/components/ui/optimized-image";
 import toast from "react-hot-toast";
 import { deletePersonImage } from "@/lib/game-utils";
@@ -15,14 +17,14 @@ import type { Person } from "@/lib/schemas";
 const PersonCard = memo(function PersonCard({
   person,
   isDeleting,
-  onDelete,
+  onDeleteClick,
 }: {
   person: Person;
   isDeleting: boolean;
-  onDelete: (personId: string, imageUrl: string | null) => void;
+  onDeleteClick: (person: Person) => void;
 }) {
   return (
-    <Card className="p-4">
+    <Card hover className="p-4">
       <div className="flex items-center gap-4">
         {person.image_url ? (
           <OptimizedAvatar
@@ -48,8 +50,9 @@ const PersonCard = memo(function PersonCard({
         </div>
         <Button
           variant="destructive"
-          onClick={() => onDelete(person.id, person.image_url)}
+          onClick={() => onDeleteClick(person)}
           disabled={isDeleting}
+          loading={isDeleting}
           size="icon"
         >
           <FaTrash className="w-4 h-4" />
@@ -61,17 +64,22 @@ const PersonCard = memo(function PersonCard({
 
 export function PeopleList({ people }: { people: Person[] }) {
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [personToDelete, setPersonToDelete] = useState<Person | null>(null);
 
-  const handleDelete = async (personId: string, imageUrl: string | null) => {
-    if (!confirm("Are you sure you want to delete this person?")) return;
+  const handleDeleteClick = (person: Person) => {
+    setPersonToDelete(person);
+  };
 
-    setDeleting(personId);
+  const handleDelete = async () => {
+    if (!personToDelete) return;
+
+    setDeleting(personToDelete.id);
     try {
       const supabase = createClient();
 
       // Delete image from storage if it exists
-      if (imageUrl) {
-        const result = await deletePersonImage(supabase, imageUrl);
+      if (personToDelete.image_url) {
+        const result = await deletePersonImage(supabase, personToDelete.image_url);
         if (!result.success) {
           // Continue with person deletion even if image deletion fails
         }
@@ -81,11 +89,12 @@ export function PeopleList({ people }: { people: Person[] }) {
       const { error } = await supabase
         .from("people")
         .delete()
-        .eq("id", personId);
+        .eq("id", personToDelete.id);
 
       if (error) throw error;
 
-      toast.success("Person deleted");
+      toast.success("Person deleted successfully");
+      setPersonToDelete(null);
       // Let real-time subscription handle the removal
     } catch (err: unknown) {
       toast.error(getErrorMessage(err));
@@ -96,24 +105,50 @@ export function PeopleList({ people }: { people: Person[] }) {
 
   if (people.length === 0) {
     return (
-      <p className="text-center text-muted-foreground py-8">
-        No people added yet. Add your first person to get started!
-      </p>
+      <EmptyState
+        icon={
+          <svg
+            className="w-8 h-8"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
+        }
+        title="No people yet"
+        description="Add your first person to get started with this group"
+      />
     );
   }
 
   return (
     <>
-      <div className="space-y-3">
+      <div className="grid gap-3 md:grid-cols-2">
         {people.map((person) => (
           <PersonCard
             key={person.id}
             person={person}
             isDeleting={deleting === person.id}
-            onDelete={handleDelete}
+            onDeleteClick={handleDeleteClick}
           />
         ))}
       </div>
+      <ConfirmDialog
+        open={!!personToDelete}
+        onOpenChange={(open) => !open && setPersonToDelete(null)}
+        title="Delete Person"
+        description={`Are you sure you want to delete ${personToDelete?.first_name} ${personToDelete?.last_name}? This action cannot be undone.`}
+        onConfirm={handleDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+      />
     </>
   );
 }

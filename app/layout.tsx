@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import { Suspense } from "react";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "@/components/ui/toast";
 import { SWRProvider } from "@/components/providers/swr-provider";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
@@ -58,28 +58,7 @@ export default function RootLayout({
       <body className={`${geistSans.className} antialiased`}>
         <ServiceWorkerRegistration />
         <AuthStateListener />
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            style: {
-              background: "#1f1f1f",
-              color: "#fff",
-              border: "1px solid #333",
-            },
-            success: {
-              iconTheme: {
-                primary: "#10b981",
-                secondary: "#fff",
-              },
-            },
-            error: {
-              iconTheme: {
-                primary: "#ef4444",
-                secondary: "#fff",
-              },
-            },
-          }}
-        />
+        <Toaster />
         <SWRProvider>
           <Suspense>{children}</Suspense>
         </SWRProvider>

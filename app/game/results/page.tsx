@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Confetti } from "@/components/ui/confetti";
 import { createClient } from "@/lib/supabase/client";
 import { logger, logError } from "@/lib/logger";
 import {
@@ -268,9 +269,10 @@ export default function GameResultsPage() {
 
   return (
     <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
+      {percentage >= 75 && <Confetti />}
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="text-6xl mb-4">{grade.emoji}</div>
+          <div className="text-6xl mb-4 animate-bounce">{grade.emoji}</div>
           <CardTitle className={`text-4xl font-bold ${grade.color}`}>
             {grade.text}
           </CardTitle>
@@ -318,6 +320,7 @@ export default function GameResultsPage() {
                     router.push("/game/join");
                   }}
                   disabled={isNavigating}
+                  loading={isNavigating}
                   className="w-full"
                 >
                   Join New Game
@@ -337,6 +340,8 @@ export default function GameResultsPage() {
                 <Button
                   onClick={handlePlayAgain}
                   disabled={isNavigating}
+                  loading={isNavigating}
+                  loadingText="Starting..."
                   className="w-full"
                 >
                   Play Again

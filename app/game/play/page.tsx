@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ErrorMessage } from "@/components/ui/error-message";
+import { CircularProgress } from "@/components/ui/progress";
 import { logger, logError, getErrorMessage } from "@/lib/logger";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -728,6 +729,7 @@ export default function GamePlayPage() {
     joinSessionId,
     questions.length,
     router,
+    joinRecordId,
   ]);
 
   useEffect(() => {
@@ -888,22 +890,34 @@ const RenderState = ({ state }: { state: StateUnion }) => {
           <Container className="flex flex-col gap-6 my-auto">
             {/* Header */}
             <div className="flex justify-between items-center">
-              <div className="text-white">
+              <div className="text-white space-y-1">
                 <p className="text-sm opacity-80">{state.playerName}</p>
                 <p className="text-2xl font-bold">
                   Score: {state.score}/{state.questions.length}
                 </p>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    Question {state.currentQuestion + 1} of {state.questions.length}
+                  </Badge>
+                  <div className="h-1.5 w-32 bg-white/20 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-primary transition-all duration-300"
+                      style={{
+                        width: `${((state.currentQuestion + 1) / state.questions.length) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="text-white text-right">
-                <p className="text-sm opacity-80">
-                  Question {state.currentQuestion + 1}/{state.questions.length}
-                </p>
-                <Badge
-                  variant={state.timeLeft < 10 ? "destructive" : "default"}
-                  className="text-2xl px-4 py-2"
+              <div className="text-white">
+                <CircularProgress
+                  value={state.timeLeft}
+                  max={30}
+                  size={80}
+                  strokeWidth={6}
                 >
-                  {state.timeLeft}s
-                </Badge>
+                  <span className="text-2xl font-bold">{state.timeLeft}</span>
+                </CircularProgress>
               </div>
             </div>
 
@@ -959,17 +973,21 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                       const isCorrect = option.id === state.question.person.id;
 
                       let buttonClass =
-                        "text-lg font-semibold disabled:opacity-100";
+                        "text-lg font-semibold disabled:opacity-100 relative overflow-hidden";
                       let buttonVariant: "default" | "outline" = "outline";
 
                       if (state.answered) {
                         if (isCorrect && isSelected) {
                           buttonClass +=
-                            " bg-green-500 hover:bg-green-500 text-white";
+                            " bg-green-500 hover:bg-green-500 text-white animate-pulse";
                           buttonVariant = "default";
                         } else if (isSelected && !isCorrect) {
                           buttonClass +=
                             " bg-red-500 hover:bg-red-500 text-white";
+                          buttonVariant = "default";
+                        } else if (isCorrect) {
+                          buttonClass +=
+                            " bg-green-500 hover:bg-green-500 text-white";
                           buttonVariant = "default";
                         }
                       }
@@ -982,6 +1000,32 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                           className={buttonClass}
                           variant={buttonVariant}
                         >
+                          {state.answered && isCorrect && (
+                            <svg
+                              className="w-5 h-5 mr-2"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
+                          {state.answered && isSelected && !isCorrect && (
+                            <svg
+                              className="w-5 h-5 mr-2"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
                           {state.gameType === "guess_name" ? (
                             <span className="truncate">
                               {option.first_name} {option.last_name}

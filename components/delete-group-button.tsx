@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/dialog";
 import toast from "react-hot-toast";
 import { createClient } from "@/lib/supabase/client";
 import { logError, getErrorMessage } from "@/lib/logger";
@@ -10,15 +11,9 @@ import { useNavigate } from "@/lib/hooks/use-navigate";
 export function DeleteGroupButton({ groupId }: { groupId: string }) {
   const { push, refresh } = useNavigate();
   const [deleting, setDeleting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleDeleteGroup = async () => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this group? This will also delete all people and active games in this group.",
-      )
-    )
-      return;
-
     setDeleting(true);
     try {
       const supabase = createClient();
@@ -72,13 +67,27 @@ export function DeleteGroupButton({ groupId }: { groupId: string }) {
   };
 
   return (
-    <Button
-      variant="destructive"
-      onClick={handleDeleteGroup}
-      disabled={deleting}
-      className="w-full"
-    >
-      {deleting ? "Deleting Group..." : "Delete Group"}
-    </Button>
+    <>
+      <Button
+        variant="destructive"
+        onClick={() => setShowConfirm(true)}
+        disabled={deleting}
+        loading={deleting}
+        loadingText="Deleting..."
+        className="w-full"
+      >
+        Delete Group
+      </Button>
+      <ConfirmDialog
+        open={showConfirm}
+        onOpenChange={setShowConfirm}
+        title="Delete Group"
+        description="Are you sure you want to delete this group? This will also delete all people and active games in this group. This action cannot be undone."
+        onConfirm={handleDeleteGroup}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+      />
+    </>
   );
 }

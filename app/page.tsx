@@ -34,31 +34,31 @@ export default async function Home() {
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse delay-1000" />
         </div>
 
-        <div className="relative container mx-auto px-4 py-20 flex flex-col items-center justify-center min-h-[600px] text-center">
+        <div className="relative container mx-auto px-4 py-12 md:py-20 flex flex-col items-center justify-center min-h-[500px] md:min-h-[600px] text-center">
           {/* Logo */}
-          <div className="mb-8 scale-150">
+          <div className="mb-6 md:mb-8 scale-125 md:scale-150">
             <Logo showText={false} href="/" />
           </div>
 
           {/* Headline */}
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white mb-4 md:mb-6 tracking-tight">
             Guess Who?
           </h1>
-          <p className="text-xl md:text-2xl text-white/90 mb-4 max-w-2xl">
+          <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-3 md:mb-4 max-w-2xl px-4">
             Test your memory and have fun with friends!
           </p>
-          <p className="text-lg text-white/80 mb-12 max-w-xl">
+          <p className="text-base sm:text-lg text-white/80 mb-8 md:mb-12 max-w-xl px-4">
             A multiplayer guessing game where you identify people from photos.
             Create custom groups, host games, and compete for the highest score.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-16">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-12 md:mb-16 w-full max-w-md px-4">
             <Link
               href="/game/join"
               className={cn(
                 buttonVariants({ size: "lg" }),
-                "text-lg px-8 py-6 bg-white text-primary hover:bg-white/90 hover:scale-105",
+                "text-base md:text-lg px-6 md:px-8 py-5 md:py-6 bg-white text-primary hover:bg-white/90 hover:scale-105 w-full sm:w-auto",
               )}
             >
               Join Game
@@ -67,7 +67,7 @@ export default async function Home() {
               href="/auth/login"
               className={cn(
                 buttonVariants({ size: "lg", variant: "outline" }),
-                "text-lg px-8 py-6 border-2 border-white text-white hover:bg-white hover:text-primary",
+                "text-base md:text-lg px-6 md:px-8 py-5 md:py-6 border-2 border-white text-white hover:bg-white hover:text-primary w-full sm:w-auto",
               )}
             >
               Host a Game
@@ -75,7 +75,7 @@ export default async function Home() {
           </div>
 
           {/* Quick Stats */}
-          <div className="flex flex-wrap justify-center gap-6 text-white/90">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-white/90 px-4">
             <div className="flex items-center gap-2">
               <Badge
                 variant="secondary"
@@ -130,18 +130,18 @@ export default async function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 bg-background">
+      <section className="py-12 md:py-20 px-4 bg-background">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gradient-primary">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 md:mb-4 text-gradient-primary">
               How It Works
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
               Simple, fast, and fun. Get started in seconds.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
             {/* Feature 1 */}
             <Card className="text-center hover:scale-105 transition-transform">
               <CardHeader>

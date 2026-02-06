@@ -91,7 +91,10 @@ export default function JoinGamePage() {
         );
 
         if (!session) {
-          throw new Error("Invalid game code or game is not active");
+          setError("Game not found");
+          setIsSubmitting(false);
+          setLoading(false);
+          return;
         }
 
         // Game code is valid, redirect to play page
@@ -150,8 +153,10 @@ export default function JoinGamePage() {
               disabled={isSubmitting || !gameCode || !playerName}
               className="w-full"
               size="lg"
+              loading={isSubmitting}
+              loadingText="Joining..."
             >
-              {isSubmitting ? "Joining..." : "Join Game"}
+              Join Game
             </Button>
           </form>
         </CardContent>

@@ -7,6 +7,11 @@
   - Let the user review changes before committing
   - Only run `git commit` commands when explicitly asked by the user
   - The user will handle their own git workflow
+- **Before committing, always run:**
+  - `npm run build` - Verify the project compiles
+  - `npm test` - Run all tests
+  - `npm run lint` - Check for linting errors
+  - Only proceed with commit if all checks pass
 
 ## Development Server
 
