@@ -66,7 +66,10 @@ export function SignUpForm({
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Sign up</CardTitle>
-          <CardDescription>Create an account to host icebreaker games that help people get to know each other</CardDescription>
+          <CardDescription>
+            Create an account to host icebreaker games that help people get to
+            know each other
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignUp}>

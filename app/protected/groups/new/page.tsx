@@ -83,7 +83,9 @@ export default function NewGroupPage() {
       <CardHeader>
         <CardTitle>Create New Group</CardTitle>
         <CardDescription>
-          Set up a new group of people for your Guess Who game. Perfect for helping new team members, students, or event attendees get to know each other!
+          Set up a new group of people for your Guess Who game. Perfect for
+          helping new team members, students, or event attendees get to know
+          each other!
         </CardDescription>
       </CardHeader>
       <CardContent>

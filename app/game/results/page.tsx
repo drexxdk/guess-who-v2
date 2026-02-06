@@ -263,7 +263,11 @@ export default function GameResultsPage() {
 
   const getGrade = () => {
     if (percentage >= 90)
-      return { emoji: "🌟", text: "You Know Everyone!", color: "text-yellow-500" };
+      return {
+        emoji: "🌟",
+        text: "You Know Everyone!",
+        color: "text-yellow-500",
+      };
     if (percentage >= 75)
       return { emoji: "🎉", text: "Great Memory!", color: "text-green-500" };
     if (percentage >= 60)
@@ -285,7 +289,7 @@ export default function GameResultsPage() {
             {grade.text}
           </CardTitle>
           <CardDescription className="text-lg mt-2">
-            You remembered {score} out of {total} people
+            You know {score} out of {total} people
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -310,6 +314,44 @@ export default function GameResultsPage() {
               <p className="text-sm text-muted-foreground">Total</p>
             </div>
           </div>
+
+          {total - score > 0 && (
+            <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                <span>💬</span>
+                Keep the Conversation Going!
+              </h3>
+              <p className="text-xs text-muted-foreground mb-2">
+                Great opportunity to connect with{" "}
+                {total - score > 1 ? "the people" : "the person"} you
+                didn&apos;t recognize:
+              </p>
+              <ul className="text-xs space-y-1 text-muted-foreground">
+                <li>
+                  • Introduce yourself and share something interesting about you
+                </li>
+                <li>• Ask about their hobbies or background</li>
+                <li>• Find common interests or connections</li>
+                {percentage >= 50 && (
+                  <li>• Help others make connections too!</li>
+                )}
+              </ul>
+            </div>
+          )}
+
+          {score === total && total > 0 && (
+            <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                <span>🌟</span>
+                You&apos;re a Connection Pro!
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Now that you know everyone, help others feel welcome! Introduce
+                people who don&apos;t know each other and share fun facts
+                you&apos;ve learned.
+              </p>
+            </div>
+          )}
 
           <div className="space-y-2">
             {gameEnded === null ? (
