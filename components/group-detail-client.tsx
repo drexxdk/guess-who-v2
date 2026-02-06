@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { GroupSettings } from "@/components/group-settings";
 import { DeleteGroupButton } from "@/components/delete-group-button";
 import type { Group, Person } from "@/lib/schemas";

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -44,9 +43,6 @@ export default function GameControlPage({
   const [gameCode, setGameCode] = useState("");
 
   // Track online players via Presence (Set of joinRecordIds)
-  const [onlinePlayerIds, setOnlinePlayerIds] = useState<Set<string>>(
-    new Set(),
-  );
   const onlinePlayerIdsRef = useRef<Set<string>>(new Set());
   const presenceChannelRef = useRef<RealtimeChannel | null>(null);
 
@@ -267,7 +263,6 @@ export default function GameControlPage({
 
         logger.log("Online player IDs:", Array.from(onlineIds));
         onlinePlayerIdsRef.current = onlineIds;
-        setOnlinePlayerIds(onlineIds);
 
         // Reload game session with new online IDs
         loadGameSession(onlineIds);
