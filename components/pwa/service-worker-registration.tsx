@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { logger, logError } from "@/lib/logger";
 
 export function ServiceWorkerRegistration() {
   useEffect(() => {
@@ -9,7 +10,7 @@ export function ServiceWorkerRegistration() {
       navigator.serviceWorker
         .register("/sw.js")
         .then((registration) => {
-          console.log(
+          logger.log(
             "Service Worker registered with scope:",
             registration.scope,
           );
@@ -34,7 +35,7 @@ export function ServiceWorkerRegistration() {
           });
         })
         .catch((error) => {
-          console.error("Service Worker registration failed:", error);
+          logError(error, "Service Worker registration failed");
         });
 
       // Handle controller change (when new SW takes over)

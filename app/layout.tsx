@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast";
 import { SWRProvider } from "@/components/providers/swr-provider";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { AuthStateListener } from "@/components/auth/auth-state-listener";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -56,6 +57,7 @@ export default function RootLayout({
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${geistSans.className} antialiased`}>
         <ServiceWorkerRegistration />
+        <AuthStateListener />
         <Toaster
           position="top-center"
           toastOptions={{

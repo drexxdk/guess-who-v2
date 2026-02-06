@@ -2,6 +2,8 @@
  * Performance monitoring utilities for development
  */
 
+import { logger } from "@/lib/logger";
+
 const isProduction = process.env.NODE_ENV === "production";
 
 interface PerformanceMark {
@@ -31,14 +33,14 @@ export function perfEnd(name: string): number | null {
 
   const mark = marks.get(name);
   if (!mark) {
-    console.warn(`Performance mark "${name}" not found`);
+    logger.log(`⚠️ Performance mark "${name}" not found`);
     return null;
   }
 
   const duration = performance.now() - mark.startTime;
   marks.delete(name);
 
-  console.log(`⏱️ ${name}: ${duration.toFixed(2)}ms`);
+  logger.log(`⏱️ ${name}: ${duration.toFixed(2)}ms`);
   return duration;
 }
 
@@ -81,7 +83,7 @@ export function reportWebVitals(metric: {
   }
 
   const { name, value, label } = metric;
-  console.log(`📊 ${name} (${label}): ${value.toFixed(2)}`);
+  logger.log(`📊 ${name} (${label}): ${value.toFixed(2)}`);
 }
 
 /**
@@ -97,7 +99,7 @@ export function useRenderTime(componentName: string): void {
     const duration = performance.now() - startTime;
     if (duration > 16) {
       // Longer than one frame (60fps)
-      console.warn(
+      logger.log(
         `🐢 Slow render: ${componentName} took ${duration.toFixed(2)}ms`,
       );
     }
@@ -122,6 +124,6 @@ export function logMemoryUsage(): void {
   if (memory) {
     const usedMB = (memory.usedJSHeapSize / 1024 / 1024).toFixed(2);
     const totalMB = (memory.totalJSHeapSize / 1024 / 1024).toFixed(2);
-    console.log(`💾 Memory: ${usedMB}MB / ${totalMB}MB`);
+    logger.log(`💾 Memory: ${usedMB}MB / ${totalMB}MB`);
   }
 }
