@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoListCard } from "@/components/ui/section-card";
 import { Badge } from "@/components/ui/badge";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { endGameSession } from "@/lib/game-utils";
@@ -414,7 +415,7 @@ export default function GameControlPage({
         <CardHeader>
           <CardTitle>Players ({players.length})</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="space-y-2">
             {players.map((player) => (
               <div
@@ -460,27 +461,17 @@ export default function GameControlPage({
         </CardContent>
       </Card>
 
-      {/* Instructions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>How to Play</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ol className="list-decimal list-inside space-y-2 text-sm">
-            <li>
-              Share the game code <Badge variant="outline">{gameCode}</Badge>{" "}
-              with players
-            </li>
-            <li>
-              Players visit <strong>your-app.com/game/join</strong> and enter
-              the code
-            </li>
-            <li>Players will see questions and answer in real-time</li>
-            <li>Monitor player progress from this dashboard</li>
-            <li>Click &quot;End Game&quot; when everyone is done</li>
-          </ol>
-        </CardContent>
-      </Card>
+      <InfoListCard
+        title="How to Play"
+        items={[
+          `Share the game code ${gameCode} with players`,
+          "Players visit your-app.com/game/join and enter the code",
+          "Players will see questions and answer in real-time",
+          "Monitor player progress from this dashboard",
+          'Click "End Game" when everyone is done',
+        ]}
+        ordered={true}
+      />
     </div>
   );
 }

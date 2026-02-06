@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoListCard } from "@/components/ui/section-card";
 import { LoadingLink } from "@/components/ui/loading-link";
 import { useLoading } from "@/lib/loading-context";
 import type { GameSessionWithGroup } from "@/lib/schemas";
@@ -102,20 +103,18 @@ export function ProtectedPageClient({
         </div>
       )}
 
-      <Card className="md:col-span-2">
-        <CardHeader>
-          <CardTitle>How It Works</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-            <li>Create a group and add people with their photos and names</li>
-            <li>Start a game and choose the mode (guess name or guess face)</li>
-            <li>Share the game code with players</li>
-            <li>Players join using the code and compete in real-time</li>
-            <li>View results and see who knows the group best!</li>
-          </ol>
-        </CardContent>
-      </Card>
+      <InfoListCard
+        title="How It Works"
+        items={[
+          "Create a group and add people with their photos and names",
+          "Start a game and choose the mode (guess name or guess face)",
+          "Share the game code with players",
+          "Players join using the code and compete in real-time",
+          "View results and see who knows the group best!",
+        ]}
+        ordered={true}
+        className="md:col-span-2"
+      />
     </div>
   );
 }

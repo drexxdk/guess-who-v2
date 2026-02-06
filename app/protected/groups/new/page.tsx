@@ -92,7 +92,7 @@ export default function NewGroupPage() {
           each other!
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="name">Group Name</Label>

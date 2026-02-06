@@ -34,7 +34,7 @@ const PersonCard = memo(function PersonCard({
           src={person.image_url}
           alt={`${person.first_name} ${person.last_name}`}
           fallbackName={`${person.first_name} ${person.last_name}`}
-          className="w-12 h-12 rounded-full"
+          className="w-12 h-12"
         />
         <div className="flex-1">
           <p className="font-medium">
@@ -128,7 +128,7 @@ export function PeopleList({ people }: { people: Person[] }) {
 
   return (
     <>
-      <StaggeredGrid className="grid gap-3 md:grid-cols-2">
+      <StaggeredGrid className="grid gap-3">
         {people.map((person) => (
           <StaggeredGridItem key={person.id}>
             <PersonCard

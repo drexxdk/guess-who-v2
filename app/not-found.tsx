@@ -8,7 +8,7 @@ const NotFound = () => {
         <CardHeader>
           <CardTitle className="text-2xl">Page not found</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           The requested page could not be found.{" "}
           <Link href="/">Go back home</Link>
         </CardContent>

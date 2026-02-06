@@ -178,7 +178,7 @@ export default function GameHostPage({
             Make everyone feel comfortable and set the right tone
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <ul className="space-y-2 text-sm text-gray-900">
             {icebreakerTips.map((tip, index) => (
               <li key={index} className="flex gap-2">

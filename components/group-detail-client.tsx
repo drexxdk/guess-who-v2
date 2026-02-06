@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { SectionCard } from "@/components/ui/section-card";
 import { buttonVariants } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
 import { GroupSettings } from "@/components/group-settings";
@@ -174,27 +175,22 @@ export function GroupDetailClient({
           </CardContent>
         </Card>
 
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Add Person</CardTitle>
-            <CardDescription>Add a new person to this group</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AddPersonForm groupId={groupId} />
-          </CardContent>
-        </Card>
+        <SectionCard
+          title="Add Person"
+          description="Add a new person to this group"
+          className="mt-6"
+        >
+          <AddPersonForm groupId={groupId} />
+        </SectionCard>
       </div>
 
       <div>
-        <Card>
-          <CardHeader>
-            <CardTitle>People</CardTitle>
-            <CardDescription>Manage people in this group</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <PeopleList people={people} />
-          </CardContent>
-        </Card>
+        <SectionCard
+          title="People"
+          description="Manage people in this group"
+        >
+          <PeopleList people={people} />
+        </SectionCard>
       </div>
     </div>
   );

@@ -36,7 +36,7 @@ export default function Page({
             Sorry, something went wrong.
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Suspense>
             <ErrorContent searchParams={searchParams} />
           </Suspense>
