@@ -185,10 +185,7 @@ export function GroupDetailClient({
       </div>
 
       <div>
-        <SectionCard
-          title="People"
-          description="Manage people in this group"
-        >
+        <SectionCard title="People" description="Manage people in this group">
           <PeopleList people={people} />
         </SectionCard>
       </div>
