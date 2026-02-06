@@ -104,7 +104,7 @@ export default function JoinGamePage() {
   }, [gameCode, playerName, router, isSubmitting, setLoading]);
 
   return (
-    <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
+    <div className="flex-1 flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold">Join Game</CardTitle>
