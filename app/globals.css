@@ -64,15 +64,6 @@
     @apply outline-2 outline-offset-2 outline-primary ring-2 ring-primary ring-offset-2 ring-offset-background;
   }
 
-  /* Mobile touch targets - minimum 44x44px (WCAG 2.5.5) */
-  button,
-  a,
-  input[type="button"],
-  input[type="submit"],
-  [role="button"] {
-    @apply min-h-[44px] min-w-[44px] md:min-h-[40px] md:min-w-[40px];
-  }
-
   /* Ensure interactive elements are keyboard accessible */
   button:focus-visible,
   a:focus-visible,

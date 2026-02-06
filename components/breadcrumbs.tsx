@@ -53,16 +53,26 @@ export function Breadcrumbs() {
     <nav className="mb-6">
       <div className="flex items-center gap-2 text-sm flex-wrap">
         {breadcrumbs.map((crumb, index) => (
-          <div key={crumb.href} className="flex items-center gap-2">
-            {index > 0 && <span className="text-muted-foreground">/</span>}
+          <>
+            {index > 0 && (
+              <span key={`sep-${index}`} className="text-muted-foreground">
+                /
+              </span>
+            )}
             {index === breadcrumbs.length - 1 ? (
-              <span className="text-foreground font-medium">{crumb.label}</span>
+              <span key={crumb.href} className="text-foreground font-medium">
+                {crumb.label}
+              </span>
             ) : (
-              <Link href={crumb.href} className="text-primary hover:underline">
+              <Link
+                key={crumb.href}
+                href={crumb.href}
+                className="text-primary hover:underline"
+              >
                 {crumb.label}
               </Link>
             )}
-          </div>
+          </>
         ))}
       </div>
     </nav>
