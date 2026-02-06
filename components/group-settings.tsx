@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -26,7 +26,7 @@ interface GroupSettingsProps {
   onEditChange?: (isEditing: boolean) => void;
 }
 
-export function GroupSettings({
+export const GroupSettings = memo(function GroupSettings({
   groupId,
   initialGroup,
   peopleCount = 4,
@@ -61,7 +61,7 @@ export function GroupSettings({
     setTotalQuestions((prev) => Math.min(prev, maxQuestions));
   }, [peopleCount]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     // Sanitize and validate group name
     const sanitizedName = sanitizeGroupName(groupName);
 
@@ -116,9 +116,17 @@ export function GroupSettings({
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [
+    groupName,
+    timeLimitSeconds,
+    optionsCount,
+    enableTimer,
+    groupId,
+    onUpdate,
+    onEditChange,
+  ]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setGroupName(initialGroup.name);
     setTimeLimitSeconds(initialGroup.time_limit_seconds ?? 30);
     setOptionsCount(initialGroup.options_count ?? 4);
@@ -127,7 +135,7 @@ export function GroupSettings({
     if (onEditChange) {
       onEditChange(false);
     }
-  };
+  }, [initialGroup, onEditChange]);
 
   if (isEditing) {
     return (
@@ -267,4 +275,4 @@ export function GroupSettings({
       </div>
     </div>
   );
-}
+});

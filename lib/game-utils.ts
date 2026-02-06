@@ -77,3 +77,64 @@ export async function endGameSession(
 
   return { success: true };
 }
+
+/**
+ * Icebreaker tips for group game sessions
+ * Tips to help groups get to know each other better
+ */
+export const ICEBREAKER_TIPS = [
+  "Take turns sharing your favorite memory from this year",
+  "Go around and share one thing you're grateful for today",
+  "Each person shares their dream vacation destination",
+  "Share a fun fact about yourself that others might not know",
+  "Tell the group about your favorite hobby or pastime",
+  "Describe your perfect weekend in three words",
+  "Share the best piece of advice you've ever received",
+  "Tell everyone about a skill you'd like to learn",
+  "Describe your favorite meal and why it's special to you",
+  "Share a movie or book that changed your perspective",
+] as const;
+
+/**
+ * Get a random icebreaker tip
+ */
+export function getRandomIcebreakerTip(): string {
+  return ICEBREAKER_TIPS[Math.floor(Math.random() * ICEBREAKER_TIPS.length)];
+}
+
+/**
+ * Format time in seconds to MM:SS format
+ */
+export function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+/**
+ * Format score as percentage
+ */
+export function formatScorePercentage(score: number, total: number): string {
+  if (total === 0) return "0%";
+  return `${Math.round((score / total) * 100)}%`;
+}
+
+/**
+ * Truncate text with ellipsis
+ */
+export function truncate(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength - 3) + "...";
+}
+
+/**
+ * Get initials from first and last name
+ */
+export function getInitials(
+  firstName: string | null | undefined,
+  lastName: string | null | undefined,
+): string {
+  const first = firstName?.charAt(0).toUpperCase() || "";
+  const last = lastName?.charAt(0).toUpperCase() || "";
+  return first + last || "?";
+}

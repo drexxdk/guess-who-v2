@@ -284,7 +284,7 @@ export default function GameResultsPage() {
       {percentage >= 75 && <Confetti />}
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="text-6xl mb-4 animate-bounce">{grade.emoji}</div>
+          <div className="text-6xl mb-4 mt-8 animate-bounce">{grade.emoji}</div>
           <CardTitle className={`text-4xl font-bold ${grade.color}`}>
             {grade.text}
           </CardTitle>

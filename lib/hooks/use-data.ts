@@ -10,6 +10,21 @@ export const swrConfig: SWRConfiguration = {
   revalidateOnReconnect: true,
   dedupingInterval: 5000,
   errorRetryCount: 3,
+  errorRetryInterval: 1000,
+  // Exponential backoff for retries
+  onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+    // Never retry on 404
+    if (error.code === "PGRST116") return;
+
+    // Only retry up to 3 times
+    if (retryCount >= 3) return;
+
+    // Exponential backoff: 1s, 2s, 4s
+    setTimeout(
+      () => revalidate({ retryCount }),
+      1000 * Math.pow(2, retryCount),
+    );
+  },
 };
 
 // Fetcher functions
