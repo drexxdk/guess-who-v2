@@ -21,6 +21,15 @@
   - After making changes, run build to verify they compile correctly
   - Don't try to start the dev server if it's already running
 
+## Package Management
+
+- **Always ask before installing new packages**
+  - Don't run `npm install` without explicit user approval
+  - Present the package name, purpose, and size if known
+  - Suggest alternatives when appropriate (e.g., built-in solutions, lighter packages)
+  - Explain why the package is needed and what problem it solves
+  - Let the user decide whether to proceed with installation
+
 ## General Guidelines
 
 - Follow the existing code style and patterns in the project
