@@ -43,9 +43,7 @@ export function ErrorMessage({
       </svg>
       <div className="flex-1">
         <p className="font-medium">{message}</p>
-        {suggestion && (
-          <p className="mt-1 text-xs opacity-80">{suggestion}</p>
-        )}
+        {suggestion && <p className="mt-1 text-xs opacity-80">{suggestion}</p>}
       </div>
     </div>
   );

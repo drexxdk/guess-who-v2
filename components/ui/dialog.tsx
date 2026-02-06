@@ -69,7 +69,9 @@ export function DialogTrigger({
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children, {
       onClick: (e: React.MouseEvent) => {
-        const childProps = children.props as { onClick?: (e: React.MouseEvent) => void };
+        const childProps = children.props as {
+          onClick?: (e: React.MouseEvent) => void;
+        };
         childProps.onClick?.(e);
         onOpenChange(true);
       },
@@ -146,9 +148,7 @@ export function DialogDescription({
   className,
 }: DialogDescriptionProps) {
   return (
-    <p className={cn("text-sm text-muted-foreground", className)}>
-      {children}
-    </p>
+    <p className={cn("text-sm text-muted-foreground", className)}>{children}</p>
   );
 }
 

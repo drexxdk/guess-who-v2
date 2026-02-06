@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { LoadingLink } from "@/components/ui/loading-link";
 import { EmptyState } from "@/components/ui/empty-state";
+import { StaggeredGrid, StaggeredGridItem } from "@/components/ui/staggered-list";
 import { useLoading } from "@/lib/loading-context";
 
 interface Group {
@@ -73,37 +74,39 @@ export function GroupsList({ groups }: GroupsListProps) {
           }
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <StaggeredGrid className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {groups.map((group) => (
-            <Card key={group.id} hover className="flex flex-col">
-              <CardHeader>
-                <CardTitle>{group.name}</CardTitle>
-                <CardDescription>
-                  {group.people?.at(0)?.count ?? 0} people
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="mt-auto">
-                <div className="flex gap-2">
-                  <LoadingLink
-                    href={`/protected/groups/${group.id}`}
-                    className={buttonVariants({
-                      variant: "outline",
-                      className: "flex-1",
-                    })}
-                  >
-                    Manage
-                  </LoadingLink>
-                  <LoadingLink
-                    href={`/protected/groups/${group.id}/host`}
-                    className={buttonVariants({ className: "flex-1" })}
-                  >
-                    Start Game
-                  </LoadingLink>
-                </div>
-              </CardContent>
-            </Card>
+            <StaggeredGridItem key={group.id}>
+              <Card hover className="flex flex-col h-full">
+                <CardHeader>
+                  <CardTitle>{group.name}</CardTitle>
+                  <CardDescription>
+                    {group.people?.at(0)?.count ?? 0} people
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="mt-auto">
+                  <div className="flex gap-2">
+                    <LoadingLink
+                      href={`/protected/groups/${group.id}`}
+                      className={buttonVariants({
+                        variant: "outline",
+                        className: "flex-1",
+                      })}
+                    >
+                      Manage
+                    </LoadingLink>
+                    <LoadingLink
+                      href={`/protected/groups/${group.id}/host`}
+                      className={buttonVariants({ className: "flex-1" })}
+                    >
+                      Start Game
+                    </LoadingLink>
+                  </div>
+                </CardContent>
+              </Card>
+            </StaggeredGridItem>
           ))}
-        </div>
+        </StaggeredGrid>
       )}
     </>
   );

@@ -17,6 +17,7 @@ import { ErrorMessage } from "@/components/ui/error-message";
 import { getActiveGameSessionByCode } from "@/lib/queries";
 import { useLoading } from "@/lib/loading-context";
 import { sanitizeGameCode, sanitizeName, validateLength } from "@/lib/security";
+import { sound, haptic } from "@/lib/sounds";
 
 export default function JoinGamePage() {
   const router = useRouter();
@@ -99,6 +100,8 @@ export default function JoinGamePage() {
 
         // Game code is valid, redirect to play page
         const joinSessionId = crypto.randomUUID();
+        sound.playJoin();
+        haptic.medium();
         router.push(
           `/game/play?code=${sanitizedCode}&name=${encodeURIComponent(sanitizedName)}&joinSessionId=${joinSessionId}`,
         );

@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { CircularProgress } from "@/components/ui/progress";
+import { KeyboardShortcuts } from "@/lib/keyboard-shortcuts";
+import { sound, haptic } from "@/lib/sounds";
 import { logger, logError, getErrorMessage } from "@/lib/logger";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -516,6 +518,15 @@ export default function GamePlayPage() {
       const isCorrect = answerId === questions[currentQuestion].person.id;
       setLastAnswerCorrect(isCorrect);
 
+      // Play sound and haptic feedback
+      if (isCorrect) {
+        sound.playCorrect();
+        haptic.success();
+      } else {
+        sound.playWrong();
+        haptic.error();
+      }
+
       if (isCorrect) {
         setScore(score + 1);
       }
@@ -832,6 +843,194 @@ interface ActiveState extends State {
   lastAnswerCorrect: boolean | null;
 }
 
+// Component for active game state with keyboard shortcuts
+function ActiveGameState({ state }: { state: ActiveState }) {
+  // Keyboard shortcuts for answer selection
+  KeyboardShortcuts.useAnswerSelection((index) => {
+    if (!state.answered && state.question.options[index]) {
+      state.handleAnswer(state.question.options[index].id);
+    }
+  }, state.question.options.length);
+
+  return (
+    <div
+      className={cn(
+        "transition-colors duration-700 grow flex flex-col gap-2 p-4 items-center bg-gradient-to-br overflow-y-auto overflow-x-clip",
+        state.lastAnswerCorrect === true
+          ? "from-green-600 to-green-800"
+          : state.lastAnswerCorrect === false
+            ? "from-red-600 to-red-800"
+            : "from-purple-500 to-pink-500",
+      )}
+    >
+      <Container className="flex flex-col gap-6 my-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div className="text-white space-y-1">
+            <p className="text-sm opacity-80">{state.playerName}</p>
+            <p className="text-2xl font-bold">
+              Score: {state.score}/{state.questions.length}
+            </p>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">
+                Question {state.currentQuestion + 1} of {state.questions.length}
+              </Badge>
+              <div className="h-1.5 w-32 bg-black/40 rounded-full overflow-hidden border border-white/30">
+                <div
+                  className="h-full bg-gradient-primary transition-all duration-300"
+                  style={{
+                    width: `${((state.currentQuestion + 1) / state.questions.length) * 100}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="text-white bg-black/40 rounded-full p-2 border border-white/30 inline-flex">
+            <CircularProgress
+              value={state.timeLeft}
+              max={30}
+              size={80}
+              strokeWidth={6}
+            >
+              <span className="text-2xl font-bold">{state.timeLeft}</span>
+            </CircularProgress>
+          </div>
+        </div>
+
+        <AnimatePresence mode="popLayout">
+          <motion.div
+            key={state.currentQuestion}
+            initial={{ x: "100vw", opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: "-100vw", opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <div
+              className={`flex gap-6 ${state.gameType === "guess_image" ? "flex-col" : "flex-col lg:flex-row"}`}
+            >
+              <Card className="flex-shrink-0 justify-center">
+                <CardHeader>
+                  <CardTitle className="text-center text-2xl">
+                    {state.gameType === "guess_name"
+                      ? "Who is this?"
+                      : "Who is " +
+                        state.question.person.first_name +
+                        " " +
+                        state.question.person.last_name +
+                        "?"}
+                  </CardTitle>
+                </CardHeader>
+                {state.gameType === "guess_name" && (
+                  <CardContent>
+                    <div className="flex justify-center">
+                      <div className=" aspect-square rounded-lg border-4 border-gray-200">
+                        <Image
+                          width={256}
+                          height={256}
+                          key={`person-image-${state.currentQuestion}-${state.question.person.id}`}
+                          src={
+                            state.question.person.image_url ||
+                            "/placeholder.png"
+                          }
+                          alt="Person"
+                          priority={true}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+              {/* Question Options */}
+              <div
+                className={`gap-2 flex-1 justify-center ${state.gameType === "guess_image" ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]" : "flex flex-col"}`}
+              >
+                {state.question.options.map((option) => {
+                  const isSelected = state.selectedAnswer === option.id;
+                  const isCorrect = option.id === state.question.person.id;
+
+                  let buttonClass =
+                    "text-lg font-semibold disabled:opacity-100 relative overflow-hidden";
+                  let buttonVariant: "default" | "outline" = "outline";
+
+                  if (state.answered) {
+                    if (isCorrect && isSelected) {
+                      buttonClass +=
+                        " bg-green-500 hover:bg-green-500 text-white animate-pulse";
+                      buttonVariant = "default";
+                    } else if (isSelected && !isCorrect) {
+                      buttonClass += " bg-red-500 hover:bg-red-500 text-white";
+                      buttonVariant = "default";
+                    } else if (isCorrect) {
+                      buttonClass +=
+                        " bg-green-500 hover:bg-green-500 text-white";
+                      buttonVariant = "default";
+                    }
+                  }
+
+                  return (
+                    <Button
+                      key={option.id}
+                      onClick={() => state.handleAnswer(option.id)}
+                      disabled={state.answered}
+                      className={buttonClass}
+                      variant={buttonVariant}
+                    >
+                      {state.answered && isCorrect && (
+                        <svg
+                          className="w-5 h-5 mr-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                      {state.answered && isSelected && !isCorrect && (
+                        <svg
+                          className="w-5 h-5 mr-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                      {state.gameType === "guess_name" ? (
+                        <span className="truncate">
+                          {option.first_name} {option.last_name}
+                        </span>
+                      ) : (
+                        <div
+                          key={`option-image-${state.currentQuestion}-${option.id}`}
+                          className="flex justify-center relative w-full min-w-[100px] min-h-[100px] max-h-[200px]"
+                        >
+                          <Image
+                            src={option.image_url || "/placeholder.png"}
+                            alt={`${option.first_name} ${option.last_name}`}
+                            width={200}
+                            height={200}
+                            priority={true}
+                          />
+                        </div>
+                      )}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </Container>
+    </div>
+  );
+}
+
 type StateUnion =
   | LoadingState
   | WaitingForStartState
@@ -876,184 +1075,7 @@ const RenderState = ({ state }: { state: StateUnion }) => {
         </div>
       );
     case "active":
-      return (
-        <div
-          className={cn(
-            "transition-colors duration-700 grow flex flex-col gap-2 p-4 items-center bg-gradient-to-br overflow-y-auto overflow-x-clip",
-            state.lastAnswerCorrect === true
-              ? "from-green-600 to-green-800"
-              : state.lastAnswerCorrect === false
-                ? "from-red-600 to-red-800"
-                : "from-purple-500 to-pink-500",
-          )}
-        >
-          <Container className="flex flex-col gap-6 my-auto">
-            {/* Header */}
-            <div className="flex justify-between items-center">
-              <div className="text-white space-y-1">
-                <p className="text-sm opacity-80">{state.playerName}</p>
-                <p className="text-2xl font-bold">
-                  Score: {state.score}/{state.questions.length}
-                </p>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-xs">
-                    Question {state.currentQuestion + 1} of {state.questions.length}
-                  </Badge>
-                  <div className="h-1.5 w-32 bg-white/20 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-primary transition-all duration-300"
-                      style={{
-                        width: `${((state.currentQuestion + 1) / state.questions.length) * 100}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="text-white">
-                <CircularProgress
-                  value={state.timeLeft}
-                  max={30}
-                  size={80}
-                  strokeWidth={6}
-                >
-                  <span className="text-2xl font-bold">{state.timeLeft}</span>
-                </CircularProgress>
-              </div>
-            </div>
-
-            <AnimatePresence mode="popLayout">
-              <motion.div
-                key={state.currentQuestion}
-                initial={{ x: "100vw", opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: "-100vw", opacity: 0 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-              >
-                <div
-                  className={`flex gap-6 ${state.gameType === "guess_image" ? "flex-col" : "flex-col lg:flex-row"}`}
-                >
-                  <Card className="flex-shrink-0 justify-center">
-                    <CardHeader>
-                      <CardTitle className="text-center text-2xl">
-                        {state.gameType === "guess_name"
-                          ? "Who is this?"
-                          : "Who is " +
-                            state.question.person.first_name +
-                            " " +
-                            state.question.person.last_name +
-                            "?"}
-                      </CardTitle>
-                    </CardHeader>
-                    {state.gameType === "guess_name" && (
-                      <CardContent>
-                        <div className="flex justify-center">
-                          <div className=" aspect-square rounded-lg border-4 border-gray-200">
-                            <Image
-                              width={256}
-                              height={256}
-                              key={`person-image-${state.currentQuestion}-${state.question.person.id}`}
-                              src={
-                                state.question.person.image_url ||
-                                "/placeholder.png"
-                              }
-                              alt="Person"
-                              priority={true}
-                            />
-                          </div>
-                        </div>
-                      </CardContent>
-                    )}
-                  </Card>
-                  {/* Question Options */}
-                  <div
-                    className={`gap-2 flex-1 justify-center ${state.gameType === "guess_image" ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]" : "flex flex-col"}`}
-                  >
-                    {state.question.options.map((option) => {
-                      const isSelected = state.selectedAnswer === option.id;
-                      const isCorrect = option.id === state.question.person.id;
-
-                      let buttonClass =
-                        "text-lg font-semibold disabled:opacity-100 relative overflow-hidden";
-                      let buttonVariant: "default" | "outline" = "outline";
-
-                      if (state.answered) {
-                        if (isCorrect && isSelected) {
-                          buttonClass +=
-                            " bg-green-500 hover:bg-green-500 text-white animate-pulse";
-                          buttonVariant = "default";
-                        } else if (isSelected && !isCorrect) {
-                          buttonClass +=
-                            " bg-red-500 hover:bg-red-500 text-white";
-                          buttonVariant = "default";
-                        } else if (isCorrect) {
-                          buttonClass +=
-                            " bg-green-500 hover:bg-green-500 text-white";
-                          buttonVariant = "default";
-                        }
-                      }
-
-                      return (
-                        <Button
-                          key={option.id}
-                          onClick={() => state.handleAnswer(option.id)}
-                          disabled={state.answered}
-                          className={buttonClass}
-                          variant={buttonVariant}
-                        >
-                          {state.answered && isCorrect && (
-                            <svg
-                              className="w-5 h-5 mr-2"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          )}
-                          {state.answered && isSelected && !isCorrect && (
-                            <svg
-                              className="w-5 h-5 mr-2"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          )}
-                          {state.gameType === "guess_name" ? (
-                            <span className="truncate">
-                              {option.first_name} {option.last_name}
-                            </span>
-                          ) : (
-                            <div
-                              key={`option-image-${state.currentQuestion}-${option.id}`}
-                              className="flex justify-center relative w-full min-w-[100px] min-h-[100px] max-h-[200px]"
-                            >
-                              <Image
-                                src={option.image_url || "/placeholder.png"}
-                                alt={`${option.first_name} ${option.last_name}`}
-                                width={200}
-                                height={200}
-                                priority={true}
-                              />
-                            </div>
-                          )}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </Container>
-        </div>
-      );
+      return <ActiveGameState state={state} />;
     default:
       const _exhaustiveCheck: undefined = state;
       return _exhaustiveCheck;

@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
-import { OptimizedAvatar } from "@/components/ui/optimized-image";
+import {
+  StaggeredGrid,
+  StaggeredGridItem,
+} from "@/components/ui/staggered-list";
+import { AvatarImage } from "@/components/ui/avatar-image";
 import toast from "react-hot-toast";
 import { deletePersonImage } from "@/lib/game-utils";
 import { getErrorMessage } from "@/lib/logger";
@@ -26,20 +30,12 @@ const PersonCard = memo(function PersonCard({
   return (
     <Card hover className="p-4">
       <div className="flex items-center gap-4">
-        {person.image_url ? (
-          <OptimizedAvatar
-            src={person.image_url}
-            alt={`${person.first_name} ${person.last_name}`}
-            size={48}
-          />
-        ) : (
-          <div className="w-12 h-12 bg-muted flex items-center justify-center rounded-full">
-            <span className="text-lg font-semibold">
-              {person.first_name[0]}
-              {person.last_name[0]}
-            </span>
-          </div>
-        )}
+        <AvatarImage
+          src={person.image_url}
+          alt={`${person.first_name} ${person.last_name}`}
+          fallbackName={`${person.first_name} ${person.last_name}`}
+          className="w-12 h-12 rounded-full"
+        />
         <div className="flex-1">
           <p className="font-medium">
             {person.first_name} {person.last_name}
@@ -79,7 +75,10 @@ export function PeopleList({ people }: { people: Person[] }) {
 
       // Delete image from storage if it exists
       if (personToDelete.image_url) {
-        const result = await deletePersonImage(supabase, personToDelete.image_url);
+        const result = await deletePersonImage(
+          supabase,
+          personToDelete.image_url,
+        );
         if (!result.success) {
           // Continue with person deletion even if image deletion fails
         }
@@ -129,16 +128,17 @@ export function PeopleList({ people }: { people: Person[] }) {
 
   return (
     <>
-      <div className="grid gap-3 md:grid-cols-2">
+      <StaggeredGrid className="grid gap-3 md:grid-cols-2">
         {people.map((person) => (
-          <PersonCard
-            key={person.id}
-            person={person}
-            isDeleting={deleting === person.id}
-            onDeleteClick={handleDeleteClick}
-          />
+          <StaggeredGridItem key={person.id}>
+            <PersonCard
+              person={person}
+              isDeleting={deleting === person.id}
+              onDeleteClick={handleDeleteClick}
+            />
+          </StaggeredGridItem>
         ))}
-      </div>
+      </StaggeredGrid>
       <ConfirmDialog
         open={!!personToDelete}
         onOpenChange={(open) => !open && setPersonToDelete(null)}

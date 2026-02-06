@@ -2,10 +2,20 @@ import { cn } from "@/lib/utils";
 
 interface SkeletonProps {
   className?: string;
+  shimmer?: boolean;
 }
 
-export function Skeleton({ className }: SkeletonProps) {
-  return <div className={cn("animate-pulse rounded-md bg-muted", className)} />;
+export function Skeleton({ className, shimmer = true }: SkeletonProps) {
+  return (
+    <div
+      className={cn(
+        "animate-pulse rounded-md bg-muted",
+        shimmer &&
+          "relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent",
+        className,
+      )}
+    />
+  );
 }
 
 export function CardSkeleton() {

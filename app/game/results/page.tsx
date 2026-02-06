@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Confetti } from "@/components/ui/confetti";
+import { sound } from "@/lib/sounds";
 import { createClient } from "@/lib/supabase/client";
 import { logger, logError } from "@/lib/logger";
 import {
@@ -66,6 +67,13 @@ export default function GameResultsPage() {
     searchParams?.get("name") || sessionStorage.getItem("lastPlayerName") || "";
   const joinRecordId = searchParams?.get("joinRecordId") || "";
   const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
+
+  // Play success sound for good scores
+  useEffect(() => {
+    if (percentage >= 75) {
+      setTimeout(() => sound.playSuccess(), 500);
+    }
+  }, [percentage]);
 
   // Track presence on results page so host still sees player as active
   useEffect(() => {
