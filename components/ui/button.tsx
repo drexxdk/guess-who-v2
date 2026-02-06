@@ -16,7 +16,8 @@ const buttonVariants = cva(
           "border-2 border-primary bg-transparent text-primary shadow-sm hover:bg-primary hover:text-white hover:scale-[1.02] active:scale-[0.98]",
         secondary:
           "bg-secondary text-secondary-foreground shadow-md hover:bg-secondary/80 hover:scale-[1.02] active:scale-[0.98]",
-        ghost: "hover:bg-accent/10 hover:text-accent hover:scale-[1.02] active:scale-[0.98]",
+        ghost:
+          "hover:bg-accent/10 hover:text-accent hover:scale-[1.02] active:scale-[0.98]",
         link: "text-primary underline-offset-4 hover:underline",
         success:
           "bg-[hsl(142_76%_36%)] text-white shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] hover:bg-[hsl(142_76%_42%)] glow-success",
@@ -24,9 +25,9 @@ const buttonVariants = cva(
           "bg-accent text-white shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] hover:bg-accent/90 glow-accent",
       },
       size: {
-        default: "px-6 py-3 text-base",
+        default: "px-6 py-2.5 text-base",
         sm: "px-4 py-2 text-sm",
-        lg: "px-8 py-4 text-lg",
+        lg: "px-8 py-3.5 text-lg",
         icon: "h-10 w-10",
       },
     },

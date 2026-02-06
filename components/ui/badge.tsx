@@ -14,7 +14,8 @@ const badgeVariants = cva(
           "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:scale-105",
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow-md hover:bg-destructive/80 hover:scale-105",
-        outline: "text-foreground border-2 border-primary text-primary hover:bg-primary hover:text-white hover:scale-105",
+        outline:
+          "text-foreground border-2 border-primary text-primary hover:bg-primary hover:text-white hover:scale-105",
         success:
           "border-transparent bg-[hsl(142_76%_36%)] text-white shadow-md hover:bg-[hsl(142_76%_42%)] hover:scale-105",
         accent:
@@ -28,7 +29,8 @@ const badgeVariants = cva(
 );
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
