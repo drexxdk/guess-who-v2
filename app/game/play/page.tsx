@@ -862,7 +862,15 @@ function ActiveGameState({ state }: { state: ActiveState }) {
             ? "from-red-600 to-red-800"
             : "from-purple-500 to-pink-500",
       )}
+      role="main"
+      aria-label="Game play area"
     >
+      {/* Screen reader announcements */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        Question {state.currentQuestion + 1} of {state.questions.length}. Time remaining: {state.timeLeft} seconds. 
+        {state.answered && (state.lastAnswerCorrect ? "Correct! " : "Incorrect. ")}
+        Current score: {state.score} out of {state.questions.length}.
+      </div>
       <Container className="flex flex-col gap-6 my-auto">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -932,8 +940,9 @@ function ActiveGameState({ state }: { state: ActiveState }) {
                             state.question.person.image_url ||
                             "/placeholder.png"
                           }
-                          alt="Person"
+                          alt={`Photo of person for question ${state.currentQuestion + 1}`}
                           priority={true}
+                          aria-label={`Question ${state.currentQuestion + 1}: Who is this person?`}
                         />
                       </div>
                     </div>
@@ -974,6 +983,14 @@ function ActiveGameState({ state }: { state: ActiveState }) {
                       disabled={state.answered}
                       className={buttonClass}
                       variant={buttonVariant}
+                      aria-label={
+                        state.gameType === "guess_name"
+                          ? `Select ${option.first_name} ${option.last_name}${isSelected ? " (selected)" : ""}${state.answered && isCorrect ? " (correct answer)" : ""}${state.answered && isSelected && !isCorrect ? " (incorrect)" : ""}`
+                          : `Select option ${state.question.options.indexOf(option) + 1}${isSelected ? " (selected)" : ""}${state.answered && isCorrect ? " (correct answer)" : ""}${state.answered && isSelected && !isCorrect ? " (incorrect)" : ""}`
+                      }
+                      aria-pressed={isSelected}
+                      aria-disabled={state.answered}
+                      tabIndex={state.answered ? -1 : 0}
                     >
                       {state.answered && isCorrect && (
                         <svg

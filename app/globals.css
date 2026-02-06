@@ -61,15 +61,50 @@
 
   /* Focus improvements for accessibility */
   *:focus-visible {
-    @apply outline-2 outline-offset-2 outline-primary;
+    @apply outline-2 outline-offset-2 outline-primary ring-2 ring-primary ring-offset-2 ring-offset-background;
   }
 
-  /* Mobile touch targets - minimum 44x44px */
+  /* Mobile touch targets - minimum 44x44px (WCAG 2.5.5) */
   button,
   a,
   input[type="button"],
-  input[type="submit"] {
-    @apply min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0;
+  input[type="submit"],
+  [role="button"] {
+    @apply min-h-[44px] min-w-[44px] md:min-h-[40px] md:min-w-[40px];
+  }
+
+  /* Ensure interactive elements are keyboard accessible */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  [role="button"]:focus-visible,
+  [tabindex]:focus-visible {
+    @apply outline-primary ring-primary;
+  }
+
+  /* Screen reader only utility */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .sr-only:focus,
+  .sr-only:active {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
   }
 
   /* Smooth scrolling */

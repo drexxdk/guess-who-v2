@@ -317,16 +317,16 @@ export default function GameResultsPage() {
 
           {total - score > 0 && (
             <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2 text-gray-900">
                 <span>💬</span>
                 Keep the Conversation Going!
               </h3>
-              <p className="text-xs text-muted-foreground mb-2">
+              <p className="text-xs text-gray-700 mb-2">
                 Great opportunity to connect with{" "}
                 {total - score > 1 ? "the people" : "the person"} you
                 didn&apos;t recognize:
               </p>
-              <ul className="text-xs space-y-1 text-muted-foreground">
+              <ul className="text-xs space-y-1 text-gray-700">
                 <li>
                   • Introduce yourself and share something interesting about you
                 </li>
@@ -341,11 +341,11 @@ export default function GameResultsPage() {
 
           {score === total && total > 0 && (
             <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
-              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2 text-gray-900">
                 <span>🌟</span>
                 You&apos;re a Connection Pro!
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-700">
                 Now that you know everyone, help others feel welcome! Introduce
                 people who don&apos;t know each other and share fun facts
                 you&apos;ve learned.
@@ -355,8 +355,8 @@ export default function GameResultsPage() {
 
           <div className="space-y-2">
             {gameEnded === null ? (
-              <div className="p-3 bg-gray-100 rounded-lg text-center">
-                <p className="text-sm text-muted-foreground">Loading...</p>
+              <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-center">
+                <p className="text-sm text-primary font-medium">Loading...</p>
               </div>
             ) : gameEnded ? (
               <>

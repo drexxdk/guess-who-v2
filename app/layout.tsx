@@ -38,8 +38,8 @@ export const viewport: Viewport = {
   themeColor: "#0a0a0a",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 const geistSans = Geist({
@@ -56,11 +56,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.className} antialiased`}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-primary focus:text-white focus:top-4 focus:left-4 focus:rounded-lg"
+        >
+          Skip to main content
+        </a>
         <ServiceWorkerRegistration />
         <AuthStateListener />
         <Toaster />
         <SWRProvider>
-          <Suspense>{children}</Suspense>
+          <Suspense>
+            <main id="main-content">{children}</main>
+          </Suspense>
         </SWRProvider>
         <InstallPrompt />
       </body>
