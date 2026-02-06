@@ -28,7 +28,7 @@ export function ProtectedPageClient({
         <div className="flex flex-col gap-4 grow">
           <h1 className="text-3xl font-bold mb-2">Welcome to Guess Who!</h1>
           <p className="text-muted-foreground">
-            Create groups and host exciting games or join others
+            A social icebreaker game that helps people learn about each other. Create groups for your team, classroom, or event and help everyone connect!
           </p>
           <div className="flex gap-4 wrap">
             <LoadingLink href="/game/join" className={buttonVariants()}>

@@ -263,14 +263,14 @@ export default function GameResultsPage() {
 
   const getGrade = () => {
     if (percentage >= 90)
-      return { emoji: "🌟", text: "Amazing!", color: "text-yellow-500" };
+      return { emoji: "🌟", text: "You Know Everyone!", color: "text-yellow-500" };
     if (percentage >= 75)
-      return { emoji: "🎉", text: "Great Job!", color: "text-green-500" };
+      return { emoji: "🎉", text: "Great Memory!", color: "text-green-500" };
     if (percentage >= 60)
-      return { emoji: "👍", text: "Good Work!", color: "text-blue-500" };
+      return { emoji: "👍", text: "Getting There!", color: "text-blue-500" };
     if (percentage >= 40)
-      return { emoji: "📚", text: "Keep Trying!", color: "text-orange-500" };
-    return { emoji: "💪", text: "Try Again!", color: "text-red-500" };
+      return { emoji: "📚", text: "Learning!", color: "text-orange-500" };
+    return { emoji: "💪", text: "Keep Learning!", color: "text-red-500" };
   };
 
   const grade = getGrade();
@@ -285,7 +285,7 @@ export default function GameResultsPage() {
             {grade.text}
           </CardTitle>
           <CardDescription className="text-lg mt-2">
-            You scored {score} out of {total}
+            You remembered {score} out of {total} people
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

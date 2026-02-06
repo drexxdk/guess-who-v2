@@ -37,7 +37,7 @@ export function GroupsList({ groups }: GroupsListProps) {
         <div>
           <h1 className="text-3xl font-bold">My groups</h1>
           <p className="text-muted-foreground">
-            Create and manage your groups of people
+            Create groups for your team, classroom, or event. Help people learn names and faces!
           </p>
         </div>
         <LoadingLink href="/protected/groups/new" className={buttonVariants()}>
@@ -63,7 +63,7 @@ export function GroupsList({ groups }: GroupsListProps) {
             </svg>
           }
           title="No groups yet"
-          description="Create your first group to start playing Guess Who with your friends"
+          description="Create your first group to help people get to know each other through an icebreaker game"
           action={
             <LoadingLink
               href="/protected/groups/new"
