@@ -123,8 +123,8 @@ export const RATE_LIMITS = {
   /** Standard API calls - 100 requests per minute */
   api: { limit: 100, windowSeconds: 60, prefix: "api" },
 
-  /** Authentication attempts - 5 per minute */
-  auth: { limit: 5, windowSeconds: 60, prefix: "auth" },
+  /** Authentication attempts - 30 per minute (allows for page reloads and retries) */
+  auth: { limit: 30, windowSeconds: 60, prefix: "auth" },
 
   /** Game session creation - 10 per minute */
   createSession: { limit: 10, windowSeconds: 60, prefix: "create-session" },

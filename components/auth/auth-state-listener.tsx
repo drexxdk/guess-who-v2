@@ -33,10 +33,14 @@ export function AuthStateListener() {
       }
 
       if (event === "SIGNED_OUT") {
-        // User was signed out (could be due to expired token)
-        // Only redirect if on a protected route
+        // Check if this was an intentional logout
+        const wasIntentional = sessionStorage.getItem("intentional_logout");
+        sessionStorage.removeItem("intentional_logout");
+
+        // Only show session expired message if not intentional
+        // and on a protected route
         const pathname = window.location.pathname;
-        if (pathname?.startsWith("/protected")) {
+        if (!wasIntentional && pathname?.startsWith("/protected")) {
           toast.error("Your session has expired. Please log in again.");
           router.push("/auth/login");
         }
