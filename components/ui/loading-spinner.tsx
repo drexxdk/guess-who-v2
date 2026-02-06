@@ -28,7 +28,7 @@ export function LoadingSpinner({
 
 export function LoadingOverlay({ size = "lg" }: { size?: "sm" | "md" | "lg" }) {
   return (
-    <div className="fixed top-[var(--header-height)] left-0 right-0 bottom-0 flex items-center justify-center bg-black/50 z-50">
+    <div className="fixed top-header left-0 right-0 bottom-0 flex items-center justify-center bg-black/50 z-50">
       <LoadingSpinner size={size} />
     </div>
   );

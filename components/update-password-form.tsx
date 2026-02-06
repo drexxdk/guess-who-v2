@@ -12,6 +12,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  PasswordStrengthMeter,
+  usePasswordStrength,
+} from "@/components/password-strength";
 import { useFormState } from "@/lib/hooks/use-form-state";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -21,11 +25,18 @@ export function UpdatePasswordForm({
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
   const [password, setPassword] = useState("");
-  const { error, isLoading, execute } = useFormState();
+  const { error, isLoading, execute, setError } = useFormState();
   const router = useRouter();
+  const passwordStrength = usePasswordStrength(password);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (passwordStrength.score < 2) {
+      setError("Please choose a stronger password");
+      return;
+    }
+
     await execute(async () => {
       const supabase = createClient();
       const { error } = await supabase.auth.updateUser({ password });
@@ -56,6 +67,7 @@ export function UpdatePasswordForm({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                <PasswordStrengthMeter password={password} />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>

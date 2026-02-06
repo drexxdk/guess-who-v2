@@ -877,7 +877,7 @@ const RenderState = ({ state }: { state: StateUnion }) => {
       return (
         <div
           className={cn(
-            "transition-colors duration-700 grow flex flex-col gap-2 p-4 items-center justify-center bg-gradient-to-br overflow-hidden",
+            "transition-colors duration-700 grow flex flex-col gap-2 p-4 items-center bg-gradient-to-br overflow-y-auto overflow-x-clip",
             state.lastAnswerCorrect === true
               ? "from-green-600 to-green-800"
               : state.lastAnswerCorrect === false
@@ -885,7 +885,7 @@ const RenderState = ({ state }: { state: StateUnion }) => {
                 : "from-purple-500 to-pink-500",
           )}
         >
-          <Container className="flex flex-col gap-6">
+          <Container className="flex flex-col gap-6 my-auto">
             {/* Header */}
             <div className="flex justify-between items-center">
               <div className="text-white">

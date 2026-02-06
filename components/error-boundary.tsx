@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  className?: string;
 }
 
 interface State {
@@ -72,6 +73,6 @@ export class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    return <div className={this.props.className}>{this.props.children}</div>;
   }
 }

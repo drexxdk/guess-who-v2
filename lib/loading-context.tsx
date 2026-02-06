@@ -26,7 +26,7 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
   return (
     <LoadingContext.Provider value={{ isLoading, setLoading }}>
       {isLoading && <LoadingOverlay />}
-      {children}
+      <div className="flex-1 flex flex-col min-h-full">{children}</div>
     </LoadingContext.Provider>
   );
 }

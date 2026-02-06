@@ -14,6 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Divider } from "@/components/ui/divider";
 import { GoogleAuthButton } from "@/components/google-auth-button";
+import {
+  PasswordStrengthMeter,
+  usePasswordStrength,
+} from "@/components/password-strength";
 import { useFormState } from "@/lib/hooks/use-form-state";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -28,12 +32,18 @@ export function SignUpForm({
   const [repeatPassword, setRepeatPassword] = useState("");
   const { error, isLoading, execute, setError } = useFormState();
   const router = useRouter();
+  const passwordStrength = usePasswordStrength(password);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== repeatPassword) {
       setError("Passwords do not match");
+      return;
+    }
+
+    if (passwordStrength.score < 2) {
+      setError("Please choose a stronger password");
       return;
     }
 
@@ -81,6 +91,7 @@ export function SignUpForm({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                <PasswordStrengthMeter password={password} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="repeat-password">Repeat Password</Label>

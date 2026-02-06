@@ -12,12 +12,14 @@ export default function GameLayout({
   return (
     <main className="h-[100dvh] flex flex-col overflow-hidden">
       <Header />
-      <div className="flex-1 flex flex-col relative overflow-auto">
-        <Suspense fallback={<LoadingOverlay />}>
-          <LoadingProvider>
-            <ErrorBoundaryWrapper>{children}</ErrorBoundaryWrapper>
-          </LoadingProvider>
-        </Suspense>
+      <div className="flex-1 flex flex-col relative overflow-auto min-h-0">
+        <LoadingProvider>
+          <Suspense fallback={<LoadingOverlay />}>
+            <ErrorBoundaryWrapper className="flex-1 flex flex-col min-h-full">
+              {children}
+            </ErrorBoundaryWrapper>
+          </Suspense>
+        </LoadingProvider>
       </div>
     </main>
   );

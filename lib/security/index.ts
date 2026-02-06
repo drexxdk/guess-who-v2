@@ -20,8 +20,4 @@ export {
   type RateLimitResult,
 } from "./rate-limit";
 
-export {
-  generateCsrfToken,
-  verifyCsrfToken,
-  withCsrfProtection,
-} from "./csrf";
+// CSRF utilities are server-only - import directly from "@/lib/security/csrf"

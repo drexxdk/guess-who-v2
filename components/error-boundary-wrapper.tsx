@@ -5,8 +5,12 @@ import { ErrorBoundary } from "@/components/error-boundary";
 
 interface ErrorBoundaryWrapperProps {
   children: ReactNode;
+  className?: string;
 }
 
-export function ErrorBoundaryWrapper({ children }: ErrorBoundaryWrapperProps) {
-  return <ErrorBoundary>{children}</ErrorBoundary>;
+export function ErrorBoundaryWrapper({
+  children,
+  className,
+}: ErrorBoundaryWrapperProps) {
+  return <ErrorBoundary className={className}>{children}</ErrorBoundary>;
 }

@@ -3,6 +3,7 @@
 @plugin "tailwindcss-animate";
 
 @theme {
+  /* Custom colors */
   --color-background: hsl(0 0% 3.9%);
   --color-foreground: hsl(0 0% 98%);
   --color-card: hsl(0 0% 3.9%);
@@ -20,9 +21,26 @@
   --color-border: hsl(0 0% 14.9%);
   --color-input: hsl(0 0% 14.9%);
   --color-ring: hsl(0 0% 83.1%);
-  --radius-lg: 0.5rem;
-  --radius-md: calc(0.5rem - 2px);
-  --radius-sm: calc(0.5rem - 4px);
+
+  /* Standard colors used in the app */
+  --color-red-50: #fef2f2;
+  --color-red-100: #fee2e2;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
+  --color-orange-50: #fff7ed;
+  --color-orange-500: #f97316;
+  --color-yellow-500: #eab308;
+  --color-lime-500: #84cc16;
+  --color-green-500: #22c55e;
+  --color-green-600: #16a34a;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  /* Spacing */
   --spacing-header: 60px;
 }
 
