@@ -397,46 +397,52 @@ function GameSetupContent({
             onClick={() => setSelectedGameType('guess_name')}
           >
             <div className="relative overflow-hidden bg-linear-to-br from-blue-500/10 to-cyan-500/10 p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="bg-blue-500/20 flex h-12 w-12 items-center justify-center rounded-xl">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2}
-                    stroke="currentColor"
-                    className="h-6 w-6 text-blue-600 dark:text-blue-400"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-                    />
-                  </svg>
-                </div>
-                {selectedGameType === 'guess_name' && (
-                  <div className="bg-primary flex h-6 w-6 items-center justify-center rounded-full">
-                    <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-500/20 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                      className="h-6 w-6 text-blue-600 dark:text-blue-400"
+                    >
                       <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
                       />
                     </svg>
                   </div>
-                )}
+                  <div>
+                    <h4 className="text-lg font-bold">Guess the Name</h4>
+                    <p className="text-muted-foreground text-sm">Show a photo, players pick the correct name</p>
+                  </div>
+                </div>
+                <div className={`bg-primary flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-opacity ${
+                  selectedGameType === 'guess_name' ? 'opacity-100' : 'opacity-0'
+                }`}>
+                  <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
               </div>
-              <h4 className="mb-2 text-xl font-bold">Guess the Name</h4>
-              <p className="text-muted-foreground mb-4 text-sm">Players see a photo and guess the person&apos;s name</p>
               
               {/* Visual Example */}
-              <div className="bg-background/50 relative rounded-lg border p-4">
+              <div className="bg-background/50 relative space-y-3 rounded-lg border p-4">
                 <div className="absolute -right-1 -top-1 rotate-12 rounded-lg bg-yellow-400 px-2 py-1 text-xs font-bold text-yellow-900 shadow-sm">
                   Example
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="bg-muted flex h-16 w-16 shrink-0 items-center justify-center rounded-full">
-                    <svg className="text-muted-foreground h-8 w-8" fill="currentColor" viewBox="0 0 20 20">
+                {/* Question - Image shown */}
+                <div className="text-center">
+                  <p className="text-muted-foreground mb-2 text-xs font-medium">QUESTION:</p>
+                  <div className="bg-muted mx-auto flex h-20 w-20 items-center justify-center rounded-lg border-2">
+                    <svg className="text-muted-foreground h-10 w-10" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
@@ -444,9 +450,15 @@ function GameSetupContent({
                       />
                     </svg>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-muted-foreground mb-1 text-xs">Players guess:</p>
-                    <p className="font-mono text-sm font-semibold">? ? ?</p>
+                </div>
+                {/* Answer Options - Names */}
+                <div>
+                  <p className="text-muted-foreground mb-2 text-xs font-medium">PICK NAME:</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-muted/50 rounded border px-2 py-1.5 text-center text-xs">John</div>
+                    <div className="bg-muted/50 rounded border px-2 py-1.5 text-center text-xs">Sarah</div>
+                    <div className="bg-muted/50 rounded border px-2 py-1.5 text-center text-xs">Mike</div>
+                    <div className="bg-muted/50 rounded border px-2 py-1.5 text-center text-xs">Lisa</div>
                   </div>
                 </div>
               </div>
@@ -462,50 +474,78 @@ function GameSetupContent({
             onClick={() => setSelectedGameType('guess_image')}
           >
             <div className="relative overflow-hidden bg-linear-to-br from-purple-500/10 to-pink-500/10 p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="bg-purple-500/20 flex h-12 w-12 items-center justify-center rounded-xl">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2}
-                    stroke="currentColor"
-                    className="h-6 w-6 text-purple-600 dark:text-purple-400"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-                    />
-                  </svg>
-                </div>
-                {selectedGameType === 'guess_image' && (
-                  <div className="bg-primary flex h-6 w-6 items-center justify-center rounded-full">
-                    <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="bg-purple-500/20 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                      className="h-6 w-6 text-purple-600 dark:text-purple-400"
+                    >
                       <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
                       />
                     </svg>
                   </div>
-                )}
+                  <div>
+                    <h4 className="text-lg font-bold">Guess the Face</h4>
+                    <p className="text-muted-foreground text-sm">Show a name, players pick the correct photo</p>
+                  </div>
+                </div>
+                <div className={`bg-primary flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-opacity ${
+                  selectedGameType === 'guess_image' ? 'opacity-100' : 'opacity-0'
+                }`}>
+                  <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
               </div>
-              <h4 className="mb-2 text-xl font-bold">Guess the Face</h4>
-              <p className="text-muted-foreground mb-4 text-sm">Players see a name and guess the person&apos;s photo</p>
               
               {/* Visual Example */}
-              <div className="bg-background/50 relative rounded-lg border p-4">
+              <div className="bg-background/50 relative space-y-3 rounded-lg border p-4">
                 <div className="absolute -right-1 -top-1 rotate-12 rounded-lg bg-yellow-400 px-2 py-1 text-xs font-bold text-yellow-900 shadow-sm">
                   Example
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="bg-muted flex h-16 w-16 shrink-0 items-center justify-center rounded-full">
-                    <span className="text-2xl">?</span>
+                {/* Question - Name shown */}
+                <div className="text-center">
+                  <p className="text-muted-foreground mb-2 text-xs font-medium">QUESTION:</p>
+                  <div className="bg-primary/10 rounded-lg border px-3 py-2">
+                    <p className="text-sm font-bold">John Smith</p>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-muted-foreground mb-1 text-xs">Players see name:</p>
-                    <p className="font-mono text-sm font-semibold">John Smith</p>
+                </div>
+                {/* Answer Options - Photos */}
+                <div>
+                  <p className="text-muted-foreground mb-2 text-xs font-medium">PICK PHOTO:</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className="bg-muted flex aspect-square items-center justify-center rounded-lg border-2">
+                      <svg className="text-muted-foreground h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="bg-muted flex aspect-square items-center justify-center rounded-lg border-2">
+                      <svg className="text-muted-foreground h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="bg-muted flex aspect-square items-center justify-center rounded-lg border-2">
+                      <svg className="text-muted-foreground h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="bg-muted flex aspect-square items-center justify-center rounded-lg border-2">
+                      <svg className="text-muted-foreground h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
