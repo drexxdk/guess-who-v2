@@ -11,27 +11,33 @@ import { useFormState } from '@/lib/hooks/use-form-state';
 import { useRouter } from 'next/navigation';
 import { useState, memo, useCallback } from 'react';
 
-export const UpdatePasswordForm = memo(function UpdatePasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+export const UpdatePasswordForm = memo(function UpdatePasswordForm({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<'div'>) {
   const [password, setPassword] = useState('');
   const { error, isLoading, execute, setError } = useFormState();
   const router = useRouter();
   const passwordStrength = usePasswordStrength(password);
 
-  const handleUpdatePassword = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdatePassword = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    if (passwordStrength.score < 2) {
-      setError('Please choose a stronger password');
-      return;
-    }
+      if (passwordStrength.score < 2) {
+        setError('Please choose a stronger password');
+        return;
+      }
 
-    await execute(async () => {
-      const supabase = createClient();
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
-      router.push('/admin');
-    });
-  }, [password, passwordStrength.score, execute, setError, router]);
+      await execute(async () => {
+        const supabase = createClient();
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) throw error;
+        router.push('/admin');
+      });
+    },
+    [password, passwordStrength.score, execute, setError, router],
+  );
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>

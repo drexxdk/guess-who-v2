@@ -22,32 +22,35 @@ export const SignUpForm = memo(function SignUpForm({ className, ...props }: Reac
   const router = useRouter();
   const passwordStrength = usePasswordStrength(password);
 
-  const handleSignUp = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSignUp = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    if (password !== repeatPassword) {
-      setError('Passwords do not match');
-      return;
-    }
+      if (password !== repeatPassword) {
+        setError('Passwords do not match');
+        return;
+      }
 
-    if (passwordStrength.score < 2) {
-      setError('Please choose a stronger password');
-      return;
-    }
+      if (passwordStrength.score < 2) {
+        setError('Please choose a stronger password');
+        return;
+      }
 
-    await execute(async () => {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/admin`,
-        },
+      await execute(async () => {
+        const supabase = createClient();
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/admin`,
+          },
+        });
+        if (error) throw error;
+        router.push('/auth/sign-up-success');
       });
-      if (error) throw error;
-      router.push('/auth/sign-up-success');
-    });
-  }, [email, password, repeatPassword, passwordStrength.score, execute, setError, router]);
+    },
+    [email, password, repeatPassword, passwordStrength.score, execute, setError, router],
+  );
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>

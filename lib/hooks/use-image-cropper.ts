@@ -94,58 +94,58 @@ export function useImageCropper(options: UseImageCropperOptions = {}) {
     [validTypes, maxFileSize],
   );
 
-  const applyCrop = useCallback(
-    async (): Promise<boolean> => {
-      return new Promise((resolve) => {
-        const img = new window.Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = cropSize;
-          canvas.height = cropSize;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(img, cropX, cropY, cropSize, cropSize, 0, 0, cropSize, cropSize);
-            const croppedImage = canvas.toDataURL('image/jpeg', quality);
-            setPreview(croppedImage);
+  const applyCrop = useCallback(async (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = cropSize;
+        canvas.height = cropSize;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, cropX, cropY, cropSize, cropSize, 0, 0, cropSize, cropSize);
+          const croppedImage = canvas.toDataURL('image/jpeg', quality);
+          setPreview(croppedImage);
 
-            // Convert cropped canvas to File
-            canvas.toBlob(
-              (blob) => {
-                if (blob) {
-                  const file = new File([blob], 'cropped-image.jpg', {
-                    type: 'image/jpeg',
-                  });
-                  setCroppedFile(file);
-                  setShowCropper(false);
-                  resolve(true);
-                } else {
-                  toast.error('Failed to create cropped image');
-                  resolve(false);
-                }
-              },
-              'image/jpeg',
-              quality,
-            );
-          } else {
-            toast.error('Failed to get canvas context');
-            resolve(false);
-          }
-        };
-        img.onerror = () => {
-          toast.error('Failed to load image for cropping');
+          // Convert cropped canvas to File
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const file = new File([blob], 'cropped-image.jpg', {
+                  type: 'image/jpeg',
+                });
+                setCroppedFile(file);
+                setShowCropper(false);
+                resolve(true);
+              } else {
+                toast.error('Failed to create cropped image');
+                resolve(false);
+              }
+            },
+            'image/jpeg',
+            quality,
+          );
+        } else {
+          toast.error('Failed to get canvas context');
           resolve(false);
-        };
-        img.src = originalImage;
-      });
-    },
-    [cropSize, cropX, cropY, quality, originalImage],
-  );
+        }
+      };
+      img.onerror = () => {
+        toast.error('Failed to load image for cropping');
+        resolve(false);
+      };
+      img.src = originalImage;
+    });
+  }, [cropSize, cropX, cropY, quality, originalImage]);
 
-  const handleMouseDownBox = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setDraggingBox(true);
-    setStartCropState({ x: cropX, y: cropY, size: cropSize, mouseX: e.clientX, mouseY: e.clientY });
-  }, [cropX, cropY, cropSize]);
+  const handleMouseDownBox = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setDraggingBox(true);
+      setStartCropState({ x: cropX, y: cropY, size: cropSize, mouseX: e.clientX, mouseY: e.clientY });
+    },
+    [cropX, cropY, cropSize],
+  );
 
   const handleMouseDownCorner = useCallback(
     (corner: string) => (e: React.MouseEvent) => {
@@ -173,8 +173,8 @@ export function useImageCropper(options: UseImageCropperOptions = {}) {
         setCropX(newX);
         setCropY(newY);
       } else if (resizingCorner) {
-        const deltaX = (e.clientX - startCropState.mouseX);
-        const deltaY = (e.clientY - startCropState.mouseY);
+        const deltaX = e.clientX - startCropState.mouseX;
+        const deltaY = e.clientY - startCropState.mouseY;
 
         let newSize = startCropState.size;
         let newX = startCropState.x;
@@ -263,19 +263,19 @@ export function useImageCropper(options: UseImageCropperOptions = {}) {
     cropX,
     cropY,
     cropSize,
-    
+
     // Actions
     validateAndLoadImage,
     applyCrop,
     cancelCrop,
     reset,
-    
+
     // Mouse handlers
     handleMouseDownBox,
     handleMouseDownCorner,
     handleMouseMove,
     handleMouseUp,
-    
+
     // Direct setters (for manual control if needed)
     setPreview,
     setCroppedFile,

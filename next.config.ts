@@ -59,19 +59,19 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  
+
   // Enable component caching for faster builds
   cacheComponents: true,
-  
+
   // Turbopack configuration (required for Next.js 16)
   turbopack: {},
-  
+
   // Optimize production builds
   compiler: {
     // Remove console statements in production
     removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
   },
-  
+
   // Optimize images
   images: {
     remotePatterns: [
@@ -96,7 +96,7 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
-  
+
   // Security and performance headers
   async headers() {
     return [
@@ -107,15 +107,10 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  
+
   // Experimental features for better performance
   experimental: {
-    optimizePackageImports: [
-      'react-icons',
-      'lucide-react',
-      'framer-motion',
-      '@supabase/supabase-js',
-    ],
+    optimizePackageImports: ['react-icons', 'framer-motion', '@supabase/supabase-js'],
   },
 };
 

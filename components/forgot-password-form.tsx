@@ -10,22 +10,28 @@ import { useFormState } from '@/lib/hooks/use-form-state';
 import Link from 'next/link';
 import { useState, memo, useCallback } from 'react';
 
-export const ForgotPasswordForm = memo(function ForgotPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+export const ForgotPasswordForm = memo(function ForgotPasswordForm({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<'div'>) {
   const [email, setEmail] = useState('');
   const [success, setSuccess] = useState(false);
   const { error, isLoading, execute } = useFormState();
 
-  const handleForgotPassword = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    await execute(async () => {
-      const supabase = createClient();
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/update-password`,
+  const handleForgotPassword = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      await execute(async () => {
+        const supabase = createClient();
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth/update-password`,
+        });
+        if (error) throw error;
+        setSuccess(true);
       });
-      if (error) throw error;
-      setSuccess(true);
-    });
-  }, [email, execute]);
+    },
+    [email, execute],
+  );
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>

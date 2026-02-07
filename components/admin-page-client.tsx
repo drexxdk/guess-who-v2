@@ -25,9 +25,9 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
     <div className="flex w-full flex-1 flex-col gap-12">
       {/* Hero Section with Gradient */}
       <Card variant="flush" className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-purple-500/10 to-pink-500/10" />
+        <div className="from-primary/10 absolute inset-0 bg-linear-to-br via-purple-500/10 to-pink-500/10" />
         <div className="relative flex items-start gap-6 p-8">
-          <div className="bg-linear-to-br from-primary to-purple-600 flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl shadow-lg">
+          <div className="from-primary flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br to-purple-600 shadow-lg">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -45,7 +45,7 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
           </div>
           <div className="flex grow flex-col gap-4">
             <div>
-              <h1 className="mb-2 bg-linear-to-r from-primary to-purple-600 bg-clip-text text-4xl font-bold text-transparent">
+              <h1 className="from-primary mb-2 bg-linear-to-r to-purple-600 bg-clip-text text-4xl font-bold text-transparent">
                 Welcome to Guess Who!
               </h1>
               <p className="text-muted-foreground text-lg">
@@ -54,10 +54,7 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <LoadingLink
-                href="/game/join"
-                className={buttonVariants({ size: 'lg', className: 'gap-2' })}
-              >
+              <LoadingLink href="/game/join" className={buttonVariants({ size: 'lg', className: 'gap-2' })}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -170,9 +167,7 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-primary/5 border-primary/10 flex flex-col gap-1 rounded-lg border p-2.5">
                       <p className="text-muted-foreground text-xs font-medium">Type</p>
-                      <p className="text-sm font-semibold">
-                        {session.game_type === 'guess_name' ? 'Name' : 'Face'}
-                      </p>
+                      <p className="text-sm font-semibold">{session.game_type === 'guess_name' ? 'Name' : 'Face'}</p>
                     </div>
                     <div className="bg-primary/5 border-primary/10 flex flex-col gap-1 rounded-lg border p-2.5">
                       <p className="text-muted-foreground text-xs font-medium">Timer</p>

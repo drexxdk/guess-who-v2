@@ -124,7 +124,6 @@ Added `React.memo()` and `useCallback()` to prevent unnecessary re-renders in th
    experimental: {
      optimizePackageImports: [
        'react-icons',
-       'lucide-react',
        'framer-motion',
        '@supabase/supabase-js',
      ],
