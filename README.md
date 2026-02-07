@@ -54,7 +54,7 @@ Perfect scenarios for this game include:
 
 - Secure user authentication with Supabase
 - Password reset and account management
-- Protected routes for authenticated users
+- Admin routes for authenticated users
 
 ## Tech Stack
 
@@ -126,7 +126,7 @@ guess-who-v2/
 ├── app/                    # Next.js app directory
 │   ├── auth/              # Authentication pages
 │   ├── game/              # Game flow pages
-│   └── protected/         # Protected app pages
+│   └── admin/             # Admin app pages
 ├── components/            # React components
 │   └── ui/               # shadcn/ui components
 ├── lib/                   # Utilities and helpers

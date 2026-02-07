@@ -133,7 +133,7 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
     }
 
     // Navigate to game started screen
-    router.push(`/protected/groups/${groupId}/host/${session.id}/started`);
+    router.push(`/admin/groups/${groupId}/host/${session.id}/started`);
   };
 
   // Show nothing until initialized (global loading overlay handles loading state)
@@ -184,7 +184,7 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
                 <Button
                   onClick={() => {
                     setLoading(true);
-                    router.push(`/protected/groups/${groupId}/host/${gameSession.id}/play`);
+                    router.push(`/admin/groups/${groupId}/host/${gameSession.id}/play`);
                   }}
                   className="flex-1"
                 >

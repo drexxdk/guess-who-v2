@@ -15,7 +15,7 @@ export default async function Home() {
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect('/protected');
+    redirect('/admin');
   }
 
   return (
@@ -175,9 +175,9 @@ export default async function Home() {
           <div className="mt-16 text-center">
             <Card className="border-primary/50 mx-auto max-w-3xl bg-gradient-to-br from-[hsl(240_10%_8%)] to-[hsl(240_10%_4%)]">
               <CardContent className="py-12">
-                <h3 className="mb-4 text-3xl font-bold">Ready to Play?</h3>
+                <h3 className="mb-4 text-3xl font-bold">Ready to Connect?</h3>
                 <p className="text-muted-foreground mb-8 text-lg">
-                  Join thousands of players having fun testing their memory
+                  Join others in a fun, engaging way to learn names and faces
                 </p>
                 <div className="flex flex-col justify-center gap-4 sm:flex-row">
                   <Link href="/game/join" className={buttonVariants({ size: 'lg' })}>

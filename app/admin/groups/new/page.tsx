@@ -70,7 +70,7 @@ export default function NewGroupPage() {
           options_count: 3,
         });
         setLoading(true);
-        router.push(`/protected/groups/${data.id}`);
+        router.push(`/admin/groups/${data.id}`);
         router.refresh();
       }
     });

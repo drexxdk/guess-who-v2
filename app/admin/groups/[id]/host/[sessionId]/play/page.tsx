@@ -320,7 +320,7 @@ export default function GameControlPage({
     setLoading(true);
     const supabase = createClient();
     await endGameSession(supabase, sessionId);
-    router.push('/protected');
+    router.push('/admin');
   };
 
   if (isLoading) {
@@ -373,7 +373,7 @@ export default function GameControlPage({
               End Game
             </Button>
             <LoadingLink
-              href="/protected"
+              href="/admin"
               className={buttonVariants({
                 variant: 'outline',
                 className: 'flex-1',

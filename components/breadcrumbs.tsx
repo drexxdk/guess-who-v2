@@ -6,16 +6,16 @@ import { usePathname } from 'next/navigation';
 export function Breadcrumbs() {
   const pathname = usePathname();
 
-  // Remove /protected prefix and split into segments
+  // Remove /admin prefix and split into segments
   const pathSegments = (pathname || '')
-    .replace(/^\/protected\/?/, '')
+    .replace(/^\/admin\/?/, '')
     .split('/')
     .filter(Boolean);
 
   // Build breadcrumb items
-  const breadcrumbs = [{ label: 'Home', href: '/protected' }];
+  const breadcrumbs = [{ label: 'Home', href: '/admin' }];
 
-  let currentPath = '/protected';
+  let currentPath = '/admin';
   for (let i = 0; i < pathSegments.length; i++) {
     const segment = pathSegments[i];
 
@@ -44,7 +44,7 @@ export function Breadcrumbs() {
     });
   }
 
-  // Don't show breadcrumbs if we're only at /protected
+  // Don't show breadcrumbs if we're only at /admin
   if (breadcrumbs.length <= 1) {
     return null;
   }
@@ -53,22 +53,16 @@ export function Breadcrumbs() {
     <nav className="mb-6">
       <div className="flex flex-wrap items-center gap-2 text-sm">
         {breadcrumbs.map((crumb, index) => (
-          <>
-            {index > 0 && (
-              <span key={`sep-${index}`} className="text-muted-foreground">
-                /
-              </span>
-            )}
+          <div key={crumb.href} className="flex items-center gap-2">
+            {index > 0 && <span className="text-muted-foreground">/</span>}
             {index === breadcrumbs.length - 1 ? (
-              <span key={crumb.href} className="text-foreground font-medium">
-                {crumb.label}
-              </span>
+              <span className="text-foreground font-medium">{crumb.label}</span>
             ) : (
-              <Link key={crumb.href} href={crumb.href} className="text-primary hover:underline">
+              <Link href={crumb.href} className="text-primary hover:underline">
                 {crumb.label}
               </Link>
             )}
-          </>
+          </div>
         ))}
       </div>
     </nav>

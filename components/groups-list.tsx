@@ -34,7 +34,7 @@ export function GroupsList({ groups }: GroupsListProps) {
             Create groups for your team, classroom, or event. Help people learn names and faces!
           </p>
         </div>
-        <LoadingLink href="/protected/groups/new" className={buttonVariants()}>
+        <LoadingLink href="/admin/groups/new" className={buttonVariants()}>
           Create New Group
         </LoadingLink>
       </div>
@@ -54,7 +54,7 @@ export function GroupsList({ groups }: GroupsListProps) {
           title="No groups yet"
           description="Create your first group to help people get to know each other through an icebreaker game"
           action={
-            <LoadingLink href="/protected/groups/new" className={buttonVariants({ size: 'lg' })}>
+            <LoadingLink href="/admin/groups/new" className={buttonVariants({ size: 'lg' })}>
               Create Your First Group
             </LoadingLink>
           }
@@ -71,7 +71,7 @@ export function GroupsList({ groups }: GroupsListProps) {
                 <CardContent className="mt-auto">
                   <div className="flex gap-2">
                     <LoadingLink
-                      href={`/protected/groups/${group.id}`}
+                      href={`/admin/groups/${group.id}`}
                       className={buttonVariants({
                         variant: 'outline',
                         className: 'flex-1',
@@ -80,7 +80,7 @@ export function GroupsList({ groups }: GroupsListProps) {
                       Manage
                     </LoadingLink>
                     <LoadingLink
-                      href={`/protected/groups/${group.id}/host`}
+                      href={`/admin/groups/${group.id}/host`}
                       className={buttonVariants({ className: 'flex-1' })}
                     >
                       Start Game

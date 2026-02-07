@@ -45,7 +45,7 @@ export default function GameStartedPage({
 
     // Navigate back to group
     setLoading(true);
-    router.push(`/protected/groups/${groupId}/host`);
+    router.push(`/admin/groups/${groupId}/host`);
   }
 
   // Show nothing until initialized (global loading overlay handles loading state)
@@ -78,7 +78,7 @@ export default function GameStartedPage({
               End Game
             </Button>
             <LoadingLink
-              href={`/protected/groups/${groupId}/host/${sessionId}/play`}
+              href={`/admin/groups/${groupId}/host/${sessionId}/play`}
               className={buttonVariants({ className: 'flex-1' })}
             >
               Go to Control Dashboard

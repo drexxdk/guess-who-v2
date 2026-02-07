@@ -5,7 +5,7 @@ import { Suspense } from 'react';
 import { LoadingProvider } from '@/lib/loading-context';
 import { ErrorBoundaryWrapper } from '@/components/error-boundary-wrapper';
 
-export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <main className="flex min-h-screen flex-col">
       <Header />

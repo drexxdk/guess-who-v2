@@ -28,7 +28,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         password,
       });
       if (error) throw error;
-      router.push('/protected');
+      router.push('/admin');
     });
   };
 

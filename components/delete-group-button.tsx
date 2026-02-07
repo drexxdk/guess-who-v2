@@ -51,7 +51,7 @@ export function DeleteGroupButton({ groupId }: { groupId: string }) {
       if (error) throw error;
 
       toast.success('Group deleted successfully');
-      push('/protected/groups');
+      push('/admin/groups');
       refresh();
     } catch (err: unknown) {
       toast.error('Error deleting group: ' + getErrorMessage(err));

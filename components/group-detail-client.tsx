@@ -130,7 +130,7 @@ export function GroupDetailClient({
             />
             <div className="mt-6 space-y-2">
               <LoadingLink
-                href={`/protected/groups/${updatedGroupData.id}/host`}
+                href={`/admin/groups/${updatedGroupData.id}/host`}
                 className={buttonVariants({
                   className: `w-full ${!hasEnoughPeople ? 'pointer-events-none opacity-50' : ''}`,
                 })}

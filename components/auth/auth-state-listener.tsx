@@ -38,9 +38,9 @@ export function AuthStateListener() {
         sessionStorage.removeItem('intentional_logout');
 
         // Only show session expired message if not intentional
-        // and on a protected route
+        // and on a admin route
         const pathname = window.location.pathname;
-        if (!wasIntentional && pathname?.startsWith('/protected')) {
+        if (!wasIntentional && pathname?.startsWith('/admin')) {
           toast.error('Your session has expired. Please log in again.');
           router.push('/auth/login');
         }
@@ -61,7 +61,7 @@ export function AuthStateListener() {
         // Session is invalid, try to refresh
         const { error: refreshError } = await supabase.auth.refreshSession();
 
-        if (refreshError && pathname?.startsWith('/protected')) {
+        if (refreshError && pathname?.startsWith('/admin')) {
           toast.error('Your session has expired. Please log in again.');
           router.push('/auth/login');
         }
