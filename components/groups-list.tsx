@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingLink } from '@/components/ui/loading-link';
@@ -18,7 +18,7 @@ interface GroupsListProps {
   groups: Group[] | null;
 }
 
-export function GroupsList({ groups }: GroupsListProps) {
+export const GroupsList = memo(function GroupsList({ groups }: GroupsListProps) {
   const { setLoading } = useLoading();
 
   // Reset loading state when page mounts
@@ -191,4 +191,4 @@ export function GroupsList({ groups }: GroupsListProps) {
       )}
     </>
   );
-}
+});

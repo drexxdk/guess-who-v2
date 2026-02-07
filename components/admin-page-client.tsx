@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import { buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +13,7 @@ interface AdminPageClientProps {
   activeSessions: GameSessionWithGroup[];
 }
 
-export function AdminPageClient({ activeSessions }: AdminPageClientProps) {
+export const AdminPageClient = memo(function AdminPageClient({ activeSessions }: AdminPageClientProps) {
   const { setLoading } = useLoading();
 
   // Reset loading state when page mounts
@@ -229,4 +229,4 @@ export function AdminPageClient({ activeSessions }: AdminPageClientProps) {
       />
     </div>
   );
-}
+});

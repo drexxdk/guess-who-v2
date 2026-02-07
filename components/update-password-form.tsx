@@ -9,15 +9,15 @@ import { Label } from '@/components/ui/label';
 import { PasswordStrengthMeter, usePasswordStrength } from '@/components/password-strength';
 import { useFormState } from '@/lib/hooks/use-form-state';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 
-export function UpdatePasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+export const UpdatePasswordForm = memo(function UpdatePasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [password, setPassword] = useState('');
   const { error, isLoading, execute, setError } = useFormState();
   const router = useRouter();
   const passwordStrength = usePasswordStrength(password);
 
-  const handleUpdatePassword = async (e: React.FormEvent) => {
+  const handleUpdatePassword = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (passwordStrength.score < 2) {
@@ -31,7 +31,7 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
       if (error) throw error;
       router.push('/admin');
     });
-  };
+  }, [password, passwordStrength.score, execute, setError, router]);
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
@@ -65,4 +65,4 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
       </Card>
     </div>
   );
-}
+});

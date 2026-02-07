@@ -1,4 +1,10 @@
 import type { NextConfig } from 'next';
+import bundleAnalyzer from '@next/bundle-analyzer';
+
+// Bundle analyzer (optional, use ANALYZE=true npm run build)
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 // Build CSP header
 const ContentSecurityPolicy = `
@@ -52,7 +58,21 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  reactStrictMode: true,
+  
+  // Enable component caching for faster builds
   cacheComponents: true,
+  
+  // Turbopack configuration (required for Next.js 16)
+  turbopack: {},
+  
+  // Optimize production builds
+  compiler: {
+    // Remove console statements in production
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
+  
+  // Optimize images
   images: {
     remotePatterns: [
       {
@@ -72,7 +92,12 @@ const nextConfig: NextConfig = {
         hostname: '*.supabase.co',
       },
     ],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
+  
+  // Security and performance headers
   async headers() {
     return [
       {
@@ -82,6 +107,16 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  
+  // Experimental features for better performance
+  experimental: {
+    optimizePackageImports: [
+      'react-icons',
+      'lucide-react',
+      'framer-motion',
+      '@supabase/supabase-js',
+    ],
+  },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

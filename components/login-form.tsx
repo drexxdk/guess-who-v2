@@ -11,15 +11,15 @@ import { GoogleAuthButton } from '@/components/google-auth-button';
 import { useFormState } from '@/lib/hooks/use-form-state';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 
-export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+export const LoginForm = memo(function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { error, isLoading, execute, setError } = useFormState();
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     await execute(async () => {
       const supabase = createClient();
@@ -30,7 +30,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       if (error) throw error;
       router.push('/admin');
     });
-  };
+  }, [email, password, execute, router]);
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
@@ -89,4 +89,4 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       </Card>
     </div>
   );
-}
+});

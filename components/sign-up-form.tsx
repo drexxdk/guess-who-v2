@@ -12,9 +12,9 @@ import { PasswordStrengthMeter, usePasswordStrength } from '@/components/passwor
 import { useFormState } from '@/lib/hooks/use-form-state';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 
-export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+export const SignUpForm = memo(function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
@@ -22,7 +22,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
   const router = useRouter();
   const passwordStrength = usePasswordStrength(password);
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSignUp = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== repeatPassword) {
@@ -47,7 +47,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
       if (error) throw error;
       router.push('/auth/sign-up-success');
     });
-  };
+  }, [email, password, repeatPassword, passwordStrength.score, execute, setError, router]);
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
@@ -111,4 +111,4 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
       </Card>
     </div>
   );
-}
+});
