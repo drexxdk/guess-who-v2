@@ -12,6 +12,7 @@ import { generateGameCode, endGameSession } from '@/lib/game-utils';
 import { useLoading } from '@/lib/loading-context';
 import type { Group, Person, GameSession, GameType } from '@/lib/schemas';
 import { logError } from '@/lib/logger';
+import { GameQRCode } from '@/components/game-qr-code';
 
 export default function GameHostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: groupId } = use(params);
@@ -168,12 +169,15 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
             <>
               <div className="space-y-4 py-8 text-center">
                 <h3 className="text-2xl font-bold">Game Started!</h3>
-                <div>
-                  <p className="text-muted-foreground mb-2 text-sm">Game Code</p>
-                  <Badge className="px-12 py-6 font-mono text-6xl">{gameCode}</Badge>
+                <div className="flex flex-col items-center gap-6">
+                  <div>
+                    <p className="text-muted-foreground mb-2 text-sm">Game Code</p>
+                    <Badge className="px-12 py-6 font-mono text-6xl">{gameCode}</Badge>
+                  </div>
+                  {gameCode && <GameQRCode gameCode={gameCode} />}
                 </div>
                 <p className="text-muted-foreground">
-                  Share this code with players so they can join at <span className="font-mono">/game/join</span>
+                  Share this code or QR code with players so they can join at <span className="font-mono">/game/join</span>
                 </p>
               </div>
 

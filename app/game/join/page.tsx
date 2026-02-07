@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect } from 'react';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,9 @@ import { sound, haptic } from '@/lib/sounds';
 
 export default function JoinGamePage() {
   const router = useRouter();
-  const [gameCode, setGameCode] = useState('');
+  const searchParams = useSearchParams();
+  const codeFromUrl = searchParams.get('code');
+  const [gameCode, setGameCode] = useState(codeFromUrl?.toUpperCase() || '');
   const [playerName, setPlayerName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,9 +29,11 @@ export default function JoinGamePage() {
     setLoading(false);
     setIsSubmitting(false);
     setError(null);
-    // Reset form fields for a fresh start
-    setGameCode('');
-    setPlayerName('');
+    // Only reset form fields if not coming from QR code
+    if (!codeFromUrl) {
+      setGameCode('');
+      setPlayerName('');
+    }
 
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
@@ -53,7 +57,7 @@ export default function JoinGamePage() {
       window.removeEventListener('pageshow', handlePageShow);
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [setLoading]);
+  }, [setLoading, codeFromUrl]);
 
   const handleJoin = useCallback(
     async (e: React.FormEvent) => {
