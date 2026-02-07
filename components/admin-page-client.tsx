@@ -1,10 +1,19 @@
 'use client';
 
 import { useEffect, memo } from 'react';
-import { FaUserGroup, FaRightToBracket, FaFolder, FaPlay, FaUser, FaImage, FaArrowUpRightFromSquare } from 'react-icons/fa6';
+import {
+  FaUserGroup,
+  FaRightToBracket,
+  FaFolder,
+  FaPlay,
+  FaUser,
+  FaImage,
+  FaArrowUpRightFromSquare,
+} from 'react-icons/fa6';
 import { buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Icon } from '@/components/ui/icon';
 import { InfoListCard } from '@/components/ui/section-card';
 import { LoadingLink } from '@/components/ui/loading-link';
 import { useLoading } from '@/lib/loading-context';
@@ -29,7 +38,7 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
         <div className="from-primary/10 absolute inset-0 bg-linear-to-br via-purple-500/10 to-pink-500/10" />
         <div className="relative flex items-start gap-6 p-8">
           <div className="from-primary flex size-20 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br to-purple-600 shadow-lg">
-            <FaUserGroup className="size-10 text-white" />
+            <Icon icon={FaUserGroup} size="2xl" color="white" />
           </div>
           <div className="flex grow flex-col gap-4">
             <div>
@@ -43,14 +52,14 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
             </div>
             <div className="flex flex-wrap gap-3">
               <LoadingLink href="/game/join" className={buttonVariants({ size: 'lg', className: 'gap-2' })}>
-                <FaRightToBracket className="size-5" />
+                <Icon icon={FaRightToBracket} size="md" />
                 Join Game
               </LoadingLink>
               <LoadingLink
                 href="/admin/groups"
                 className={buttonVariants({ variant: 'secondary', size: 'lg', className: 'gap-2' })}
               >
-                <FaFolder className="size-5" />
+                <Icon icon={FaFolder} size="md" />
                 My Groups
               </LoadingLink>
             </div>
@@ -63,7 +72,7 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
         <div>
           <div className="mb-6 flex items-center gap-3">
             <div className="bg-primary/20 flex size-10 items-center justify-center rounded-lg">
-              <FaPlay className="text-primary size-6" />
+              <Icon icon={FaPlay} size="lg" color="primary" />
             </div>
             <div>
               <h2 className="text-2xl font-semibold">Your Active Games</h2>
@@ -77,9 +86,9 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {session.game_type === 'guess_name' ? (
-                        <FaUser className="text-primary size-5" />
+                        <Icon icon={FaUser} size="md" color="primary" />
                       ) : (
-                        <FaImage className="text-primary size-5" />
+                        <Icon icon={FaImage} size="md" color="primary" />
                       )}
                       <CardTitle className="text-base">{session.groups?.name || 'Unknown'}</CardTitle>
                     </div>
@@ -110,7 +119,7 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
                     href={`/admin/groups/${session.groups?.id}/host/${session.id}/play`}
                     className={buttonVariants({ className: 'w-full gap-2 group-hover:shadow-lg' })}
                   >
-                    <FaArrowUpRightFromSquare className="size-4" />
+                    <Icon icon={FaArrowUpRightFromSquare} size="sm" />
                     Open Game
                   </LoadingLink>
                 </CardContent>

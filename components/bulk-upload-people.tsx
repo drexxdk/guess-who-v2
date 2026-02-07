@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { FaDownload } from 'react-icons/fa6';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
@@ -199,6 +200,8 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
       return;
     }
 
+    setLoadingImage(true);
+
     const reader = new FileReader();
     reader.onloadend = () => {
       const imageData = reader.result as string;
@@ -213,6 +216,7 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
         setCropY(Math.max(0, (img.height - minDimension) / 2));
         setCropSize(minDimension);
         setShowCropper(true);
+        setLoadingImage(false);
       };
       img.src = imageData;
     };
@@ -240,6 +244,9 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
         toast.error('Please select an image file');
         return;
       }
+
+      setLoadingImage(true);
+
       const reader = new FileReader();
       reader.onloadend = () => {
         const imageData = reader.result as string;
@@ -254,6 +261,7 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
           setCropY(Math.max(0, (img.height - minDimension) / 2));
           setCropSize(minDimension);
           setShowCropper(true);
+          setLoadingImage(false);
         };
         img.src = imageData;
       };
@@ -635,6 +643,7 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
                 });
               }}
               className="mt-1"
+              disabled={uploading}
             />
           </div>
 
@@ -652,6 +661,7 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
                 });
               }}
               className="mt-1"
+              disabled={uploading}
             />
           </div>
 
@@ -669,6 +679,7 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
                 });
               }}
               className="border-input bg-background mt-1 w-full rounded-md border px-3 py-2 text-sm"
+              disabled={uploading}
             >
               <option value="male">Male</option>
               <option value="female">Female</option>
@@ -679,7 +690,8 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
           <div>
             <Label>Photo</Label>
             {loadingImage ? (
-              <div className="bg-muted mt-1 flex h-40 items-center justify-center rounded-lg border">
+              <div className="bg-muted mt-1 flex h-40 flex-col items-center justify-center gap-3 rounded-lg border">
+                <div className="border-t-primary border-r-primary h-8 w-8 animate-spin rounded-full border-2 border-transparent"></div>
                 <div className="text-muted-foreground text-sm">Loading image...</div>
               </div>
             ) : showCropper && originalImage ? (
@@ -950,7 +962,7 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
       </div>
 
       <Button variant="outline" onClick={downloadTemplate} className="flex w-full items-center gap-2">
-        <FaDownload className="size-4" />
+        <Icon icon={FaDownload} size="sm" />
         Download CSV Template
       </Button>
     </div>

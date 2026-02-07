@@ -4,6 +4,7 @@ import { useEffect, memo } from 'react';
 import { FaPlus, FaUserGroup, FaPlay, FaGear, FaClock } from 'react-icons/fa6';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Icon } from '@/components/ui/icon';
 import { LoadingLink } from '@/components/ui/loading-link';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StaggeredGrid, StaggeredGridItem } from '@/components/ui/staggered-list';
@@ -36,14 +37,14 @@ export const GroupsList = memo(function GroupsList({ groups }: GroupsListProps) 
           </p>
         </div>
         <LoadingLink href="/admin/groups/new" className={buttonVariants({ className: 'gap-2' })}>
-          <FaPlus className="size-4" />
+          <Icon icon={FaPlus} size="sm" />
           Create Group
         </LoadingLink>
       </div>
 
       {!groups || groups.length === 0 ? (
         <EmptyState
-          icon={<FaUserGroup className="size-8" />}
+          icon={<Icon icon={FaUserGroup} size="xl" />}
           title="No groups yet"
           description="Create your first group to help people get to know each other through an icebreaker game"
           action={
@@ -62,11 +63,15 @@ export const GroupsList = memo(function GroupsList({ groups }: GroupsListProps) 
                   {/* Visual Header with Gradient */}
                   <div className="from-primary/20 relative h-32 bg-linear-to-br via-purple-500/20 to-pink-500/20">
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <FaUserGroup className="text-primary/40 size-16 transition-transform group-hover:scale-110" />
+                      <Icon
+                        icon={FaUserGroup}
+                        size="4xl"
+                        className="text-primary/40 transition-transform group-hover:scale-110"
+                      />
                     </div>
                     {/* People Count Badge */}
                     <div className="absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 shadow-lg backdrop-blur-sm dark:bg-gray-900/90">
-                      <FaUserGroup className="text-primary size-4" />
+                      <Icon icon={FaUserGroup} size="sm" color="primary" />
                       <span className="text-sm font-semibold">{peopleCount}</span>
                     </div>
                   </div>
@@ -85,7 +90,7 @@ export const GroupsList = memo(function GroupsList({ groups }: GroupsListProps) 
                         href={`/admin/groups/${group.id}/host`}
                         className={buttonVariants({ className: 'flex-1 gap-2 group-hover:shadow-md' })}
                       >
-                        <FaPlay className="size-4" />
+                        <Icon icon={FaPlay} size="sm" />
                         Start Game
                       </LoadingLink>
                       <LoadingLink
@@ -95,7 +100,7 @@ export const GroupsList = memo(function GroupsList({ groups }: GroupsListProps) 
                           className: 'flex-1 gap-2',
                         })}
                       >
-                        <FaGear className="size-4" />
+                        <Icon icon={FaGear} size="sm" />
                         Manage
                       </LoadingLink>
                     </CardContent>

@@ -7,6 +7,7 @@ import { FaCheck, FaXmark } from 'react-icons/fa6';
 import { createClient } from '@/lib/supabase/client';
 import { markPlayerAsLeft } from '@/app/actions/mark-player-left';
 import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ErrorMessage } from '@/components/ui/error-message';
@@ -927,8 +928,8 @@ function ActiveGameState({ state }: { state: ActiveState }) {
                           )}
                           {state.answered && (isCorrect || isSelected) && (
                             <span className="flex size-6 shrink-0 items-center justify-center">
-                              {isCorrect && <FaCheck className="size-6" />}
-                              {isSelected && !isCorrect && <FaXmark className="size-6" />}
+                              {isCorrect && <Icon icon={FaCheck} size="lg" />}
+                              {isSelected && !isCorrect && <Icon icon={FaXmark} size="lg" />}
                             </span>
                           )}
                         </span>

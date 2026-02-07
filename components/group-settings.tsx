@@ -195,8 +195,8 @@ export const GroupSettings = memo(function GroupSettings({
           <Button onClick={handleCancel} variant="outline" disabled={isSaving} className="flex-1">
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving} className="flex-1">
-            {isSaving ? 'Saving...' : 'Save'}
+          <Button onClick={handleSave} loading={isSaving} loadingText="Saving..." className="flex-1">
+            Save
           </Button>
         </div>
       </div>

@@ -38,15 +38,13 @@ export default async function Home() {
 
           {/* Headline */}
           <div className="flex flex-col gap-3 md:gap-4">
-            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-7xl">
-              Guess Who?
-            </h1>
+            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-7xl">Guess Who?</h1>
             <p className="max-w-2xl px-4 text-lg text-white/90 sm:text-xl md:text-2xl">
               Get to know each other through fun and games!
             </p>
             <p className="max-w-xl px-4 text-base text-white/80 sm:text-lg">
-              A social icebreaker game that helps people learn about each other. Perfect for new employees, students, team
-              building, and social events.
+              A social icebreaker game that helps people learn about each other. Perfect for new employees, students,
+              team building, and social events.
             </p>
           </div>
 
@@ -101,12 +99,10 @@ export default async function Home() {
         <div className="container mx-auto max-w-6xl">
           <div className="mb-12 text-center md:mb-16">
             <div className="flex flex-col gap-3 md:gap-4">
-              <h2 className="text-gradient-primary text-3xl font-bold sm:text-4xl md:text-5xl">
-                How It Works
-              </h2>
+              <h2 className="text-gradient-primary text-3xl font-bold sm:text-4xl md:text-5xl">How It Works</h2>
               <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-              Break the ice and build connections. Get started in seconds.
-            </p>
+                Break the ice and build connections. Get started in seconds.
+              </p>
             </div>
           </div>
 
@@ -114,7 +110,7 @@ export default async function Home() {
             {/* Feature 1 */}
             <Card className="text-center transition-transform hover:scale-105">
               <CardHeader className="flex flex-col gap-4">
-                <div className="bg-gradient-primary glow-primary flex size-16 items-center justify-center rounded-2xl self-center">
+                <div className="bg-gradient-primary glow-primary flex size-16 items-center justify-center self-center rounded-2xl">
                   <Icon icon={FaPlus} size="xl" color="white" />
                 </div>
                 <CardTitle>Create or Join</CardTitle>
@@ -127,7 +123,7 @@ export default async function Home() {
             {/* Feature 2 */}
             <Card className="text-center transition-transform hover:scale-105">
               <CardHeader className="flex flex-col gap-4">
-                <div className="glow-accent flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[hsl(217_91%_60%)] to-[hsl(340_82%_52%)] self-center">
+                <div className="glow-accent flex size-16 items-center justify-center self-center rounded-2xl bg-gradient-to-br from-[hsl(217_91%_60%)] to-[hsl(340_82%_52%)]">
                   <Icon icon={FaCircleQuestion} size="xl" color="white" />
                 </div>
                 <CardTitle>Guess the Person</CardTitle>
@@ -140,7 +136,7 @@ export default async function Home() {
             {/* Feature 3 */}
             <Card className="text-center transition-transform hover:scale-105">
               <CardHeader className="flex flex-col gap-4">
-                <div className="glow-success flex size-16 items-center justify-center rounded-2xl bg-[hsl(142_76%_36%)] self-center">
+                <div className="glow-success flex size-16 items-center justify-center self-center rounded-2xl bg-[hsl(142_76%_36%)]">
                   <Icon icon={FaTrophy} size="xl" color="white" />
                 </div>
                 <CardTitle>Compete & Win</CardTitle>

@@ -6,6 +6,7 @@ import { PeopleList } from '@/components/people-list';
 import { AddPersonForm } from '@/components/add-person-form';
 import { BulkUploadPeople } from '@/components/bulk-upload-people';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Icon } from '@/components/ui/icon';
 import { SectionCard } from '@/components/ui/section-card';
 import { buttonVariants } from '@/components/ui/button';
 import { Button } from '@/components/ui/button';
@@ -128,12 +129,12 @@ export function GroupDetailClient({
           <div className="relative flex items-start justify-between gap-6 p-8">
             <div className="flex items-start gap-6">
               <div className="from-primary flex size-16 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br to-purple-600 shadow-lg">
-                <FaUserGroup className="size-8 text-white" />
+                <Icon icon={FaUserGroup} size="xl" color="white" />
               </div>
               <div>
                 <h1 className="mb-2 text-3xl font-bold">{updatedGroupData.name}</h1>
                 <div className="flex items-center gap-2">
-                  <FaUserGroup className="text-primary size-5" />
+                  <Icon icon={FaUserGroup} size="md" color="primary" />
                   <p className="text-muted-foreground text-lg">
                     <span className="text-foreground font-semibold">{people.length}</span> people in this group
                   </p>
@@ -147,7 +148,7 @@ export function GroupDetailClient({
               aria-label="Edit group settings"
               className="shrink-0"
             >
-              <FaPencil className="size-4" />
+              <Icon icon={FaPencil} size="sm" />
             </Button>
           </div>
         </div>
@@ -159,7 +160,7 @@ export function GroupDetailClient({
           <Card variant="compact">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <FaGear className="text-primary size-5" />
+                <Icon icon={FaGear} size="md" color="primary" />
                 <CardTitle>Game Settings</CardTitle>
               </div>
               <CardDescription>Configure how games will be played in this group</CardDescription>
@@ -180,7 +181,7 @@ export function GroupDetailClient({
           <Card variant="compact">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <FaPlay className="text-primary size-5" />
+                <Icon icon={FaPlay} size="md" color="primary" />
                 <CardTitle>Actions</CardTitle>
               </div>
               <CardDescription>Start a game or manage this group</CardDescription>
@@ -192,12 +193,12 @@ export function GroupDetailClient({
                   className: `w-full gap-2 ${!hasEnoughPeople ? 'pointer-events-none opacity-50' : ''}`,
                 })}
               >
-                <FaPlay className="size-5" />
+                <Icon icon={FaPlay} size="md" />
                 Start Game
               </LoadingLink>
               {!hasEnoughPeople && (
                 <div className="bg-destructive/10 border-destructive/20 flex items-start gap-2 rounded-lg border p-3">
-                  <FaTriangleExclamation className="text-destructive size-5 shrink-0" />
+                  <Icon icon={FaTriangleExclamation} size="md" color="error" className="shrink-0" />
                   <p className="text-destructive text-sm">
                     You need at least {updatedGroupData.options_count} people to start a game
                   </p>

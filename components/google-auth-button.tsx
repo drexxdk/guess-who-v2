@@ -27,7 +27,13 @@ export function GoogleAuthButton({ label = 'Sign in with Google', disabled, onEr
   };
 
   return (
-    <Button type="button" variant="outline" className="flex w-full items-center gap-2" onClick={handleGoogleAuth} disabled={disabled}>
+    <Button
+      type="button"
+      variant="outline"
+      className="flex w-full items-center gap-2"
+      onClick={handleGoogleAuth}
+      disabled={disabled}
+    >
       <svg className="size-4" viewBox="0 0 24 24">
         <path
           fill="currentColor"

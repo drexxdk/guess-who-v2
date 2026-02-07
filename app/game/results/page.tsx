@@ -149,7 +149,6 @@ export default function GameResultsPage() {
   const handlePlayAgain = async () => {
     if (isNavigating) return;
     setIsNavigating(true);
-    setLoading(true);
 
     if (gameEnded) {
       // Game has been ended by host, send them back to join
@@ -322,7 +321,6 @@ export default function GameResultsPage() {
                 <Button
                   onClick={() => {
                     setIsNavigating(true);
-                    setLoading(true);
                     router.push('/game/join');
                   }}
                   disabled={isNavigating}

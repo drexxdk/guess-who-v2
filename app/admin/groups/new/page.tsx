@@ -69,7 +69,6 @@ export default function NewGroupPage() {
           enable_timer: true,
           options_count: 3,
         });
-        setLoading(true);
         router.push(`/admin/groups/${data.id}`);
         router.refresh();
       }
@@ -95,6 +94,7 @@ export default function NewGroupPage() {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
+              disabled={isLoading}
             />
           </div>
 
@@ -105,6 +105,7 @@ export default function NewGroupPage() {
               checked={formData.enable_timer}
               onChange={(e) => setFormData({ ...formData, enable_timer: e.target.checked })}
               className="text-primary focus:ring-primary h-4 w-4 cursor-pointer rounded border-gray-300 focus:ring-2 focus:ring-offset-2"
+              disabled={isLoading}
             />
             <Label htmlFor="enable-timer" className="cursor-pointer text-sm leading-none font-medium">
               Enable countdown timer
@@ -126,6 +127,7 @@ export default function NewGroupPage() {
                 })
               }
               required
+              disabled={isLoading}
             />
             <p className="text-muted-foreground text-sm">How long players have to answer each question</p>
           </div>
@@ -145,6 +147,7 @@ export default function NewGroupPage() {
                 })
               }
               required
+              disabled={isLoading}
             />
             <p className="text-muted-foreground text-sm">How many choices to show per question (2-10)</p>
           </div>
@@ -152,11 +155,17 @@ export default function NewGroupPage() {
           <ErrorMessage message={error} />
 
           <div className="flex gap-4">
-            <Button type="button" variant="outline" onClick={() => router.back()} className="flex-1">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+              disabled={isLoading}
+              className="flex-1"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading} className="flex-1">
-              {isLoading ? 'Creating...' : 'Create Group'}
+            <Button type="submit" loading={isLoading} loadingText="Creating..." className="flex-1">
+              Create Group
             </Button>
           </div>
         </form>

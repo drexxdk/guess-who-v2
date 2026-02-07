@@ -89,9 +89,7 @@ export default function GameStartedPage({
             {/* QR Code */}
             {gameSession.game_code && (
               <div className="bg-background/50 flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6">
-                <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                  Or Scan QR Code
-                </p>
+                <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Or Scan QR Code</p>
                 <div className="rounded-lg bg-white p-2">
                   <GameQRCode gameCode={gameSession.game_code} />
                 </div>

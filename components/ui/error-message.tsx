@@ -3,28 +3,25 @@ import { cn } from '@/lib/utils';
 import { FaCircleExclamation, FaTriangleExclamation, FaCircleInfo, FaCircleCheck } from 'react-icons/fa6';
 import { Icon } from './icon';
 
-const messageVariants = cva(
-  'flex items-start gap-3 rounded-lg border transition-all duration-200',
-  {
-    variants: {
-      severity: {
-        error: 'bg-destructive/10 border-destructive/20 text-destructive',
-        warning: 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-400',
-        info: 'bg-blue-500/10 border-blue-500/20 text-blue-700 dark:text-blue-400',
-        success: 'bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400',
-      },
-      size: {
-        sm: 'p-2 text-xs',
-        md: 'p-3 text-sm',
-        lg: 'p-4 text-base',
-      },
+const messageVariants = cva('flex items-start gap-3 rounded-lg border transition-all duration-200', {
+  variants: {
+    severity: {
+      error: 'bg-destructive/10 border-destructive/20 text-destructive',
+      warning: 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-400',
+      info: 'bg-blue-500/10 border-blue-500/20 text-blue-700 dark:text-blue-400',
+      success: 'bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400',
     },
-    defaultVariants: {
-      severity: 'error',
-      size: 'md',
+    size: {
+      sm: 'p-2 text-xs',
+      md: 'p-3 text-sm',
+      lg: 'p-4 text-base',
     },
   },
-);
+  defaultVariants: {
+    severity: 'error',
+    size: 'md',
+  },
+});
 
 const iconMap = {
   error: FaCircleExclamation,

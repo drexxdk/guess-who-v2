@@ -54,6 +54,7 @@ export const LoginForm = memo(function LoginForm({ className, ...props }: React.
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
               <div className="grid gap-2">
@@ -72,11 +73,12 @@ export const LoginForm = memo(function LoginForm({ className, ...props }: React.
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Logging in...' : 'Login'}
+              <Button type="submit" className="w-full" loading={isLoading} loadingText="Logging in...">
+                Login
               </Button>
               <Divider />
               <GoogleAuthButton disabled={isLoading} onError={setError} />

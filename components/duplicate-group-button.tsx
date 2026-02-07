@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaCopy } from 'react-icons/fa6';
 import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { duplicateGroup } from '@/app/actions/duplicate-group';
 import toast from 'react-hot-toast';
 
@@ -28,9 +29,15 @@ export function DuplicateGroupButton({ groupId }: { groupId: string }) {
   };
 
   return (
-    <Button variant="outline" onClick={handleDuplicate} disabled={loading} className="w-full gap-2">
-      <FaCopy className="size-5" />
-      {loading ? 'Duplicating...' : 'Duplicate Group'}
+    <Button
+      variant="outline"
+      onClick={handleDuplicate}
+      loading={loading}
+      loadingText="Duplicating..."
+      className="w-full gap-2"
+    >
+      <Icon icon={FaCopy} size="md" />
+      Duplicate Group
     </Button>
   );
 }

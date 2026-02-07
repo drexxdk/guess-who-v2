@@ -4,6 +4,7 @@ import { useState, memo } from 'react';
 import { FaTrash, FaSpinner, FaCheck, FaXmark, FaUser } from 'react-icons/fa6';
 import { AnimatePresence } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
+import { Icon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -58,7 +59,7 @@ const PersonCard = memo(function PersonCard({
           size="icon"
           aria-label={`Delete ${person.first_name} ${person.last_name}`}
         >
-          <FaTrash className="size-4" />
+          <Icon icon={FaTrash} size="sm" />
         </Button>
       </div>
 
@@ -66,7 +67,7 @@ const PersonCard = memo(function PersonCard({
       {isConfirming && (
         <div className="absolute inset-0 flex items-center justify-end gap-2 rounded-lg bg-black/60 px-4">
           <Button variant="outline" onClick={onCancelDelete} disabled={isDeleting} size="icon" aria-label="Cancel">
-            <FaXmark className="size-4" />
+            <Icon icon={FaXmark} size="sm" />
           </Button>
           <Button
             onClick={() => onConfirmDelete(person)}
@@ -75,7 +76,11 @@ const PersonCard = memo(function PersonCard({
             aria-label="Confirm delete"
             className="bg-green-600 text-white hover:bg-green-700"
           >
-            {isDeleting ? <FaSpinner className="size-4 animate-spin" /> : <FaCheck className="size-4" />}
+            {isDeleting ? (
+              <Icon icon={FaSpinner} size="sm" className="animate-spin" />
+            ) : (
+              <Icon icon={FaCheck} size="sm" />
+            )}
           </Button>
         </div>
       )}
@@ -126,7 +131,7 @@ export function PeopleList({ people }: { people: Person[] }) {
   if (people.length === 0) {
     return (
       <EmptyState
-        icon={<FaUser className="size-8" />}
+        icon={<Icon icon={FaUser} size="xl" />}
         title="No people yet"
         description="Add your first person to get started with this group"
       />

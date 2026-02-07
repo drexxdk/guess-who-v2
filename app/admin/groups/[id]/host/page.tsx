@@ -2,10 +2,23 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaPlay, FaUserGroup, FaXmark, FaArrowRight, FaWandMagicSparkles, FaUser, FaCheck, FaImage, FaGear, FaArrowLeft, FaTriangleExclamation } from 'react-icons/fa6';
+import {
+  FaPlay,
+  FaUserGroup,
+  FaXmark,
+  FaArrowRight,
+  FaWandMagicSparkles,
+  FaUser,
+  FaCheck,
+  FaImage,
+  FaGear,
+  FaArrowLeft,
+  FaTriangleExclamation,
+} from 'react-icons/fa6';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Icon } from '@/components/ui/icon';
 import { use } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ErrorMessage } from '@/components/ui/error-message';
@@ -194,19 +207,19 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
           <div className="relative flex flex-col gap-2 p-8">
             <div className="flex items-start gap-6">
               <div className="from-primary flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br to-purple-600 shadow-lg">
-                <FaPlay className="h-8 w-8 text-white" />
+                <Icon icon={FaPlay} size="xl" color="white" />
               </div>
               <div>
                 <h1 className="text-3xl font-bold">Start a New Game</h1>
                 <div className="flex items-center gap-2">
-                <FaUserGroup className="text-primary h-5 w-5" />
-                <p className="text-muted-foreground text-lg">
-                  <span className="text-foreground font-semibold">{groupData.name}</span> • {people.length} people
-                </p>
+                  <Icon icon={FaUserGroup} size="md" color="primary" />
+                  <p className="text-muted-foreground text-lg">
+                    <span className="text-foreground font-semibold">{groupData.name}</span> • {people.length} people
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
         </div>
       </Card>
 
@@ -255,23 +268,23 @@ function GameStartedContent({
   setLoading: (loading: boolean) => void;
 }) {
   return (
-      <div className="flex flex-col gap-6 rounded-xl bg-linear-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10 p-6">
-        {/* Header */}
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-green-500/10 px-4 py-2">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-            <span className="text-sm font-medium text-green-600 dark:text-green-400">Live</span>
-          </div>
-          <h3 className="text-2xl font-bold">Game Started!</h3>
-          <p className="text-muted-foreground text-sm">Players can join using either method below</p>
+    <div className="flex flex-col gap-6 rounded-xl bg-linear-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10 p-6">
+      {/* Header */}
+      <div className="text-center">
+        <div className="inline-flex items-center gap-2 rounded-full bg-green-500/10 px-4 py-2">
+          <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+          <span className="text-sm font-medium text-green-600 dark:text-green-400">Live</span>
         </div>
+        <h3 className="text-2xl font-bold">Game Started!</h3>
+        <p className="text-muted-foreground text-sm">Players can join using either method below</p>
+      </div>
 
-        {/* Code and QR Section */}
-        <div className="grid gap-6 md:grid-cols-2">
+      {/* Code and QR Section */}
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Game Code */}
-          <div className="bg-background/50 flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6">
-            <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Game Code</p>
-            <Badge className="bg-primary hover:bg-primary px-8 py-4 font-mono text-5xl shadow-lg">{gameCode}</Badge>
+        <div className="bg-background/50 flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6">
+          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Game Code</p>
+          <Badge className="bg-primary hover:bg-primary px-8 py-4 font-mono text-5xl shadow-lg">{gameCode}</Badge>
           <p className="text-muted-foreground text-center text-xs">
             Enter at <span className="text-foreground font-mono">/game/join</span>
           </p>
@@ -279,12 +292,12 @@ function GameStartedContent({
 
         {/* QR Code */}
         {gameCode && (
-            <div className="bg-background/50 flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6">
-              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Or Scan QR Code</p>
-              <div className="rounded-lg bg-white p-2">
-                <GameQRCode gameCode={gameCode} />
-              </div>
-              <p className="text-muted-foreground text-center text-xs">Opens with code pre-filled</p>
+          <div className="bg-background/50 flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6">
+            <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Or Scan QR Code</p>
+            <div className="rounded-lg bg-white p-2">
+              <GameQRCode gameCode={gameCode} />
+            </div>
+            <p className="text-muted-foreground text-center text-xs">Opens with code pre-filled</p>
           </div>
         )}
       </div>
@@ -292,7 +305,7 @@ function GameStartedContent({
       {/* Actions */}
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button variant="outline" onClick={cancelGame} className="flex-1 gap-2">
-          <FaXmark className="h-4 w-4" />
+          <Icon icon={FaXmark} size="sm" />
           End Game
         </Button>
         <Button
@@ -302,7 +315,7 @@ function GameStartedContent({
           }}
           className="flex-1 gap-2"
         >
-          <FaArrowRight className="h-4 w-4" />
+          <Icon icon={FaArrowRight} size="sm" />
           Go to Dashboard
         </Button>
       </div>
@@ -347,7 +360,7 @@ function GameSetupContent({
     <>
       <div>
         <div className="mb-4 flex items-center gap-2">
-          <FaWandMagicSparkles className="text-primary h-5 w-5" />
+          <Icon icon={FaWandMagicSparkles} size="md" color="primary" />
           <h3 className="text-lg font-semibold">Select Game Mode</h3>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
@@ -363,7 +376,7 @@ function GameSetupContent({
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-500/20">
-                    <FaUser className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    <Icon icon={FaUser} size="lg" color="info" />
                   </div>
                   <div>
                     <h4 className="text-lg font-bold">Guess the Name</h4>
@@ -375,7 +388,7 @@ function GameSetupContent({
                     selectedGameType === 'guess_name' ? 'opacity-100' : 'opacity-0'
                   }`}
                 >
-                  <FaCheck className="h-4 w-4 text-white" />
+                  <Icon icon={FaCheck} size="sm" color="white" />
                 </div>
               </div>
 
@@ -388,7 +401,7 @@ function GameSetupContent({
                 <div className="flex flex-col gap-2 text-center">
                   <p className="text-muted-foreground mb-2 text-xs font-medium">QUESTION:</p>
                   <div className="bg-muted mx-auto flex h-20 w-20 items-center justify-center rounded-lg border-2">
-                    <FaUser className="text-muted-foreground h-10 w-10" />
+                    <Icon icon={FaUser} size="2xl" color="muted" />
                   </div>
                 </div>
                 {/* Answer Options - Names */}
@@ -417,7 +430,7 @@ function GameSetupContent({
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-purple-500/20">
-                    <FaImage className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    <Icon icon={FaImage} size="lg" className="text-purple-600 dark:text-purple-400" />
                   </div>
                   <div>
                     <h4 className="text-lg font-bold">Guess the Face</h4>
@@ -429,7 +442,7 @@ function GameSetupContent({
                     selectedGameType === 'guess_image' ? 'opacity-100' : 'opacity-0'
                   }`}
                 >
-                  <FaCheck className="h-4 w-4 text-white" />
+                  <Icon icon={FaCheck} size="sm" color="white" />
                 </div>
               </div>
 
@@ -450,16 +463,16 @@ function GameSetupContent({
                   <p className="text-muted-foreground mb-2 text-xs font-medium">PICK PHOTO:</p>
                   <div className="grid grid-cols-4 gap-2">
                     <div className="bg-muted flex aspect-square items-center justify-center rounded-lg border-2">
-                      <FaUser className="text-muted-foreground h-6 w-6" />
+                      <Icon icon={FaUser} size="lg" color="muted" />
                     </div>
                     <div className="bg-muted flex aspect-square items-center justify-center rounded-lg border-2">
-                      <FaUser className="text-muted-foreground h-6 w-6" />
+                      <Icon icon={FaUser} size="lg" color="muted" />
                     </div>
                     <div className="bg-muted flex aspect-square items-center justify-center rounded-lg border-2">
-                      <FaUser className="text-muted-foreground h-6 w-6" />
+                      <Icon icon={FaUser} size="lg" color="muted" />
                     </div>
                     <div className="bg-muted flex aspect-square items-center justify-center rounded-lg border-2">
-                      <FaUser className="text-muted-foreground h-6 w-6" />
+                      <Icon icon={FaUser} size="lg" color="muted" />
                     </div>
                   </div>
                 </div>
@@ -471,7 +484,7 @@ function GameSetupContent({
 
       <div>
         <div className="flex items-center gap-2">
-          <FaGear className="text-primary h-5 w-5" />
+          <Icon icon={FaGear} size="md" color="primary" />
           <h3 className="text-lg font-semibold">Game Settings</h3>
         </div>
         <div className="mt-4 flex flex-col gap-6">
@@ -539,11 +552,11 @@ function GameSetupContent({
 
       <div className="flex gap-4">
         <Button variant="outline" onClick={() => router.back()} className="flex-1 gap-2">
-          <FaArrowLeft className="h-4 w-4" />
+          <Icon icon={FaArrowLeft} size="sm" />
           Cancel
         </Button>
         <Button onClick={startGame} disabled={!groupData || people.length < optionsCount} className="flex-1 gap-2">
-          <FaPlay className="h-4 w-4" />
+          <Icon icon={FaPlay} size="sm" />
           Start Game
         </Button>
       </div>
@@ -552,7 +565,7 @@ function GameSetupContent({
 
       {people.length < optionsCount && !error && (
         <div className="bg-destructive/10 border-destructive/20 flex items-start gap-2 rounded-lg border p-3">
-          <FaTriangleExclamation className="text-destructive h-5 w-5 shrink-0" />
+          <Icon icon={FaTriangleExclamation} size="md" color="error" className="shrink-0" />
           <p className="text-destructive text-sm">You need at least {optionsCount} people to start a game</p>
         </div>
       )}

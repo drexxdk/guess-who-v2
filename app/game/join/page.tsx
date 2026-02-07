@@ -80,7 +80,6 @@ export default function JoinGamePage() {
 
       setError(null);
       setIsSubmitting(true);
-      setLoading(true);
 
       try {
         const supabase = createClient();
@@ -89,7 +88,6 @@ export default function JoinGamePage() {
         if (!session) {
           setError('Game not found');
           setIsSubmitting(false);
-          setLoading(false);
           return;
         }
 
@@ -104,7 +102,6 @@ export default function JoinGamePage() {
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
         setIsSubmitting(false);
-        setLoading(false);
       }
     },
     [gameCode, playerName, router, isSubmitting, setLoading],

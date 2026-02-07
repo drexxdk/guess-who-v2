@@ -73,6 +73,7 @@ export const SignUpForm = memo(function SignUpForm({ className, ...props }: Reac
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
               <div className="grid gap-2">
@@ -83,6 +84,7 @@ export const SignUpForm = memo(function SignUpForm({ className, ...props }: Reac
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
                 />
                 <PasswordStrengthMeter password={password} />
               </div>
@@ -94,11 +96,12 @@ export const SignUpForm = memo(function SignUpForm({ className, ...props }: Reac
                   required
                   value={repeatPassword}
                   onChange={(e) => setRepeatPassword(e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Creating an account...' : 'Sign up'}
+              <Button type="submit" className="w-full" loading={isLoading} loadingText="Creating an account...">
+                Sign up
               </Button>
               <Divider />
               <GoogleAuthButton label="Sign up with Google" disabled={isLoading} onError={setError} />

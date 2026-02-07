@@ -9,13 +9,12 @@ import { Label } from '@/components/ui/label';
 import toast from 'react-hot-toast';
 import type { PersonInsert, GenderType } from '@/lib/schemas';
 import { logError, getErrorMessage } from '@/lib/logger';
-import { useLoading } from '@/lib/loading-context';
 import { sanitizeName, validateLength } from '@/lib/security';
 
 export function AddPersonForm({ groupId }: { groupId: string }) {
   const cropContainerRef = useRef<HTMLDivElement>(null);
-  const { setLoading: setGlobalLoading } = useLoading();
   const [loading, setLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [preview, setPreview] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -62,6 +61,9 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
       return;
     }
 
+    // Set loading state while processing image
+    setImageLoading(true);
+
     // Read image and show cropper
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -77,6 +79,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
         setCropX(Math.max(0, (img.width - minDimension) / 2));
         setCropY(Math.max(0, (img.height - minDimension) / 2));
         setCropSize(minDimension);
+        setImageLoading(false);
       };
       img.src = imageData;
     };
@@ -118,6 +121,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
     setShowCropper(false);
     setOriginalImage('');
     setPreview('');
+    setImageLoading(false);
   };
 
   const handleCropBoxMouseDown = (e: React.MouseEvent) => {
@@ -293,7 +297,6 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
     }
 
     setLoading(true);
-    setGlobalLoading(true);
 
     try {
       const supabase = createClient();
@@ -364,7 +367,6 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
       toast.error('Error adding person: ' + getErrorMessage(err));
     } finally {
       setLoading(false);
-      setGlobalLoading(false);
     }
   };
 
@@ -388,6 +390,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
               data-lpignore="true"
               required
               aria-required="true"
+              disabled={loading}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -406,6 +409,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
               data-lpignore="true"
               required
               aria-required="true"
+              disabled={loading}
             />
           </div>
         </div>
@@ -429,6 +433,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
             className="border-input bg-background focus-visible:ring-ring focus-visible:ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
             required
             aria-required="true"
+            disabled={loading}
           >
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -592,7 +597,12 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
                 disabled={loading}
                 className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
               />
-              {preview ? (
+              {imageLoading ? (
+                <div className="pointer-events-none flex flex-col gap-3 py-8">
+                  <div className="border-t-primary border-r-primary mx-auto h-12 w-12 animate-spin rounded-full border-4 border-transparent"></div>
+                  <p className="text-sm font-medium">Processing image...</p>
+                </div>
+              ) : preview ? (
                 <div className="pointer-events-none flex flex-col gap-3">
                   <div className="relative mx-auto">
                     <Image src={preview} alt="Preview" width={500} height={500} className="rounded-lg object-cover" />
@@ -617,10 +627,12 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
             </Button>
             <Button
               type="submit"
-              disabled={loading || !formData.first_name.trim() || !formData.last_name.trim() || !selectedFile}
+              disabled={!formData.first_name.trim() || !formData.last_name.trim() || !selectedFile}
+              loading={loading}
+              loadingText="Adding..."
               className="flex-1"
             >
-              {loading ? 'Adding...' : 'Add Person'}
+              Add Person
             </Button>
           </div>
         )}
