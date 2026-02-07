@@ -16,9 +16,10 @@ export function LiveRegion({
   const regionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const element = regionRef.current;
     return () => {
-      if (clearOnUnmount && regionRef.current) {
-        regionRef.current.textContent = '';
+      if (clearOnUnmount && element) {
+        element.textContent = '';
       }
     };
   }, [clearOnUnmount]);

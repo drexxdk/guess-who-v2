@@ -56,7 +56,7 @@ export async function withRetry<T>(
 export class SafeQueryBuilder<T> {
   constructor(
     private supabase: SupabaseClient<Database>,
-    private tableName: string,
+    private tableName: keyof Database['public']['Tables'],
   ) {}
 
   async select(columns = '*'): Promise<T[] | null> {
@@ -77,7 +77,11 @@ export class SafeQueryBuilder<T> {
 
   async insert(values: Partial<T>): Promise<T | null> {
     try {
-      const { data, error } = await this.supabase.from(this.tableName).insert(values).select().single();
+      const { data, error } = await this.supabase
+        .from(this.tableName)
+        .insert(values as never)
+        .select()
+        .single();
 
       if (error) {
         logger.error(`Insert into ${this.tableName} failed:`, error);
@@ -93,7 +97,12 @@ export class SafeQueryBuilder<T> {
 
   async update(id: string, values: Partial<T>): Promise<T | null> {
     try {
-      const { data, error } = await this.supabase.from(this.tableName).update(values).eq('id', id).select().single();
+      const { data, error } = await this.supabase
+        .from(this.tableName)
+        .update(values as never)
+        .eq('id', id)
+        .select()
+        .single();
 
       if (error) {
         logger.error(`Update in ${this.tableName} failed:`, error);
@@ -127,6 +136,9 @@ export class SafeQueryBuilder<T> {
 /**
  * Create a safe query builder for a table
  */
-export function createSafeQuery<T>(supabase: SupabaseClient<Database>, tableName: string): SafeQueryBuilder<T> {
+export function createSafeQuery<T>(
+  supabase: SupabaseClient<Database>,
+  tableName: keyof Database['public']['Tables'],
+): SafeQueryBuilder<T> {
   return new SafeQueryBuilder<T>(supabase, tableName);
 }

@@ -47,7 +47,7 @@ export function validateInput<T>(
     return { success: true, data: result.data };
   }
 
-  const firstError = result.error.errors[0];
+  const firstError = result.error.issues[0];
   return {
     success: false,
     error: firstError?.message || 'Validation failed',
