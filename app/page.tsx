@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { FaUserGroup, FaGraduationCap, FaHeart, FaPlus, FaCircleQuestion, FaTrophy } from 'react-icons/fa6';
 import Link from 'next/link';
 import { Logo } from '@/components/ui/logo';
 import { buttonVariants } from '@/components/ui/button';
@@ -72,29 +73,19 @@ export default async function Home() {
           <div className="flex flex-wrap justify-center gap-4 px-4 text-white/90 md:gap-6">
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="bg-white/20 text-white hover:bg-white/30">
-                <svg className="mr-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                </svg>
+                <FaUserGroup className="mr-1 h-4 w-4" />
                 Social
               </Badge>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="bg-white/20 text-white hover:bg-white/30">
-                <svg className="mr-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
-                </svg>
+                <FaGraduationCap className="mr-1 h-4 w-4" />
                 Learning
               </Badge>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="bg-white/20 text-white hover:bg-white/30">
-                <svg className="mr-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <FaHeart className="mr-1 h-4 w-4" />
                 Icebreaker
               </Badge>
             </div>
@@ -119,9 +110,7 @@ export default async function Home() {
             <Card className="text-center transition-transform hover:scale-105">
               <CardHeader>
                 <div className="bg-gradient-primary glow-primary mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl">
-                  <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
+                  <FaPlus className="h-8 w-8 text-white" />
                 </div>
                 <CardTitle>Create or Join</CardTitle>
                 <CardDescription>
@@ -134,14 +123,7 @@ export default async function Home() {
             <Card className="text-center transition-transform hover:scale-105">
               <CardHeader>
                 <div className="glow-accent mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[hsl(217_91%_60%)] to-[hsl(340_82%_52%)]">
-                  <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+                  <FaCircleQuestion className="h-8 w-8 text-white" />
                 </div>
                 <CardTitle>Guess the Person</CardTitle>
                 <CardDescription>
@@ -154,14 +136,7 @@ export default async function Home() {
             <Card className="text-center transition-transform hover:scale-105">
               <CardHeader>
                 <div className="glow-success mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[hsl(142_76%_36%)]">
-                  <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                    />
-                  </svg>
+                  <FaTrophy className="h-8 w-8 text-white" />
                 </div>
                 <CardTitle>Compete & Win</CardTitle>
                 <CardDescription>

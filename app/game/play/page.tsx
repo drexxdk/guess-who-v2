@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FaCheck, FaXmark } from 'react-icons/fa6';
 import { createClient } from '@/lib/supabase/client';
 import { markPlayerAsLeft } from '@/app/actions/mark-player-left';
 import { Button } from '@/components/ui/button';
@@ -926,24 +927,8 @@ function ActiveGameState({ state }: { state: ActiveState }) {
                           )}
                           {state.answered && (isCorrect || isSelected) && (
                             <span className="ml-3 flex h-6 w-6 shrink-0 items-center justify-center">
-                              {isCorrect && (
-                                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                              )}
-                              {isSelected && !isCorrect && (
-                                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                              )}
+                              {isCorrect && <FaCheck className="h-6 w-6" />}
+                              {isSelected && !isCorrect && <FaXmark className="h-6 w-6" />}
                             </span>
                           )}
                         </span>

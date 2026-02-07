@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, memo } from 'react';
-import { FaTrash, FaSpinner, FaCheck, FaXmark } from 'react-icons/fa6';
+import { FaTrash, FaSpinner, FaCheck, FaXmark, FaUser } from 'react-icons/fa6';
 import { AnimatePresence } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -126,16 +126,7 @@ export function PeopleList({ people }: { people: Person[] }) {
   if (people.length === 0) {
     return (
       <EmptyState
-        icon={
-          <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
-        }
+        icon={<FaUser className="h-8 w-8" />}
         title="No people yet"
         description="Add your first person to get started with this group"
       />

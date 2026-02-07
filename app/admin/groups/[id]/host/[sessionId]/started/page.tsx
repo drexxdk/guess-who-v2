@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { use } from 'react';
+import { FaXmark, FaArrowRight } from 'react-icons/fa6';
 import { createClient } from '@/lib/supabase/client';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -102,18 +103,14 @@ export default function GameStartedPage({
           {/* Actions */}
           <div className="flex flex-col gap-3 pt-4 sm:flex-row">
             <Button variant="outline" onClick={cancelGame} className="flex-1">
-              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <FaXmark className="mr-2 h-4 w-4" />
               End Game
             </Button>
             <LoadingLink
               href={`/admin/groups/${groupId}/host/${sessionId}/play`}
               className={buttonVariants({ className: 'flex-1' })}
             >
-              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
+              <FaArrowRight className="mr-2 h-4 w-4" />
               Go to Dashboard
             </LoadingLink>
           </div>
