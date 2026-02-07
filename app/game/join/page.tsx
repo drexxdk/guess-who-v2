@@ -1,28 +1,22 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect } from "react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ErrorMessage } from "@/components/ui/error-message";
-import { getActiveGameSessionByCode } from "@/lib/queries";
-import { useLoading } from "@/lib/loading-context";
-import { sanitizeGameCode, sanitizeName, validateLength } from "@/lib/security";
-import { sound, haptic } from "@/lib/sounds";
+import { useCallback, useEffect } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ErrorMessage } from '@/components/ui/error-message';
+import { getActiveGameSessionByCode } from '@/lib/queries';
+import { useLoading } from '@/lib/loading-context';
+import { sanitizeGameCode, sanitizeName, validateLength } from '@/lib/security';
+import { sound, haptic } from '@/lib/sounds';
 
 export default function JoinGamePage() {
   const router = useRouter();
-  const [gameCode, setGameCode] = useState("");
-  const [playerName, setPlayerName] = useState("");
+  const [gameCode, setGameCode] = useState('');
+  const [playerName, setPlayerName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setLoading } = useLoading();
@@ -34,16 +28,16 @@ export default function JoinGamePage() {
     setIsSubmitting(false);
     setError(null);
     // Reset form fields for a fresh start
-    setGameCode("");
-    setPlayerName("");
+    setGameCode('');
+    setPlayerName('');
 
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
         setLoading(false);
         setIsSubmitting(false);
         setError(null);
-        setGameCode("");
-        setPlayerName("");
+        setGameCode('');
+        setPlayerName('');
       }
     };
 
@@ -53,11 +47,11 @@ export default function JoinGamePage() {
       setError(null);
     };
 
-    window.addEventListener("pageshow", handlePageShow);
-    window.addEventListener("popstate", handlePopState);
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('popstate', handlePopState);
     return () => {
-      window.removeEventListener("pageshow", handlePageShow);
-      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('popstate', handlePopState);
     };
   }, [setLoading]);
 
@@ -71,12 +65,12 @@ export default function JoinGamePage() {
       const sanitizedName = sanitizeName(playerName);
 
       if (!sanitizedCode || sanitizedCode.length !== 6) {
-        setError("Please enter a valid 6-character game code");
+        setError('Please enter a valid 6-character game code');
         return;
       }
 
       if (!sanitizedName || !validateLength(sanitizedName, 50, 1)) {
-        setError("Please enter a valid name (1-50 characters)");
+        setError('Please enter a valid name (1-50 characters)');
         return;
       }
 
@@ -86,13 +80,10 @@ export default function JoinGamePage() {
 
       try {
         const supabase = createClient();
-        const session = await getActiveGameSessionByCode(
-          supabase,
-          sanitizedCode,
-        );
+        const session = await getActiveGameSessionByCode(supabase, sanitizedCode);
 
         if (!session) {
-          setError("Game not found");
+          setError('Game not found');
           setIsSubmitting(false);
           setLoading(false);
           return;
@@ -107,7 +98,7 @@ export default function JoinGamePage() {
         );
         // Keep loading state active during navigation - will be reset on unmount or back navigation
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(err instanceof Error ? err.message : 'An error occurred');
         setIsSubmitting(false);
         setLoading(false);
       }
@@ -116,13 +107,11 @@ export default function JoinGamePage() {
   );
 
   return (
-    <div className="flex-1 flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
+    <div className="flex flex-1 flex-col items-center justify-center gap-2 bg-gradient-to-br from-purple-500 to-pink-500 p-4">
       <Card className="w-full max-w-lg space-y-6">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold">Join Game</CardTitle>
-          <CardDescription>
-            Enter the game code to join the fun!
-          </CardDescription>
+          <CardDescription>Enter the game code to join the fun!</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleJoin} className="space-y-4">

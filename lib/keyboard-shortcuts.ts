@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 interface ShortcutConfig {
   key: string;
@@ -29,8 +29,8 @@ export function useKeyboardShortcut(config: ShortcutConfig | ShortcutConfig[]) {
       });
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [config]);
 }
 
@@ -47,15 +47,15 @@ export const KeyboardShortcuts = {
         }
       };
 
-      window.addEventListener("keydown", handleKeyDown);
-      return () => window.removeEventListener("keydown", handleKeyDown);
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
     }, [onSelect, maxOptions]);
   },
 
   // Enter to submit
   useEnterToSubmit: (onSubmit: () => void) => {
     useKeyboardShortcut({
-      key: "Enter",
+      key: 'Enter',
       callback: onSubmit,
       preventDefault: true,
     });
@@ -64,7 +64,7 @@ export const KeyboardShortcuts = {
   // Escape to close/cancel
   useEscapeToClose: (onClose: () => void) => {
     useKeyboardShortcut({
-      key: "Escape",
+      key: 'Escape',
       callback: onClose,
     });
   },

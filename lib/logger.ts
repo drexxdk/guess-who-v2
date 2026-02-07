@@ -1,6 +1,6 @@
-const isDev = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV === 'development';
 
-type LogLevel = "log" | "warn" | "error" | "info" | "debug";
+type LogLevel = 'log' | 'warn' | 'error' | 'info' | 'debug';
 
 function createLogger(level: LogLevel) {
   return (...args: unknown[]) => {
@@ -11,11 +11,11 @@ function createLogger(level: LogLevel) {
 }
 
 export const logger = {
-  log: createLogger("log"),
-  warn: createLogger("warn"),
-  error: createLogger("error"),
-  info: createLogger("info"),
-  debug: createLogger("debug"),
+  log: createLogger('log'),
+  warn: createLogger('warn'),
+  error: createLogger('error'),
+  info: createLogger('info'),
+  debug: createLogger('debug'),
 };
 
 // For errors that should always be logged (even in production)

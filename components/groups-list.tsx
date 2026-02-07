@@ -1,21 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { LoadingLink } from "@/components/ui/loading-link";
-import { EmptyState } from "@/components/ui/empty-state";
-import {
-  StaggeredGrid,
-  StaggeredGridItem,
-} from "@/components/ui/staggered-list";
-import { useLoading } from "@/lib/loading-context";
+import { useEffect } from 'react';
+import { buttonVariants } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { LoadingLink } from '@/components/ui/loading-link';
+import { EmptyState } from '@/components/ui/empty-state';
+import { StaggeredGrid, StaggeredGridItem } from '@/components/ui/staggered-list';
+import { useLoading } from '@/lib/loading-context';
 
 interface Group {
   id: string;
@@ -36,12 +27,11 @@ export function GroupsList({ groups }: GroupsListProps) {
   }, [setLoading]);
   return (
     <>
-      <div className="flex justify-between items-center mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">My groups</h1>
           <p className="text-muted-foreground">
-            Create groups for your team, classroom, or event. Help people learn
-            names and faces!
+            Create groups for your team, classroom, or event. Help people learn names and faces!
           </p>
         </div>
         <LoadingLink href="/protected/groups/new" className={buttonVariants()}>
@@ -52,12 +42,7 @@ export function GroupsList({ groups }: GroupsListProps) {
       {!groups || groups.length === 0 ? (
         <EmptyState
           icon={
-            <svg
-              className="w-8 h-8"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -69,10 +54,7 @@ export function GroupsList({ groups }: GroupsListProps) {
           title="No groups yet"
           description="Create your first group to help people get to know each other through an icebreaker game"
           action={
-            <LoadingLink
-              href="/protected/groups/new"
-              className={buttonVariants({ size: "lg" })}
-            >
+            <LoadingLink href="/protected/groups/new" className={buttonVariants({ size: 'lg' })}>
               Create Your First Group
             </LoadingLink>
           }
@@ -81,27 +63,25 @@ export function GroupsList({ groups }: GroupsListProps) {
         <StaggeredGrid className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {groups.map((group) => (
             <StaggeredGridItem key={group.id}>
-              <Card hover className="flex flex-col h-full">
+              <Card hover className="flex h-full flex-col">
                 <CardHeader>
                   <CardTitle>{group.name}</CardTitle>
-                  <CardDescription>
-                    {group.people?.at(0)?.count ?? 0} people
-                  </CardDescription>
+                  <CardDescription>{group.people?.at(0)?.count ?? 0} people</CardDescription>
                 </CardHeader>
                 <CardContent className="mt-auto">
                   <div className="flex gap-2">
                     <LoadingLink
                       href={`/protected/groups/${group.id}`}
                       className={buttonVariants({
-                        variant: "outline",
-                        className: "flex-1",
+                        variant: 'outline',
+                        className: 'flex-1',
                       })}
                     >
                       Manage
                     </LoadingLink>
                     <LoadingLink
                       href={`/protected/groups/${group.id}/host`}
-                      className={buttonVariants({ className: "flex-1" })}
+                      className={buttonVariants({ className: 'flex-1' })}
                     >
                       Start Game
                     </LoadingLink>

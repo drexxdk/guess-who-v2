@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { cn } from "@/lib/utils";
-import { Button } from "./button";
+import * as React from 'react';
+import { cn } from '@/lib/utils';
+import { Button } from './button';
 
 interface DialogProps {
   open?: boolean;
@@ -50,20 +50,10 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
   const isOpen = isControlled ? open : internalOpen;
   const setIsOpen = isControlled ? onOpenChange || (() => {}) : setInternalOpen;
 
-  return (
-    <DialogContext.Provider value={{ open: isOpen, onOpenChange: setIsOpen }}>
-      {children}
-    </DialogContext.Provider>
-  );
+  return <DialogContext.Provider value={{ open: isOpen, onOpenChange: setIsOpen }}>{children}</DialogContext.Provider>;
 }
 
-export function DialogTrigger({
-  children,
-  asChild,
-}: {
-  children: React.ReactNode;
-  asChild?: boolean;
-}) {
+export function DialogTrigger({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) {
   const { onOpenChange } = React.useContext(DialogContext);
 
   if (asChild && React.isValidElement(children)) {
@@ -92,13 +82,13 @@ export function DialogContent({ children, className }: DialogContentProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
       onClick={() => onOpenChange(false)}
     >
       <div
         className={cn(
-          "relative bg-card border border-border rounded-xl shadow-2xl max-w-lg w-full p-6 space-y-4",
-          "animate-in fade-in-0 zoom-in-95 duration-200",
+          'bg-card border-border relative w-full max-w-lg space-y-4 rounded-xl border p-6 shadow-2xl',
+          'animate-in fade-in-0 zoom-in-95 duration-200',
           className,
         )}
         onClick={(e) => e.stopPropagation()}
@@ -110,46 +100,23 @@ export function DialogContent({ children, className }: DialogContentProps) {
 }
 
 export function DialogHeader({ children, className }: DialogHeaderProps) {
-  return (
-    <div className={cn("space-y-2 text-center sm:text-left", className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn('space-y-2 text-center sm:text-left', className)}>{children}</div>;
 }
 
 export function DialogFooter({ children, className }: DialogFooterProps) {
   return (
-    <div
-      className={cn(
-        "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2",
-        className,
-      )}
-    >
+    <div className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:space-x-2', className)}>
       {children}
     </div>
   );
 }
 
 export function DialogTitle({ children, className }: DialogTitleProps) {
-  return (
-    <h2
-      className={cn(
-        "text-2xl font-bold leading-none tracking-tight",
-        className,
-      )}
-    >
-      {children}
-    </h2>
-  );
+  return <h2 className={cn('text-2xl leading-none font-bold tracking-tight', className)}>{children}</h2>;
 }
 
-export function DialogDescription({
-  children,
-  className,
-}: DialogDescriptionProps) {
-  return (
-    <p className={cn("text-sm text-muted-foreground", className)}>{children}</p>
-  );
+export function DialogDescription({ children, className }: DialogDescriptionProps) {
+  return <p className={cn('text-muted-foreground text-sm', className)}>{children}</p>;
 }
 
 // Confirmation Dialog helper
@@ -161,7 +128,7 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   confirmText?: string;
   cancelText?: string;
-  variant?: "destructive" | "default";
+  variant?: 'destructive' | 'default';
 }
 
 export function ConfirmDialog({
@@ -170,9 +137,9 @@ export function ConfirmDialog({
   title,
   description,
   onConfirm,
-  confirmText = "Confirm",
-  cancelText = "Cancel",
-  variant = "destructive",
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  variant = 'destructive',
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

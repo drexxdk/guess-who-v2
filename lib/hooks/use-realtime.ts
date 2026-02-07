@@ -1,13 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
-import type {
-  RealtimeChannel,
-  RealtimePostgresChangesPayload,
-} from "@supabase/supabase-js";
+import { useEffect, useRef } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
-type PostgresChangeEvent = "INSERT" | "UPDATE" | "DELETE" | "*";
+type PostgresChangeEvent = 'INSERT' | 'UPDATE' | 'DELETE' | '*';
 
 // Re-export the payload type for consumers
 export type { RealtimePostgresChangesPayload };
@@ -17,7 +14,7 @@ export function getPayloadNew<T extends Record<string, unknown>>(
   payload: RealtimePostgresChangesPayload<T>,
 ): T | undefined {
   const data = payload.new;
-  if (data && typeof data === "object" && Object.keys(data).length > 0) {
+  if (data && typeof data === 'object' && Object.keys(data).length > 0) {
     return data as T;
   }
   return undefined;
@@ -28,7 +25,7 @@ export function getPayloadOld<T extends Record<string, unknown>>(
   payload: RealtimePostgresChangesPayload<T>,
 ): Partial<T> | undefined {
   const data = payload.old;
-  if (data && typeof data === "object" && Object.keys(data).length > 0) {
+  if (data && typeof data === 'object' && Object.keys(data).length > 0) {
     return data as Partial<T>;
   }
   return undefined;
@@ -43,23 +40,14 @@ interface SubscriptionConfig<T extends Record<string, unknown>> {
   onEvent: (payload: RealtimePostgresChangesPayload<T>) => void;
 }
 
-export function useRealtimeSubscription<T extends Record<string, unknown>>(
-  config: SubscriptionConfig<T> | null,
-) {
+export function useRealtimeSubscription<T extends Record<string, unknown>>(config: SubscriptionConfig<T> | null) {
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
     if (!config) return;
 
     const supabase = createClient();
-    const {
-      channelName,
-      table,
-      schema = "public",
-      event = "*",
-      filter,
-      onEvent,
-    } = config;
+    const { channelName, table, schema = 'public', event = '*', filter, onEvent } = config;
 
     const channel = supabase.channel(channelName);
 
@@ -80,11 +68,9 @@ export function useRealtimeSubscription<T extends Record<string, unknown>>(
 
     channel
       .on(
-        "postgres_changes",
+        'postgres_changes',
         subscriptionConfig,
-        onEvent as (
-          payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
-        ) => void,
+        onEvent as (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void,
       )
       .subscribe();
 
@@ -125,7 +111,7 @@ export function useMultiRealtimeSubscription<T extends Record<string, unknown>>(
     let channel = supabase.channel(channelName);
 
     for (const sub of subscriptions) {
-      const { table, schema = "public", event = "*", filter, onEvent } = sub;
+      const { table, schema = 'public', event = '*', filter, onEvent } = sub;
 
       const subscriptionConfig: {
         event: PostgresChangeEvent;
@@ -143,11 +129,9 @@ export function useMultiRealtimeSubscription<T extends Record<string, unknown>>(
       }
 
       channel = channel.on(
-        "postgres_changes",
+        'postgres_changes',
         subscriptionConfig,
-        onEvent as (
-          payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
-        ) => void,
+        onEvent as (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void,
       );
     }
 

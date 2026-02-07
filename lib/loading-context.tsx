@@ -1,13 +1,7 @@
-"use client";
+'use client';
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  ReactNode,
-} from "react";
-import { LoadingOverlay } from "@/components/ui/loading-spinner";
+import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { LoadingOverlay } from '@/components/ui/loading-spinner';
 
 interface LoadingContextType {
   isLoading: boolean;
@@ -26,7 +20,7 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
   return (
     <LoadingContext.Provider value={{ isLoading, setLoading }}>
       {isLoading && <LoadingOverlay />}
-      <div className="flex-1 flex flex-col min-h-full">{children}</div>
+      <div className="flex min-h-full flex-1 flex-col">{children}</div>
     </LoadingContext.Provider>
   );
 }
@@ -34,7 +28,7 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
 export function useLoading() {
   const context = useContext(LoadingContext);
   if (!context) {
-    throw new Error("useLoading must be used within LoadingProvider");
+    throw new Error('useLoading must be used within LoadingProvider');
   }
   return context;
 }

@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
-import { markPlayerAsLeft } from "@/app/actions/mark-player-left";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ErrorMessage } from "@/components/ui/error-message";
-import { CircularProgress } from "@/components/ui/progress";
-import { KeyboardShortcuts } from "@/lib/keyboard-shortcuts";
-import { sound, haptic } from "@/lib/sounds";
-import { logger, logError, getErrorMessage } from "@/lib/logger";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-import type { Person, GameSession, GameType } from "@/lib/schemas";
-import { useLoading } from "@/lib/loading-context";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { createClient } from '@/lib/supabase/client';
+import { markPlayerAsLeft } from '@/app/actions/mark-player-left';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ErrorMessage } from '@/components/ui/error-message';
+import { CircularProgress } from '@/components/ui/progress';
+import { KeyboardShortcuts } from '@/lib/keyboard-shortcuts';
+import { sound, haptic } from '@/lib/sounds';
+import { logger, logError, getErrorMessage } from '@/lib/logger';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
+import type { Person, GameSession, GameType } from '@/lib/schemas';
+import { useLoading } from '@/lib/loading-context';
 
 interface Question {
   person: Person;
@@ -26,10 +26,10 @@ interface Question {
 export default function GamePlayPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const gameCode = searchParams?.get("code");
-  const playerName = searchParams?.get("name");
-  const joinSessionId = searchParams?.get("joinSessionId"); // Unique ID for this join instance
-  const retry = searchParams?.get("retry"); // Flag to indicate this is a retry/fresh start
+  const gameCode = searchParams?.get('code');
+  const playerName = searchParams?.get('name');
+  const joinSessionId = searchParams?.get('joinSessionId'); // Unique ID for this join instance
+  const retry = searchParams?.get('retry'); // Flag to indicate this is a retry/fresh start
 
   const [loading, setLoadingState] = useState(false);
   const [initialized, setInitialized] = useState(false);
@@ -67,9 +67,7 @@ export default function GamePlayPage() {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [answered, setAnswered] = useState(false);
-  const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(
-    null,
-  );
+  const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
 
   // Validate required search params and redirect if missing
   useEffect(() => {
@@ -77,7 +75,7 @@ export default function GamePlayPage() {
 
     if (!hasParams) {
       setGlobalLoading(false);
-      router.replace("/game/join");
+      router.replace('/game/join');
     } else {
       setInitialized(true);
     }
@@ -88,23 +86,18 @@ export default function GamePlayPage() {
     const handlePopState = () => {
       // When user navigates back, immediately redirect to ensure we don't show loading
       if (!gameCode || !playerName) {
-        router.replace("/game/join");
+        router.replace('/game/join');
       }
     };
 
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, [gameCode, playerName, router]);
 
   const generateQuestions = useCallback(
-    (
-      allPeople: Person[],
-      gameType: GameType,
-      count: number,
-      optionsCount: number,
-    ): Question[] => {
+    (allPeople: Person[], gameType: GameType, count: number, optionsCount: number): Question[] => {
       if (allPeople.length < 2) {
-        setError("Not enough people in this group to play!");
+        setError('Not enough people in this group to play!');
         return [];
       }
 
@@ -118,9 +111,7 @@ export default function GamePlayPage() {
         const numWrongOptions = Math.max(1, optionsCount - 1);
 
         // Filter candidates by the same gender as the correct person
-        const samGenderPeople = allPeople.filter(
-          (p) => p.id !== correctPerson.id && p.gender === correctPerson.gender,
-        );
+        const samGenderPeople = allPeople.filter((p) => p.id !== correctPerson.id && p.gender === correctPerson.gender);
 
         // If not enough same gender people, fall back to any gender
         const candidates =
@@ -132,9 +123,7 @@ export default function GamePlayPage() {
           .sort(() => Math.random() - 0.5)
           .slice(0, Math.min(numWrongOptions, candidates.length));
 
-        const options = [...wrongOptions, correctPerson].sort(
-          () => Math.random() - 0.5,
-        );
+        const options = [...wrongOptions, correctPerson].sort(() => Math.random() - 0.5);
 
         questionList.push({
           person: correctPerson,
@@ -142,11 +131,7 @@ export default function GamePlayPage() {
         });
       }
 
-      logger.log(
-        "generateQuestions: Created",
-        questionList.length,
-        "questions",
-      );
+      logger.log('generateQuestions: Created', questionList.length, 'questions');
       return questionList;
     },
     [],
@@ -160,20 +145,20 @@ export default function GamePlayPage() {
 
     // Prevent double execution (React StrictMode or rapid re-renders)
     if (isLoadingGameRef.current) {
-      logger.log("[loadGame] Already loading, skipping duplicate call");
+      logger.log('[loadGame] Already loading, skipping duplicate call');
       return;
     }
 
     // For the same joinSessionId, only load once
     if (hasLoadedRef.current && !retry) {
-      logger.log("[loadGame] Already loaded for this session, skipping");
+      logger.log('[loadGame] Already loaded for this session, skipping');
       return;
     }
 
     isLoadingGameRef.current = true;
 
     try {
-      logger.log("[loadGame] Starting loadGame");
+      logger.log('[loadGame] Starting loadGame');
       // Reset all game state at the start
       setLoading(true);
       setCurrentQuestion(0);
@@ -186,19 +171,15 @@ export default function GamePlayPage() {
       const supabase = createClient();
 
       // Store game code and player name for "Play Again" feature
-      sessionStorage.setItem("lastGameCode", gameCode);
-      sessionStorage.setItem("lastPlayerName", playerName);
+      sessionStorage.setItem('lastGameCode', gameCode);
+      sessionStorage.setItem('lastPlayerName', playerName);
 
       // Find game session by code (allow any status so player can rejoin and try again)
-      const { data: session } = await supabase
-        .from("game_sessions")
-        .select("*")
-        .eq("game_code", gameCode)
-        .single();
+      const { data: session } = await supabase.from('game_sessions').select('*').eq('game_code', gameCode).single();
 
       if (!session) {
-        logError("Game session not found for code:", gameCode);
-        setError("Game not found!");
+        logError('Game session not found for code:', gameCode);
+        setError('Game not found!');
         setLoading(false);
         return;
       }
@@ -208,9 +189,7 @@ export default function GamePlayPage() {
 
       // Always clear any leftover data to start fresh
       // This ensures clean state when player rejoins/tries again
-      sessionStorage.removeItem(
-        `questionStartTime_${session.id}_${playerName}`,
-      );
+      sessionStorage.removeItem(`questionStartTime_${session.id}_${playerName}`);
       sessionStorage.removeItem(`joinRecordId_${gameCode}_${playerName}`);
 
       // Create or reuse join record for this player instance
@@ -218,60 +197,51 @@ export default function GamePlayPage() {
 
       if (joinSessionId) {
         // If this is a retry, look for existing join record by player name first
-        if (retry === "true") {
+        if (retry === 'true') {
           const { data: existingByName } = await supabase
-            .from("game_answers")
-            .select("id, is_active, join_id")
-            .eq("session_id", session.id)
-            .eq("player_name", playerName)
-            .is("correct_option_id", null)
-            .order("created_at", { ascending: false })
+            .from('game_answers')
+            .select('id, is_active, join_id')
+            .eq('session_id', session.id)
+            .eq('player_name', playerName)
+            .is('correct_option_id', null)
+            .order('created_at', { ascending: false })
             .limit(1);
 
           const [existingRecord] = existingByName ?? [];
           if (existingRecord) {
-            logger.log(
-              "Player retrying - reusing existing join record:",
-              existingRecord.id,
-            );
+            logger.log('Player retrying - reusing existing join record:', existingRecord.id);
             currentJoinRecordId = existingRecord.id;
 
             // Update the join record to be active AND update join_id to match new joinSessionId
             await supabase
-              .from("game_answers")
+              .from('game_answers')
               .update({
                 is_active: true,
                 join_id: joinSessionId, // Update to new joinSessionId so answers match
                 updated_at: new Date().toISOString(),
               })
-              .eq("id", existingRecord.id);
+              .eq('id', existingRecord.id);
           }
         }
 
         // If not a retry or no existing record found, check by join_id (joinSessionId stored as join_id)
         if (!currentJoinRecordId) {
           const { data: existingJoins } = await supabase
-            .from("game_answers")
-            .select("id, is_active")
-            .eq("session_id", session.id)
-            .eq("join_id", joinSessionId)
-            .is("correct_option_id", null)
+            .from('game_answers')
+            .select('id, is_active')
+            .eq('session_id', session.id)
+            .eq('join_id', joinSessionId)
+            .is('correct_option_id', null)
             .limit(1);
 
           const [existingJoin] = existingJoins ?? [];
           if (existingJoin) {
-            logger.log(
-              "Player rejoining - using existing join record:",
-              existingJoin.id,
-            );
+            logger.log('Player rejoining - using existing join record:', existingJoin.id);
             currentJoinRecordId = existingJoin.id;
 
             // Re-mark as active if needed
             if (!existingJoin.is_active) {
-              await supabase
-                .from("game_answers")
-                .update({ is_active: true })
-                .eq("id", existingJoin.id);
+              await supabase.from('game_answers').update({ is_active: true }).eq('id', existingJoin.id);
             }
           }
         }
@@ -279,13 +249,13 @@ export default function GamePlayPage() {
         // Only create a new record if we didn't find an existing one
         if (!currentJoinRecordId) {
           // Create new join record - database has unique constraint to prevent duplicates
-          logger.log("Creating new join tracking record:", {
+          logger.log('Creating new join tracking record:', {
             session_id: session.id,
             player_name: playerName,
             join_id: joinSessionId,
           });
           const { data: joinData, error: insertError } = await supabase
-            .from("game_answers")
+            .from('game_answers')
             .insert({
               session_id: session.id,
               player_name: playerName,
@@ -294,56 +264,48 @@ export default function GamePlayPage() {
               is_active: true,
               join_id: joinSessionId,
             })
-            .select("id");
+            .select('id');
 
           if (insertError) {
             // Check if it's a duplicate key error (race condition - record was created by another call)
-            if (insertError.code === "23505") {
-              logger.log(
-                "Duplicate key - fetching existing record created by race condition",
-              );
+            if (insertError.code === '23505') {
+              logger.log('Duplicate key - fetching existing record created by race condition');
               const { data: raceJoins } = await supabase
-                .from("game_answers")
-                .select("id")
-                .eq("session_id", session.id)
-                .eq("join_id", joinSessionId)
-                .is("correct_option_id", null)
+                .from('game_answers')
+                .select('id')
+                .eq('session_id', session.id)
+                .eq('join_id', joinSessionId)
+                .is('correct_option_id', null)
                 .limit(1);
               const [raceJoin] = raceJoins ?? [];
               currentJoinRecordId = raceJoin?.id ?? null;
             } else {
-              logError("Error inserting join tracking:", insertError);
+              logError('Error inserting join tracking:', insertError);
             }
           } else {
             const [joinRecord] = joinData ?? [];
             currentJoinRecordId = joinRecord?.id ?? null;
-            logger.log(
-              "Join tracking inserted successfully, ID:",
-              currentJoinRecordId,
-            );
+            logger.log('Join tracking inserted successfully, ID:', currentJoinRecordId);
           }
         }
       }
 
       if (currentJoinRecordId) {
         setJoinRecordId(currentJoinRecordId);
-        sessionStorage.setItem(
-          `joinRecordId_${gameCode}_${joinSessionId ?? playerName}`,
-          currentJoinRecordId,
-        );
+        sessionStorage.setItem(`joinRecordId_${gameCode}_${joinSessionId ?? playerName}`, currentJoinRecordId);
       }
 
       // Load people from the group
       const { data: peopleData, error: peopleError } = await supabase
-        .from("people")
-        .select("*")
-        .eq("group_id", session.group_id);
+        .from('people')
+        .select('*')
+        .eq('group_id', session.group_id);
 
-      logger.log("People data:", peopleData, "Error:", peopleError);
+      logger.log('People data:', peopleData, 'Error:', peopleError);
 
       if (!peopleData || peopleData.length === 0) {
-        logError("No people found in group");
-        setError("This group has no people! Add people to the group first.");
+        logError('No people found in group');
+        setError('This group has no people! Add people to the group first.');
         setLoading(false);
         return;
       }
@@ -352,18 +314,13 @@ export default function GamePlayPage() {
       const optionsCount = session.options_count ?? 4;
       const totalQuestions = session.total_questions ?? 10;
 
-      const generatedQuestions = generateQuestions(
-        peopleData,
-        session.game_type,
-        totalQuestions,
-        optionsCount,
-      );
+      const generatedQuestions = generateQuestions(peopleData, session.game_type, totalQuestions, optionsCount);
       logger.log(
-        "[loadGame] generateQuestions called with",
+        '[loadGame] generateQuestions called with',
         totalQuestions,
-        "questions, got",
+        'questions, got',
         generatedQuestions.length,
-        "back",
+        'back',
       );
       setQuestions(generatedQuestions);
 
@@ -380,24 +337,21 @@ export default function GamePlayPage() {
       if (!retry && joinSessionId) {
         // Query by join_id to support multiple players with same name
         const { data: allAnswers } = await supabase
-          .from("game_answers")
-          .select("id, correct_option_id, selected_option_id, response_time_ms")
-          .eq("session_id", session.id)
-          .eq("join_id", joinSessionId)
-          .order("id", { ascending: true });
+          .from('game_answers')
+          .select('id, correct_option_id, selected_option_id, response_time_ms')
+          .eq('session_id', session.id)
+          .eq('join_id', joinSessionId)
+          .order('id', { ascending: true });
 
         if (allAnswers && allAnswers.length > 0) {
           // Filter answers that have been submitted (both correct_option_id and selected_option_id exist)
-          answeredQuestions = allAnswers.filter(
-            (a) =>
-              a.correct_option_id !== null && a.selected_option_id !== null,
-          );
+          answeredQuestions = allAnswers.filter((a) => a.correct_option_id !== null && a.selected_option_id !== null);
 
           if (answeredQuestions.length > 0) {
             logger.log(
-              "Player has answered",
+              'Player has answered',
               answeredQuestions.length,
-              "questions, resuming from question",
+              'questions, resuming from question',
               answeredQuestions.length,
             );
             resumeFromQuestion = answeredQuestions.length;
@@ -411,30 +365,21 @@ export default function GamePlayPage() {
 
       // Check if there's a stored question start time (from before reload)
       // Use session ID in key to isolate different game sessions
-      const storedStartTime = sessionStorage.getItem(
-        `questionStartTime_${session.id}_${playerName}`,
-      );
+      const storedStartTime = sessionStorage.getItem(`questionStartTime_${session.id}_${playerName}`);
       let initialTimeLeft = timeLimit;
 
       if (storedStartTime && resumeFromQuestion < totalQuestions) {
         const elapsedMs = Date.now() - parseInt(storedStartTime);
         const elapsedSeconds = Math.floor(elapsedMs / 1000);
         initialTimeLeft = Math.max(0, timeLimit - elapsedSeconds);
-        logger.log(
-          "Resuming question with",
-          initialTimeLeft,
-          "seconds remaining",
-        );
+        logger.log('Resuming question with', initialTimeLeft, 'seconds remaining');
       } else {
         // New question, store the start time
-        sessionStorage.setItem(
-          `questionStartTime_${session.id}_${playerName}`,
-          Date.now().toString(),
-        );
+        sessionStorage.setItem(`questionStartTime_${session.id}_${playerName}`, Date.now().toString());
       }
 
-      logger.log("Game loaded successfully, starting game");
-      logger.log("Questions generated:", session.total_questions);
+      logger.log('Game loaded successfully, starting game');
+      logger.log('Questions generated:', session.total_questions);
 
       // Ensure all state updates are batched before marking game as started
       setTimeLeft(initialTimeLeft);
@@ -442,20 +387,13 @@ export default function GamePlayPage() {
       hasLoadedRef.current = true;
       // Don't set gameStarted here - let the useEffect below handle it when questions are ready
     } catch (error) {
-      logError("Error loading game:", error);
-      setError("Error loading game: " + getErrorMessage(error));
+      logError('Error loading game:', error);
+      setError('Error loading game: ' + getErrorMessage(error));
       setLoading(false);
     } finally {
       isLoadingGameRef.current = false;
     }
-  }, [
-    gameCode,
-    playerName,
-    generateQuestions,
-    retry,
-    joinSessionId,
-    setLoading,
-  ]);
+  }, [gameCode, playerName, generateQuestions, retry, joinSessionId, setLoading]);
 
   const finishGame = useCallback(async () => {
     if (!gameSession || !playerName || !joinSessionId) return;
@@ -466,48 +404,37 @@ export default function GamePlayPage() {
     // This is more reliable than using the score state variable
     // Use join_id to support multiple players with same name
     const { data: answers, error: queryError } = await supabase
-      .from("game_answers")
-      .select("is_correct")
-      .eq("session_id", gameSession.id)
-      .eq("join_id", joinSessionId)
-      .not("correct_option_id", "is", null); // Exclude join tracking records
+      .from('game_answers')
+      .select('is_correct')
+      .eq('session_id', gameSession.id)
+      .eq('join_id', joinSessionId)
+      .not('correct_option_id', 'is', null); // Exclude join tracking records
 
     if (queryError) {
-      logError("Error querying answers:", queryError);
+      logError('Error querying answers:', queryError);
     }
 
     // Count correct answers from the database
-    const actualScore =
-      answers?.filter((answer) => answer.is_correct).length || 0;
+    const actualScore = answers?.filter((answer) => answer.is_correct).length || 0;
 
     // Save final score but don't mark session as completed
     // The session will only be marked complete when the host clicks "End Game"
     await supabase
-      .from("game_sessions")
+      .from('game_sessions')
       .update({
         score: actualScore,
       })
-      .eq("id", gameSession.id);
+      .eq('id', gameSession.id);
 
     // Get join record ID from state or sessionStorage
     const recordId =
-      joinRecordId ||
-      sessionStorage.getItem(
-        `joinRecordId_${gameSession.game_code}_${joinSessionId || playerName}`,
-      );
+      joinRecordId || sessionStorage.getItem(`joinRecordId_${gameSession.game_code}_${joinSessionId || playerName}`);
 
     // Redirect to results page with the actual score from database
     router.replace(
-      `/game/results?session=${gameSession.id}&score=${actualScore}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || "")}&gameCode=${gameSession.game_code}&joinRecordId=${recordId || ""}`,
+      `/game/results?session=${gameSession.id}&score=${actualScore}&total=${questions.length}&code=${gameSession.game_code}&name=${encodeURIComponent(playerName || '')}&gameCode=${gameSession.game_code}&joinRecordId=${recordId || ''}`,
     );
-  }, [
-    gameSession,
-    questions.length,
-    router,
-    playerName,
-    joinSessionId,
-    joinRecordId,
-  ]);
+  }, [gameSession, questions.length, router, playerName, joinSessionId, joinRecordId]);
 
   const handleAnswer = useCallback(
     async (answerId: string | null) => {
@@ -534,27 +461,21 @@ export default function GamePlayPage() {
 
       // Save answer to database
       const supabase = createClient();
-      logger.log(
-        "Saving answer with join_id:",
-        joinSessionId,
-        "is_correct:",
-        isCorrect,
-      );
-      const { error } = await supabase.from("game_answers").insert({
+      logger.log('Saving answer with join_id:', joinSessionId, 'is_correct:', isCorrect);
+      const { error } = await supabase.from('game_answers').insert({
         session_id: gameSession.id,
         correct_option_id: questions[currentQuestion].person.id,
         selected_option_id: answerId,
         is_correct: isCorrect,
-        response_time_ms:
-          Math.max(0, (gameSession.time_limit_seconds || 30) - timeLeft) * 1000,
+        response_time_ms: Math.max(0, (gameSession.time_limit_seconds || 30) - timeLeft) * 1000,
         player_name: playerName,
         join_id: joinSessionId,
       });
 
       if (error) {
-        logError("Error saving answer:", error);
+        logError('Error saving answer:', error);
       } else {
-        logger.log("Answer saved successfully");
+        logger.log('Answer saved successfully');
       }
 
       // Move to next question after animation completes
@@ -566,30 +487,15 @@ export default function GamePlayPage() {
           setTimeLeft(gameSession?.time_limit_seconds || 30);
           setLastAnswerCorrect(null);
           // Store start time for the new question
-          sessionStorage.setItem(
-            `questionStartTime_${gameSession?.id}_${playerName}`,
-            Date.now().toString(),
-          );
+          sessionStorage.setItem(`questionStartTime_${gameSession?.id}_${playerName}`, Date.now().toString());
         } else {
           // Game finished
-          sessionStorage.removeItem(
-            `questionStartTime_${gameSession?.id}_${playerName}`,
-          );
+          sessionStorage.removeItem(`questionStartTime_${gameSession?.id}_${playerName}`);
           finishGame();
         }
       }, 500);
     },
-    [
-      answered,
-      gameSession,
-      questions,
-      currentQuestion,
-      score,
-      timeLeft,
-      playerName,
-      finishGame,
-      joinSessionId,
-    ],
+    [answered, gameSession, questions, currentQuestion, score, timeLeft, playerName, finishGame, joinSessionId],
   );
 
   useEffect(() => {
@@ -606,12 +512,7 @@ export default function GamePlayPage() {
     const supabase = createClient();
     const channelName = `presence:game:${gameSession.id}`;
 
-    logger.log(
-      "Setting up presence tracking for player:",
-      playerName,
-      "joinRecordId:",
-      joinRecordId,
-    );
+    logger.log('Setting up presence tracking for player:', playerName, 'joinRecordId:', joinRecordId);
 
     const channel = supabase.channel(channelName, {
       config: {
@@ -622,12 +523,12 @@ export default function GamePlayPage() {
     });
 
     channel
-      .on("presence", { event: "sync" }, () => {
+      .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        logger.log("Presence sync:", state);
+        logger.log('Presence sync:', state);
       })
       .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
+        if (status === 'SUBSCRIBED') {
           // Track this player's presence
           await channel.track({
             joinRecordId,
@@ -635,12 +536,12 @@ export default function GamePlayPage() {
             joinSessionId,
             online_at: new Date().toISOString(),
           });
-          logger.log("Presence tracked successfully");
+          logger.log('Presence tracked successfully');
         }
       });
 
     return () => {
-      logger.log("Cleaning up presence for player:", playerName);
+      logger.log('Cleaning up presence for player:', playerName);
       channel.untrack();
       supabase.removeChannel(channel);
     };
@@ -651,28 +552,19 @@ export default function GamePlayPage() {
     if (!gameSession?.id || !playerName) return;
 
     const handlePlayerLeft = async () => {
-      logger.log(
-        "Player leaving game:",
-        playerName,
-        "joinSessionId:",
-        joinSessionId,
-      );
-      const result = await markPlayerAsLeft(
-        gameSession.id,
-        playerName,
-        joinSessionId ?? undefined,
-      );
-      logger.log("Mark player as left result:", result);
+      logger.log('Player leaving game:', playerName, 'joinSessionId:', joinSessionId);
+      const result = await markPlayerAsLeft(gameSession.id, playerName, joinSessionId ?? undefined);
+      logger.log('Mark player as left result:', result);
     };
 
     const handleBeforeUnload = () => {
       handlePlayerLeft();
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       // Only mark as left if they're actually closing the window (beforeunload was triggered)
       // Don't mark as left on normal navigation away (they might be going to results)
     };
@@ -689,42 +581,38 @@ export default function GamePlayPage() {
     const channel = supabase
       .channel(`game:${sessionId}`)
       .on(
-        "postgres_changes",
+        'postgres_changes',
         {
-          event: "UPDATE",
-          schema: "public",
-          table: "game_sessions",
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'game_sessions',
           filter: `id=eq.${sessionId}`,
         },
         async (payload) => {
           const updatedSession = payload.new as { status?: string } | null;
-          if (updatedSession?.status === "completed") {
+          if (updatedSession?.status === 'completed') {
             // Game ended by host - get actual score from database and redirect to results
             // Use join_id to support multiple players with same name
             const { data: answers, error: queryError } = await supabase
-              .from("game_answers")
-              .select("is_correct")
-              .eq("session_id", sessionId)
-              .eq("join_id", joinSessionId)
-              .not("correct_option_id", "is", null); // Exclude join tracking records
+              .from('game_answers')
+              .select('is_correct')
+              .eq('session_id', sessionId)
+              .eq('join_id', joinSessionId)
+              .not('correct_option_id', 'is', null); // Exclude join tracking records
 
             if (queryError) {
-              logError("Error querying answers:", queryError);
+              logError('Error querying answers:', queryError);
             }
 
             // Count correct answers from the database
-            const actualScore =
-              answers?.filter((answer) => answer.is_correct).length || 0;
+            const actualScore = answers?.filter((answer) => answer.is_correct).length || 0;
 
             // Get join record ID
             const recordId =
-              joinRecordId ||
-              sessionStorage.getItem(
-                `joinRecordId_${gameCode}_${joinSessionId || playerName}`,
-              );
+              joinRecordId || sessionStorage.getItem(`joinRecordId_${gameCode}_${joinSessionId || playerName}`);
 
             router.replace(
-              `/game/results?session=${sessionId}&score=${actualScore}&total=${questions.length}&code=${gameCode}&name=${encodeURIComponent(playerName || "")}&joinRecordId=${recordId || ""}`,
+              `/game/results?session=${sessionId}&score=${actualScore}&total=${questions.length}&code=${gameCode}&name=${encodeURIComponent(playerName || '')}&joinRecordId=${recordId || ''}`,
             );
           }
         },
@@ -734,15 +622,7 @@ export default function GamePlayPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [
-    gameSession?.id,
-    gameSession?.game_code,
-    playerName,
-    joinSessionId,
-    questions.length,
-    router,
-    joinRecordId,
-  ]);
+  }, [gameSession?.id, gameSession?.game_code, playerName, joinSessionId, questions.length, router, joinRecordId]);
 
   useEffect(() => {
     // Only run timer if we have questions loaded and active AND timer is enabled
@@ -750,21 +630,10 @@ export default function GamePlayPage() {
     if (questions.length > 0 && timeLeft > 0 && !answered && timerEnabled) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (
-      timeLeft === 0 &&
-      !answered &&
-      questions.length > 0 &&
-      timerEnabled
-    ) {
+    } else if (timeLeft === 0 && !answered && questions.length > 0 && timerEnabled) {
       handleAnswer(null);
     }
-  }, [
-    timeLeft,
-    answered,
-    questions.length,
-    handleAnswer,
-    gameSession?.enable_timer,
-  ]);
+  }, [timeLeft, answered, questions.length, handleAnswer, gameSession?.enable_timer]);
 
   // If we don't have valid params or not initialized yet, return empty while redirecting
   if (!gameCode || !playerName || !initialized) {
@@ -775,15 +644,15 @@ export default function GamePlayPage() {
     <RenderState
       state={
         loading
-          ? { type: "loading", error }
+          ? { type: 'loading', error }
           : !questions || questions.length === 0
-            ? { type: "waiting-for-start", error }
+            ? { type: 'waiting-for-start', error }
             : !questions[currentQuestion]
-              ? { type: "loading-question" }
+              ? { type: 'loading-question' }
               : {
-                  type: "active",
+                  type: 'active',
                   gameType: gameSession!.game_type,
-                  playerName: playerName || "Player",
+                  playerName: playerName || 'Player',
                   score,
                   question: questions[currentQuestion],
                   currentQuestion,
@@ -800,16 +669,10 @@ export default function GamePlayPage() {
   );
 }
 
-const Container = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
+const Container = ({ children, className }: { children: React.ReactNode; className?: string }) => {
   return (
-    <div className="w-full max-w-screen-lg">
-      <div className={cn("w-full max-w-screen-lg ", className)}>{children}</div>
+    <div className="w-full max-w-5xl">
+      <div className={cn('w-full max-w-5xl', className)}>{children}</div>
     </div>
   );
 };
@@ -825,25 +688,25 @@ const Message = ({ text }: { text: string }) => {
 };
 
 interface State {
-  type: "loading" | "waiting-for-start" | "loading-question" | "active";
+  type: 'loading' | 'waiting-for-start' | 'loading-question' | 'active';
 }
 
 interface LoadingState extends State {
-  type: "loading";
+  type: 'loading';
   error?: string | null;
 }
 
 interface WaitingForStartState extends State {
-  type: "waiting-for-start";
+  type: 'waiting-for-start';
   error?: string | null;
 }
 
 interface LoadingQuestionState extends State {
-  type: "loading-question";
+  type: 'loading-question';
 }
 
 interface ActiveState extends State {
-  type: "active";
+  type: 'active';
   gameType: GameType;
   playerName: string;
   score: number;
@@ -860,226 +723,248 @@ interface ActiveState extends State {
 
 // Component for active game state with keyboard shortcuts
 function ActiveGameState({ state }: { state: ActiveState }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to top smoothly when question changes
+  useEffect(() => {
+    if (containerRef.current) {
+      const start = containerRef.current.scrollTop;
+      const duration = 200; // Fast smooth scroll (200ms)
+      const startTime = performance.now();
+
+      const animateScroll = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Ease out cubic for smooth deceleration
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+        if (containerRef.current) {
+          containerRef.current.scrollTop = start * (1 - easeProgress);
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(animateScroll);
+        }
+      };
+
+      requestAnimationFrame(animateScroll);
+    }
+  }, [state.currentQuestion]);
+
+  // Handle answer with event handling
+  const handleAnswerWithScrollPreservation = useCallback(
+    (answerId: string | null, event?: React.MouseEvent) => {
+      // Prevent any scroll behavior from the click
+      if (event) {
+        event.preventDefault();
+        // Blur the button to prevent focus scrolling
+        (event.currentTarget as HTMLButtonElement).blur();
+      }
+
+      state.handleAnswer(answerId);
+    },
+    [state],
+  );
+
   // Keyboard shortcuts for answer selection
   KeyboardShortcuts.useAnswerSelection((index) => {
     if (!state.answered && state.question.options[index]) {
-      state.handleAnswer(state.question.options[index].id);
+      handleAnswerWithScrollPreservation(state.question.options[index].id);
     }
   }, state.question.options.length);
 
   return (
     <div
+      ref={containerRef}
       className={cn(
-        "transition-colors duration-700 grow flex flex-col gap-2 p-4 items-center bg-gradient-to-br overflow-y-auto overflow-x-clip",
+        'flex grow flex-col items-center gap-2 overflow-x-clip overflow-y-auto bg-linear-to-br p-4 transition-colors duration-700',
         state.lastAnswerCorrect === true
-          ? "from-green-600 to-green-800"
+          ? 'from-green-600 to-green-800'
           : state.lastAnswerCorrect === false
-            ? "from-red-600 to-red-800"
-            : "from-purple-500 to-pink-500",
+            ? 'from-red-600 to-red-800'
+            : 'from-purple-500 to-pink-500',
       )}
       role="main"
       aria-label="Game play area"
     >
       {/* Screen reader announcements */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
-        Question {state.currentQuestion + 1} of {state.questions.length}. Time
-        remaining: {state.timeLeft} seconds.
-        {state.answered &&
-          (state.lastAnswerCorrect ? "Correct! " : "Incorrect. ")}
+        Question {state.currentQuestion + 1} of {state.questions.length}. Time remaining: {state.timeLeft} seconds.
+        {state.answered && (state.lastAnswerCorrect ? 'Correct! ' : 'Incorrect. ')}
         Current score: {state.score} out of {state.questions.length}.
       </div>
-      <Container className="flex flex-col gap-6 my-auto">
+      <Container className="my-auto flex flex-col gap-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
-          <div className="text-white space-y-1">
-            <p className="text-sm opacity-80">{state.playerName}</p>
+        <div className="flex items-center justify-between gap-6">
+          <div className="space-y-1 text-white">
             <p className="text-2xl font-bold">
               Score: {state.score}/{state.questions.length}
             </p>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs">
-                Question {state.currentQuestion + 1} of {state.questions.length}
-              </Badge>
-              <div className="h-1.5 w-32 bg-black/40 rounded-full overflow-hidden border border-white/30">
-                <div
-                  className="h-full bg-gradient-primary transition-all duration-300"
-                  style={{
-                    width: `${((state.currentQuestion + 1) / state.questions.length) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
+            <Badge variant="secondary" className="text-xs">
+              Question {state.currentQuestion + 1} of {state.questions.length}
+            </Badge>
           </div>
           {state.gameSession.enable_timer !== false && (
-            <div className="text-white bg-black/40 rounded-full p-2 border border-white/30 inline-flex">
-              <CircularProgress
-                value={state.timeLeft}
-                max={30}
-                size={80}
-                strokeWidth={6}
-              >
+            <div className="inline-flex shrink-0 rounded-full border border-white/30 bg-black/40 p-2 text-white">
+              <CircularProgress value={state.timeLeft} max={30} size={80} strokeWidth={6}>
                 <span className="text-2xl font-bold">{state.timeLeft}</span>
               </CircularProgress>
             </div>
           )}
         </div>
 
-        <AnimatePresence mode="popLayout">
-          <motion.div
-            key={state.currentQuestion}
-            initial={{ x: "100vw", opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: "-100vw", opacity: 0 }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
-            <div
-              className={`flex gap-6 ${state.gameType === "guess_image" ? "flex-col" : "flex-col lg:flex-row"}`}
+        {/* Progress Bar */}
+        <div className="h-1.5 w-full overflow-hidden rounded-full border border-white/30 bg-black/40">
+          <div
+            className="bg-gradient-primary h-full transition-all duration-300"
+            style={{
+              width: `${((state.currentQuestion + 1) / state.questions.length) * 100}%`,
+            }}
+          />
+        </div>
+
+        <div className="relative flex-1 overflow-x-hidden pb-8">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={state.currentQuestion}
+              initial={{ x: '100%', opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: '-100%', opacity: 0 }}
+              transition={{ duration: 0.5, ease: 'easeInOut' }}
+              className="min-h-125 w-full"
             >
-              <Card className="flex-shrink-0 justify-center">
-                <CardHeader>
-                  <CardTitle className="text-center text-2xl">
-                    {state.gameType === "guess_name"
-                      ? "Who is this?"
-                      : "Who is " +
-                        state.question.person.first_name +
-                        " " +
-                        state.question.person.last_name +
-                        "?"}
-                  </CardTitle>
-                </CardHeader>
-                {state.gameType === "guess_name" && (
-                  <CardContent>
-                    <div className="flex justify-center">
-                      <div className=" aspect-square rounded-lg border-4 border-gray-200">
-                        <Image
-                          width={256}
-                          height={256}
-                          key={`person-image-${state.currentQuestion}-${state.question.person.id}`}
-                          src={
-                            state.question.person.image_url ||
-                            "/placeholder.png"
-                          }
-                          alt={`Photo of person for question ${state.currentQuestion + 1}`}
-                          priority={true}
-                          aria-label={`Question ${state.currentQuestion + 1}: Who is this person?`}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-              {/* Question Options */}
-              <div
-                className={`gap-2 flex-1 justify-center ${state.gameType === "guess_image" ? "grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]" : "flex flex-col"}`}
-              >
-                {state.question.options.map((option) => {
-                  const isSelected = state.selectedAnswer === option.id;
-                  const isCorrect = option.id === state.question.person.id;
-
-                  let buttonClass =
-                    "text-lg font-semibold disabled:opacity-100 relative overflow-hidden";
-                  let buttonVariant: "default" | "outline" = "outline";
-
-                  if (state.answered) {
-                    if (isCorrect && isSelected) {
-                      buttonClass +=
-                        " bg-green-500 hover:bg-green-500 text-white animate-pulse";
-                      buttonVariant = "default";
-                    } else if (isSelected && !isCorrect) {
-                      buttonClass += " bg-red-500 hover:bg-red-500 text-white";
-                      buttonVariant = "default";
-                    } else if (isCorrect) {
-                      buttonClass +=
-                        " bg-green-500 hover:bg-green-500 text-white";
-                      buttonVariant = "default";
-                    }
-                  }
-
-                  return (
-                    <Button
-                      key={option.id}
-                      onClick={() => state.handleAnswer(option.id)}
-                      disabled={state.answered}
-                      className={buttonClass}
-                      variant={buttonVariant}
-                      aria-label={
-                        state.gameType === "guess_name"
-                          ? `Select ${option.first_name} ${option.last_name}${isSelected ? " (selected)" : ""}${state.answered && isCorrect ? " (correct answer)" : ""}${state.answered && isSelected && !isCorrect ? " (incorrect)" : ""}`
-                          : `Select option ${state.question.options.indexOf(option) + 1}${isSelected ? " (selected)" : ""}${state.answered && isCorrect ? " (correct answer)" : ""}${state.answered && isSelected && !isCorrect ? " (incorrect)" : ""}`
-                      }
-                      aria-pressed={isSelected}
-                      aria-disabled={state.answered}
-                      tabIndex={state.answered ? -1 : 0}
-                    >
-                      {state.answered && isCorrect && (
-                        <svg
-                          className="w-5 h-5 mr-2"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      )}
-                      {state.answered && isSelected && !isCorrect && (
-                        <svg
-                          className="w-5 h-5 mr-2"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      )}
-                      {state.gameType === "guess_name" ? (
-                        <span className="truncate">
-                          {option.first_name} {option.last_name}
-                        </span>
-                      ) : (
-                        <div
-                          key={`option-image-${state.currentQuestion}-${option.id}`}
-                          className="flex justify-center relative w-full min-w-[100px] min-h-[100px] max-h-[200px]"
-                        >
+              <div className={`flex gap-6 ${state.gameType === 'guess_image' ? 'flex-col' : 'flex-col lg:flex-row'}`}>
+                <Card className="shrink-0 justify-center">
+                  <CardHeader>
+                    <CardTitle className="text-center text-2xl">
+                      {state.gameType === 'guess_name'
+                        ? 'Who is this?'
+                        : 'Who is ' + state.question.person.first_name + ' ' + state.question.person.last_name + '?'}
+                    </CardTitle>
+                  </CardHeader>
+                  {state.gameType === 'guess_name' && (
+                    <CardContent>
+                      <div className="flex justify-center">
+                        <div className="aspect-square rounded-lg border-4 border-gray-200">
                           <Image
-                            src={option.image_url || "/placeholder.png"}
-                            alt={`${option.first_name} ${option.last_name}`}
-                            width={200}
-                            height={200}
+                            width={256}
+                            height={256}
+                            key={`person-image-${state.currentQuestion}-${state.question.person.id}`}
+                            src={state.question.person.image_url || '/placeholder.png'}
+                            alt={`Photo of person for question ${state.currentQuestion + 1}`}
                             priority={true}
+                            aria-label={`Question ${state.currentQuestion + 1}: Who is this person?`}
                           />
                         </div>
-                      )}
-                    </Button>
-                  );
-                })}
+                      </div>
+                    </CardContent>
+                  )}
+                </Card>
+                {/* Question Options */}
+                <div
+                  className={`flex-1 justify-center gap-2 ${state.gameType === 'guess_image' ? 'grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))]' : 'flex flex-col'}`}
+                >
+                  {state.question.options.map((option) => {
+                    const isSelected = state.selectedAnswer === option.id;
+                    const isCorrect = option.id === state.question.person.id;
+
+                    let buttonClass = 'text-lg font-semibold disabled:opacity-100 relative overflow-hidden border-2';
+                    let buttonVariant: 'default' | 'outline' = 'outline';
+
+                    if (state.answered) {
+                      if (isCorrect && isSelected) {
+                        buttonClass += ' bg-green-500 hover:bg-green-500 text-white border-green-500 animate-pulse';
+                        buttonVariant = 'default';
+                      } else if (isSelected && !isCorrect) {
+                        buttonClass += ' bg-red-500 hover:bg-red-500 text-white border-red-500';
+                        buttonVariant = 'default';
+                      } else if (isCorrect) {
+                        buttonClass += ' bg-green-500 hover:bg-green-500 text-white border-green-500';
+                        buttonVariant = 'default';
+                      }
+                    }
+
+                    return (
+                      <Button
+                        key={option.id}
+                        onClick={(e) => handleAnswerWithScrollPreservation(option.id, e)}
+                        disabled={state.answered}
+                        className={buttonClass}
+                        variant={buttonVariant}
+                        aria-label={
+                          state.gameType === 'guess_name'
+                            ? `Select ${option.first_name} ${option.last_name}${isSelected ? ' (selected)' : ''}${state.answered && isCorrect ? ' (correct answer)' : ''}${state.answered && isSelected && !isCorrect ? ' (incorrect)' : ''}`
+                            : `Select option ${state.question.options.indexOf(option) + 1}${isSelected ? ' (selected)' : ''}${state.answered && isCorrect ? ' (correct answer)' : ''}${state.answered && isSelected && !isCorrect ? ' (incorrect)' : ''}`
+                        }
+                        aria-pressed={isSelected}
+                        aria-disabled={state.answered}
+                        tabIndex={state.answered ? -1 : 0}
+                      >
+                        <span className="flex w-full items-center justify-between">
+                          {state.gameType === 'guess_name' ? (
+                            <span className="flex-1 truncate text-left">
+                              {option.first_name} {option.last_name}
+                            </span>
+                          ) : (
+                            <div
+                              key={`option-image-${state.currentQuestion}-${option.id}`}
+                              className="relative flex max-h-50 min-h-25 min-w-25 flex-1 items-center justify-center"
+                            >
+                              <Image
+                                src={option.image_url || '/placeholder.png'}
+                                alt={`${option.first_name} ${option.last_name}`}
+                                width={200}
+                                height={200}
+                                priority={true}
+                              />
+                            </div>
+                          )}
+                          {state.answered && (isCorrect || isSelected) && (
+                            <span className="ml-3 flex h-6 w-6 shrink-0 items-center justify-center">
+                              {isCorrect && (
+                                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              )}
+                              {isSelected && !isCorrect && (
+                                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              )}
+                            </span>
+                          )}
+                        </span>
+                      </Button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </Container>
     </div>
   );
 }
 
-type StateUnion =
-  | LoadingState
-  | WaitingForStartState
-  | LoadingQuestionState
-  | ActiveState;
+type StateUnion = LoadingState | WaitingForStartState | LoadingQuestionState | ActiveState;
 
 const RenderState = ({ state }: { state: StateUnion }) => {
   switch (state.type) {
-    case "loading":
+    case 'loading':
       // Global loading overlay handles spinner, only show error if present
       if (state.error) {
         return (
-          <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
+          <div className="flex grow flex-col items-center justify-center gap-2 bg-linear-to-br from-purple-500 to-pink-500 p-4">
             <Container>
               <ErrorMessage message={state.error} size="lg" />
             </Container>
@@ -1087,12 +972,10 @@ const RenderState = ({ state }: { state: StateUnion }) => {
         );
       }
       // Return empty div to maintain layout while global overlay shows spinner
+      return <div className="grow bg-linear-to-br from-purple-500 to-pink-500" />;
+    case 'waiting-for-start':
       return (
-        <div className="grow bg-gradient-to-br from-purple-500 to-pink-500" />
-      );
-    case "waiting-for-start":
-      return (
-        <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
+        <div className="flex grow flex-col items-center justify-center gap-2 bg-linear-to-br from-purple-500 to-pink-500 p-4">
           <Container>
             {state.error ? (
               <ErrorMessage message={state.error} size="lg" />
@@ -1102,15 +985,15 @@ const RenderState = ({ state }: { state: StateUnion }) => {
           </Container>
         </div>
       );
-    case "loading-question":
+    case 'loading-question':
       return (
-        <div className="grow flex flex-col gap-2 items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 p-4">
+        <div className="flex grow flex-col items-center justify-center gap-2 bg-linear-to-br from-purple-500 to-pink-500 p-4">
           <Container>
             <Message text="Loading question..." />
           </Container>
         </div>
       );
-    case "active":
+    case 'active':
       return <ActiveGameState state={state} />;
     default:
       const _exhaustiveCheck: undefined = state;

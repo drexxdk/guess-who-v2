@@ -1,30 +1,20 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useMemo, useEffect } from "react";
-import { FaPencil } from "react-icons/fa6";
-import { PeopleList } from "@/components/people-list";
-import { AddPersonForm } from "@/components/add-person-form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { SectionCard } from "@/components/ui/section-card";
-import { buttonVariants } from "@/components/ui/button";
-import { Button } from "@/components/ui/button";
-import { GroupSettings } from "@/components/group-settings";
-import { DeleteGroupButton } from "@/components/delete-group-button";
-import type { Group, Person } from "@/lib/schemas";
-import { logger } from "@/lib/logger";
-import {
-  useMultiRealtimeSubscription,
-  getPayloadNew,
-  getPayloadOld,
-} from "@/lib/hooks/use-realtime";
-import { useLoading } from "@/lib/loading-context";
-import { LoadingLink } from "@/components/ui/loading-link";
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { FaPencil } from 'react-icons/fa6';
+import { PeopleList } from '@/components/people-list';
+import { AddPersonForm } from '@/components/add-person-form';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { SectionCard } from '@/components/ui/section-card';
+import { buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
+import { GroupSettings } from '@/components/group-settings';
+import { DeleteGroupButton } from '@/components/delete-group-button';
+import type { Group, Person } from '@/lib/schemas';
+import { logger } from '@/lib/logger';
+import { useMultiRealtimeSubscription, getPayloadNew, getPayloadOld } from '@/lib/hooks/use-realtime';
+import { useLoading } from '@/lib/loading-context';
+import { LoadingLink } from '@/components/ui/loading-link';
 
 export function GroupDetailClient({
   groupData,
@@ -46,43 +36,30 @@ export function GroupDetailClient({
   }, [setLoading]);
 
   // Realtime event handlers
-  const handleDelete = useCallback(
-    (payload: Parameters<typeof getPayloadOld<Person>>[0]) => {
-      const oldData = getPayloadOld<Person>(payload);
-      if (!oldData?.id) return;
-      logger.log("DELETE event received for person:", oldData.id);
-      setPeople((prev) => prev.filter((p) => p.id !== oldData.id));
-    },
-    [],
-  );
+  const handleDelete = useCallback((payload: Parameters<typeof getPayloadOld<Person>>[0]) => {
+    const oldData = getPayloadOld<Person>(payload);
+    if (!oldData?.id) return;
+    logger.log('DELETE event received for person:', oldData.id);
+    setPeople((prev) => prev.filter((p) => p.id !== oldData.id));
+  }, []);
 
-  const handleInsert = useCallback(
-    (payload: Parameters<typeof getPayloadNew<Person>>[0]) => {
-      const newPerson = getPayloadNew<Person>(payload);
-      if (!newPerson?.id) return;
-      logger.log("INSERT event received:", newPerson);
-      setPeople((prev) =>
-        [...prev, newPerson].sort((a, b) =>
-          a.first_name.localeCompare(b.first_name),
-        ),
-      );
-    },
-    [],
-  );
+  const handleInsert = useCallback((payload: Parameters<typeof getPayloadNew<Person>>[0]) => {
+    const newPerson = getPayloadNew<Person>(payload);
+    if (!newPerson?.id) return;
+    logger.log('INSERT event received:', newPerson);
+    setPeople((prev) => [...prev, newPerson].sort((a, b) => a.first_name.localeCompare(b.first_name)));
+  }, []);
 
-  const handleUpdate = useCallback(
-    (payload: Parameters<typeof getPayloadNew<Person>>[0]) => {
-      const updatedPerson = getPayloadNew<Person>(payload);
-      if (!updatedPerson?.id) return;
-      logger.log("UPDATE event received:", updatedPerson);
-      setPeople((prev) =>
-        prev
-          .map((p) => (p.id === updatedPerson.id ? updatedPerson : p))
-          .sort((a, b) => a.first_name.localeCompare(b.first_name)),
-      );
-    },
-    [],
-  );
+  const handleUpdate = useCallback((payload: Parameters<typeof getPayloadNew<Person>>[0]) => {
+    const updatedPerson = getPayloadNew<Person>(payload);
+    if (!updatedPerson?.id) return;
+    logger.log('UPDATE event received:', updatedPerson);
+    setPeople((prev) =>
+      prev
+        .map((p) => (p.id === updatedPerson.id ? updatedPerson : p))
+        .sort((a, b) => a.first_name.localeCompare(b.first_name)),
+    );
+  }, []);
 
   // Watch for changes to people in this group
   const realtimeConfig = useMemo(
@@ -90,19 +67,19 @@ export function GroupDetailClient({
       channelName: `people:${groupId}`,
       subscriptions: [
         {
-          table: "people",
-          event: "DELETE" as const,
+          table: 'people',
+          event: 'DELETE' as const,
           onEvent: handleDelete,
         },
         {
-          table: "people",
-          event: "INSERT" as const,
+          table: 'people',
+          event: 'INSERT' as const,
           filter: `group_id=eq.${groupId}`,
           onEvent: handleInsert,
         },
         {
-          table: "people",
-          event: "UPDATE" as const,
+          table: 'people',
+          event: 'UPDATE' as const,
           filter: `group_id=eq.${groupId}`,
           onEvent: handleUpdate,
         },
@@ -113,12 +90,9 @@ export function GroupDetailClient({
 
   useMultiRealtimeSubscription<Person>(realtimeConfig);
 
-  const hasEnoughPeople =
-    people.length >= (updatedGroupData.options_count ?? 4);
+  const hasEnoughPeople = people.length >= (updatedGroupData.options_count ?? 4);
 
-  const handleGroupUpdate = (
-    updated: Pick<Group, "name" | "time_limit_seconds" | "options_count">,
-  ) => {
+  const handleGroupUpdate = (updated: Pick<Group, 'name' | 'time_limit_seconds' | 'options_count'>) => {
     setUpdatedGroupData((prev) => ({
       ...prev,
       ...updated,
@@ -130,12 +104,10 @@ export function GroupDetailClient({
       <div>
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-start">
+            <div className="flex items-start justify-between">
               <div>
                 <CardTitle>{updatedGroupData.name}</CardTitle>
-                <CardDescription>
-                  {people.length} people in this group
-                </CardDescription>
+                <CardDescription>{people.length} people in this group</CardDescription>
               </div>
               <Button
                 onClick={() => setIsEditingSettings(true)}
@@ -143,7 +115,7 @@ export function GroupDetailClient({
                 size="icon"
                 aria-label="Edit group settings"
               >
-                <FaPencil className="w-4 h-4" />
+                <FaPencil className="h-4 w-4" />
               </Button>
             </div>
           </CardHeader>
@@ -160,15 +132,14 @@ export function GroupDetailClient({
               <LoadingLink
                 href={`/protected/groups/${updatedGroupData.id}/host`}
                 className={buttonVariants({
-                  className: `w-full ${!hasEnoughPeople ? "opacity-50 pointer-events-none" : ""}`,
+                  className: `w-full ${!hasEnoughPeople ? 'pointer-events-none opacity-50' : ''}`,
                 })}
               >
                 Start Game
               </LoadingLink>
               {!hasEnoughPeople && (
-                <p className="text-sm text-destructive text-center">
-                  You need at least {updatedGroupData.options_count} people to
-                  start a game
+                <p className="text-destructive text-center text-sm">
+                  You need at least {updatedGroupData.options_count} people to start a game
                 </p>
               )}
               <DeleteGroupButton groupId={groupId} />
@@ -176,11 +147,7 @@ export function GroupDetailClient({
           </CardContent>
         </Card>
 
-        <SectionCard
-          title="Add Person"
-          description="Add a new person to this group"
-          className="mt-6"
-        >
+        <SectionCard title="Add Person" description="Add a new person to this group" className="mt-6">
           <AddPersonForm groupId={groupId} />
         </SectionCard>
       </div>

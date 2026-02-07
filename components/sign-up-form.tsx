@@ -1,35 +1,23 @@
-"use client";
+'use client';
 
-import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Divider } from "@/components/ui/divider";
-import { GoogleAuthButton } from "@/components/google-auth-button";
-import {
-  PasswordStrengthMeter,
-  usePasswordStrength,
-} from "@/components/password-strength";
-import { useFormState } from "@/lib/hooks/use-form-state";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Divider } from '@/components/ui/divider';
+import { GoogleAuthButton } from '@/components/google-auth-button';
+import { PasswordStrengthMeter, usePasswordStrength } from '@/components/password-strength';
+import { useFormState } from '@/lib/hooks/use-form-state';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-export function SignUpForm({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<"div">) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [repeatPassword, setRepeatPassword] = useState("");
+export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState('');
   const { error, isLoading, execute, setError } = useFormState();
   const router = useRouter();
   const passwordStrength = usePasswordStrength(password);
@@ -38,12 +26,12 @@ export function SignUpForm({
     e.preventDefault();
 
     if (password !== repeatPassword) {
-      setError("Passwords do not match");
+      setError('Passwords do not match');
       return;
     }
 
     if (passwordStrength.score < 2) {
-      setError("Please choose a stronger password");
+      setError('Please choose a stronger password');
       return;
     }
 
@@ -57,18 +45,17 @@ export function SignUpForm({
         },
       });
       if (error) throw error;
-      router.push("/auth/sign-up-success");
+      router.push('/auth/sign-up-success');
     });
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Sign up</CardTitle>
           <CardDescription>
-            Create an account to host icebreaker games that help people get to
-            know each other
+            Create an account to host icebreaker games that help people get to know each other
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -108,17 +95,13 @@ export function SignUpForm({
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating an account..." : "Sign up"}
+                {isLoading ? 'Creating an account...' : 'Sign up'}
               </Button>
               <Divider />
-              <GoogleAuthButton
-                label="Sign up with Google"
-                disabled={isLoading}
-                onError={setError}
-              />
+              <GoogleAuthButton label="Sign up with Google" disabled={isLoading} onError={setError} />
             </div>
             <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
+              Already have an account?{' '}
               <Link href="/auth/login" className="underline underline-offset-4">
                 Login
               </Link>

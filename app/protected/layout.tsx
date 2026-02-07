@@ -1,23 +1,19 @@
-import { Header } from "@/components/header";
-import { Breadcrumbs } from "@/components/breadcrumbs";
-import { LoadingOverlay } from "@/components/ui/loading-spinner";
-import { Suspense } from "react";
-import { LoadingProvider } from "@/lib/loading-context";
-import { ErrorBoundaryWrapper } from "@/components/error-boundary-wrapper";
+import { Header } from '@/components/header';
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import { LoadingOverlay } from '@/components/ui/loading-spinner';
+import { Suspense } from 'react';
+import { LoadingProvider } from '@/lib/loading-context';
+import { ErrorBoundaryWrapper } from '@/components/error-boundary-wrapper';
 
-export default function ProtectedLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="flex min-h-screen flex-col">
       <Header />
-      <div className="flex-grow flex flex-col relative">
+      <div className="relative flex grow flex-col">
         <LoadingProvider>
           <ErrorBoundaryWrapper>
             <div className="p-8">
-              <div className="w-full mx-auto max-w-screen-lg">
+              <div className="mx-auto w-full max-w-5xl">
                 <Breadcrumbs />
                 <Suspense fallback={<LoadingOverlay />}>{children}</Suspense>
               </div>

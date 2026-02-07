@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Page() {
   return (
@@ -15,9 +9,8 @@ export default function Page() {
           <CardDescription>Check your email to confirm</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground">
-            You&apos;ve successfully signed up. Please check your email to
-            confirm your account before signing in.
+          <p className="text-muted-foreground text-sm">
+            You&apos;ve successfully signed up. Please check your email to confirm your account before signing in.
           </p>
         </CardContent>
       </Card>

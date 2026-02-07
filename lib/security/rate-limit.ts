@@ -35,11 +35,8 @@ export interface RateLimitResult {
  * @param config - Rate limit configuration
  * @returns Rate limit result with success status and metadata
  */
-export function checkRateLimit(
-  identifier: string,
-  config: RateLimitConfig,
-): RateLimitResult {
-  const { limit, windowSeconds, prefix = "default" } = config;
+export function checkRateLimit(identifier: string, config: RateLimitConfig): RateLimitResult {
+  const { limit, windowSeconds, prefix = 'default' } = config;
   const key = `${prefix}:${identifier}`;
   const now = Date.now();
 
@@ -100,7 +97,7 @@ function cleanupExpiredEntries(): void {
 /**
  * Reset rate limit for a specific identifier
  */
-export function resetRateLimit(identifier: string, prefix = "default"): void {
+export function resetRateLimit(identifier: string, prefix = 'default'): void {
   const key = `${prefix}:${identifier}`;
   rateLimitStore.delete(key);
 }
@@ -108,30 +105,28 @@ export function resetRateLimit(identifier: string, prefix = "default"): void {
 /**
  * Get rate limit headers for HTTP response
  */
-export function getRateLimitHeaders(
-  result: RateLimitResult,
-): Record<string, string> {
+export function getRateLimitHeaders(result: RateLimitResult): Record<string, string> {
   return {
-    "X-RateLimit-Limit": result.limit.toString(),
-    "X-RateLimit-Remaining": result.remaining.toString(),
-    "X-RateLimit-Reset": result.resetInSeconds.toString(),
+    'X-RateLimit-Limit': result.limit.toString(),
+    'X-RateLimit-Remaining': result.remaining.toString(),
+    'X-RateLimit-Reset': result.resetInSeconds.toString(),
   };
 }
 
 // Preset configurations for different use cases
 export const RATE_LIMITS = {
   /** Standard API calls - 100 requests per minute */
-  api: { limit: 100, windowSeconds: 60, prefix: "api" },
+  api: { limit: 100, windowSeconds: 60, prefix: 'api' },
 
   /** Authentication attempts - 30 per minute (allows for page reloads and retries) */
-  auth: { limit: 30, windowSeconds: 60, prefix: "auth" },
+  auth: { limit: 30, windowSeconds: 60, prefix: 'auth' },
 
   /** Game session creation - 10 per minute */
-  createSession: { limit: 10, windowSeconds: 60, prefix: "create-session" },
+  createSession: { limit: 10, windowSeconds: 60, prefix: 'create-session' },
 
   /** File uploads - 20 per minute */
-  upload: { limit: 20, windowSeconds: 60, prefix: "upload" },
+  upload: { limit: 20, windowSeconds: 60, prefix: 'upload' },
 
   /** Sensitive operations - 3 per minute */
-  sensitive: { limit: 3, windowSeconds: 60, prefix: "sensitive" },
+  sensitive: { limit: 3, windowSeconds: 60, prefix: 'sensitive' },
 } as const;

@@ -1,6 +1,6 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-@plugin "tailwindcss-animate";
+@plugin 'tailwindcss-animate';
 
 @theme {
   /* Brand Colors - Vibrant and Modern */
@@ -61,7 +61,7 @@
 
   /* Focus improvements for accessibility */
   *:focus-visible {
-    @apply outline-2 outline-offset-2 outline-primary ring-2 ring-primary ring-offset-2 ring-offset-background;
+    @apply outline-primary ring-primary ring-offset-background ring-2 ring-offset-2 outline-2 outline-offset-2;
   }
 
   /* Ensure interactive elements are keyboard accessible */
@@ -70,7 +70,7 @@
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible,
-  [role="button"]:focus-visible,
+  [role='button']:focus-visible,
   [tabindex]:focus-visible {
     @apply outline-primary ring-primary;
   }

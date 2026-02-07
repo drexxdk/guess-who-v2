@@ -6,8 +6,8 @@ export class SoundManager {
   private audioContext: AudioContext | null = null;
 
   private constructor() {
-    if (typeof window !== "undefined") {
-      this.enabled = localStorage.getItem("soundEnabled") !== "false";
+    if (typeof window !== 'undefined') {
+      this.enabled = localStorage.getItem('soundEnabled') !== 'false';
     }
   }
 
@@ -19,20 +19,19 @@ export class SoundManager {
   }
 
   private getAudioContext(): AudioContext {
-    if (!this.audioContext && typeof window !== "undefined") {
+    if (!this.audioContext && typeof window !== 'undefined') {
       const WindowWithWebkit = window as typeof window & {
         webkitAudioContext?: typeof AudioContext;
       };
-      this.audioContext = new (window.AudioContext ||
-        WindowWithWebkit.webkitAudioContext!)();
+      this.audioContext = new (window.AudioContext || WindowWithWebkit.webkitAudioContext!)();
     }
     return this.audioContext!;
   }
 
   setEnabled(enabled: boolean) {
     this.enabled = enabled;
-    if (typeof window !== "undefined") {
-      localStorage.setItem("soundEnabled", enabled.toString());
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('soundEnabled', enabled.toString());
     }
   }
 
@@ -53,18 +52,15 @@ export class SoundManager {
       gainNode.connect(ctx.destination);
 
       oscillator.frequency.value = frequency;
-      oscillator.type = "sine";
+      oscillator.type = 'sine';
 
       gainNode.gain.setValueAtTime(volume, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(
-        0.01,
-        ctx.currentTime + duration,
-      );
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
 
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + duration);
     } catch (error) {
-      console.error("Error playing sound:", error);
+      console.error('Error playing sound:', error);
     }
   }
 
@@ -107,8 +103,8 @@ export class HapticManager {
   private enabled: boolean = true;
 
   private constructor() {
-    if (typeof window !== "undefined") {
-      this.enabled = localStorage.getItem("hapticEnabled") !== "false";
+    if (typeof window !== 'undefined') {
+      this.enabled = localStorage.getItem('hapticEnabled') !== 'false';
     }
   }
 
@@ -121,8 +117,8 @@ export class HapticManager {
 
   setEnabled(enabled: boolean) {
     this.enabled = enabled;
-    if (typeof window !== "undefined") {
-      localStorage.setItem("hapticEnabled", enabled.toString());
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hapticEnabled', enabled.toString());
     }
   }
 
@@ -131,18 +127,14 @@ export class HapticManager {
   }
 
   private vibrate(pattern: number | number[]) {
-    if (
-      !this.enabled ||
-      typeof window === "undefined" ||
-      !window.navigator.vibrate
-    ) {
+    if (!this.enabled || typeof window === 'undefined' || !window.navigator.vibrate) {
       return;
     }
 
     try {
       window.navigator.vibrate(pattern);
     } catch (error) {
-      console.error("Error triggering haptic feedback:", error);
+      console.error('Error triggering haptic feedback:', error);
     }
   }
 

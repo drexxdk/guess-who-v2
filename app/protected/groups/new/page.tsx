@@ -1,28 +1,22 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useFormState } from "@/lib/hooks/use-form-state";
-import { ErrorMessage } from "@/components/ui/error-message";
-import { useLoading } from "@/lib/loading-context";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useFormState } from '@/lib/hooks/use-form-state';
+import { ErrorMessage } from '@/components/ui/error-message';
+import { useLoading } from '@/lib/loading-context';
 
 export default function NewGroupPage() {
   const router = useRouter();
   const { setLoading } = useLoading();
   const { error, isLoading, execute, clearError } = useFormState();
   const [formData, setFormData] = useState({
-    name: "",
+    name: '',
     time_limit_seconds: 15,
     options_count: 3,
     enable_timer: true,
@@ -33,7 +27,7 @@ export default function NewGroupPage() {
     setLoading(false);
     // Reset form when component mounts
     setFormData({
-      name: "",
+      name: '',
       time_limit_seconds: 15,
       options_count: 3,
       enable_timer: true,
@@ -51,11 +45,11 @@ export default function NewGroupPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        throw new Error("Not authenticated");
+        throw new Error('Not authenticated');
       }
 
       const { data, error: insertError } = await supabase
-        .from("groups")
+        .from('groups')
         .insert({
           name: formData.name,
           creator_id: user.id,
@@ -70,7 +64,7 @@ export default function NewGroupPage() {
 
       if (data) {
         setFormData({
-          name: "",
+          name: '',
           time_limit_seconds: 15,
           enable_timer: true,
           options_count: 3,
@@ -87,9 +81,8 @@ export default function NewGroupPage() {
       <CardHeader>
         <CardTitle>Create New Group</CardTitle>
         <CardDescription>
-          Set up a new group of people for your Guess Who game. Perfect for
-          helping new team members, students, or event attendees get to know
-          each other!
+          Set up a new group of people for your Guess Who game. Perfect for helping new team members, students, or event
+          attendees get to know each other!
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
@@ -100,9 +93,7 @@ export default function NewGroupPage() {
               id="name"
               placeholder="e.g., Friends, Family, Coworkers"
               value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
             />
           </div>
@@ -112,23 +103,16 @@ export default function NewGroupPage() {
               id="enable-timer"
               type="checkbox"
               checked={formData.enable_timer}
-              onChange={(e) =>
-                setFormData({ ...formData, enable_timer: e.target.checked })
-              }
-              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer"
+              onChange={(e) => setFormData({ ...formData, enable_timer: e.target.checked })}
+              className="text-primary focus:ring-primary h-4 w-4 cursor-pointer rounded border-gray-300 focus:ring-2 focus:ring-offset-2"
             />
-            <Label
-              htmlFor="enable-timer"
-              className="text-sm font-medium leading-none cursor-pointer"
-            >
+            <Label htmlFor="enable-timer" className="cursor-pointer text-sm leading-none font-medium">
               Enable countdown timer
             </Label>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="time_limit">
-              Time Limit (seconds per question)
-            </Label>
+            <Label htmlFor="time_limit">Time Limit (seconds per question)</Label>
             <Input
               id="time_limit"
               type="number"
@@ -143,9 +127,7 @@ export default function NewGroupPage() {
               }
               required
             />
-            <p className="text-sm text-muted-foreground">
-              How long players have to answer each question
-            </p>
+            <p className="text-muted-foreground text-sm">How long players have to answer each question</p>
           </div>
 
           <div className="space-y-2">
@@ -164,24 +146,17 @@ export default function NewGroupPage() {
               }
               required
             />
-            <p className="text-sm text-muted-foreground">
-              How many choices to show per question (2-10)
-            </p>
+            <p className="text-muted-foreground text-sm">How many choices to show per question (2-10)</p>
           </div>
 
           <ErrorMessage message={error} />
 
           <div className="flex gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-              className="flex-1"
-            >
+            <Button type="button" variant="outline" onClick={() => router.back()} className="flex-1">
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading} className="flex-1">
-              {isLoading ? "Creating..." : "Create Group"}
+              {isLoading ? 'Creating...' : 'Create Group'}
             </Button>
           </div>
         </form>

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface AnimatedIconProps {
   children: React.ReactNode;
   className?: string;
-  animation?: "bounce" | "rotate" | "scale" | "pulse" | "shake";
+  animation?: 'bounce' | 'rotate' | 'scale' | 'pulse' | 'shake';
 }
 
 const animations = {
@@ -33,16 +33,9 @@ const animations = {
   },
 };
 
-export function AnimatedIcon({
-  children,
-  className,
-  animation = "scale",
-}: AnimatedIconProps) {
+export function AnimatedIcon({ children, className, animation = 'scale' }: AnimatedIconProps) {
   return (
-    <motion.div
-      className={cn("inline-flex", className)}
-      whileHover={animations[animation].hover}
-    >
+    <motion.div className={cn('inline-flex', className)} whileHover={animations[animation].hover}>
       {children}
     </motion.div>
   );

@@ -1,9 +1,9 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Enums
-export const gameTypeSchema = z.enum(["guess_name", "guess_image"]);
-export const genderTypeSchema = z.enum(["male", "female", "other"]);
-export const userRoleSchema = z.enum(["teacher", "student"]);
+export const gameTypeSchema = z.enum(['guess_name', 'guess_image']);
+export const genderTypeSchema = z.enum(['male', 'female', 'other']);
+export const userRoleSchema = z.enum(['teacher', 'student']);
 
 export type GameType = z.infer<typeof gameTypeSchema>;
 export type GenderType = z.infer<typeof genderTypeSchema>;
@@ -128,21 +128,19 @@ export const gameSessionSchema = z.object({
   completed_at: z.string().nullable(),
 });
 
-export const gameSessionInsertSchema = gameSessionSchema
-  .omit({ id: true })
-  .extend({
-    id: z.string().uuid().optional(),
-    game_code: z.string().optional().nullable(),
-    status: z.string().optional().nullable(),
-    score: z.number().optional().nullable(),
-    total_questions: z.number().optional().nullable(),
-    time_limit_seconds: z.number().optional().nullable(),
-    options_count: z.number().optional().nullable(),
-    enable_timer: z.boolean().optional().nullable(),
-    user_id: z.string().uuid().optional().nullable(),
-    started_at: z.string().optional().nullable(),
-    completed_at: z.string().optional().nullable(),
-  });
+export const gameSessionInsertSchema = gameSessionSchema.omit({ id: true }).extend({
+  id: z.string().uuid().optional(),
+  game_code: z.string().optional().nullable(),
+  status: z.string().optional().nullable(),
+  score: z.number().optional().nullable(),
+  total_questions: z.number().optional().nullable(),
+  time_limit_seconds: z.number().optional().nullable(),
+  options_count: z.number().optional().nullable(),
+  enable_timer: z.boolean().optional().nullable(),
+  user_id: z.string().uuid().optional().nullable(),
+  started_at: z.string().optional().nullable(),
+  completed_at: z.string().optional().nullable(),
+});
 
 export type GameSession = z.infer<typeof gameSessionSchema>;
 export type GameSessionInsert = z.infer<typeof gameSessionInsertSchema>;
@@ -179,21 +177,11 @@ export type PersonWithGroup = z.infer<typeof personWithGroupSchema>;
  * Parse data with a Zod schema, throwing a descriptive error if validation fails.
  * Use this when you expect valid data and want to fail fast.
  */
-export function parseOrThrow<T>(
-  schema: z.ZodType<T>,
-  data: unknown,
-  context?: string,
-): T {
+export function parseOrThrow<T>(schema: z.ZodType<T>, data: unknown, context?: string): T {
   const result = schema.safeParse(data);
   if (!result.success) {
-    const errorMessage = result.error.issues
-      .map((e) => `${e.path.join(".")}: ${e.message}`)
-      .join(", ");
-    throw new Error(
-      context
-        ? `${context}: ${errorMessage}`
-        : `Validation failed: ${errorMessage}`,
-    );
+    const errorMessage = result.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
+    throw new Error(context ? `${context}: ${errorMessage}` : `Validation failed: ${errorMessage}`);
   }
   return result.data;
 }
@@ -211,10 +199,7 @@ export function parseOrNull<T>(schema: z.ZodType<T>, data: unknown): T | null {
  * Parse an array of items, filtering out invalid entries.
  * Returns only the items that pass validation.
  */
-export function parseArrayFiltered<T>(
-  schema: z.ZodType<T>,
-  data: unknown[],
-): T[] {
+export function parseArrayFiltered<T>(schema: z.ZodType<T>, data: unknown[]): T[] {
   return data
     .map((item) => schema.safeParse(item))
     .filter((result): result is z.ZodSafeParseSuccess<T> => result.success)

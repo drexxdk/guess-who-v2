@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { motion, AnimatePresence } from "framer-motion";
-import { usePathname } from "next/navigation";
-import { ReactNode } from "react";
+import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
+import { ReactNode } from 'react';
 
 interface PageTransitionProps {
   children: ReactNode;
@@ -20,7 +20,7 @@ export function PageTransition({ children }: PageTransitionProps) {
         exit={{ opacity: 0, y: -20 }}
         transition={{
           duration: 0.3,
-          ease: "easeInOut",
+          ease: 'easeInOut',
         }}
       >
         {children}
@@ -42,7 +42,7 @@ export function SlideTransition({ children }: PageTransitionProps) {
         exit={{ opacity: 0, x: -20 }}
         transition={{
           duration: 0.25,
-          ease: "easeInOut",
+          ease: 'easeInOut',
         }}
       >
         {children}
@@ -64,7 +64,7 @@ export function ScaleTransition({ children }: PageTransitionProps) {
         exit={{ opacity: 0, scale: 1.05 }}
         transition={{
           duration: 0.2,
-          ease: "easeInOut",
+          ease: 'easeInOut',
         }}
       >
         {children}

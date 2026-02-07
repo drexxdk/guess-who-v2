@@ -1,5 +1,5 @@
-import { createBrowserClient } from "@supabase/ssr";
-import type { Database } from "@/lib/database.types";
+import { createBrowserClient } from '@supabase/ssr';
+import type { Database } from '@/lib/database.types';
 
 export function createClient() {
   return createBrowserClient<Database>(
@@ -37,8 +37,7 @@ export async function ensureValidSession() {
 
   if (expiresAt && expiresAt - now < 60) {
     // Token is about to expire, try to refresh
-    const { data: refreshData, error: refreshError } =
-      await supabase.auth.refreshSession();
+    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
 
     if (refreshError || !refreshData.session) {
       return { valid: false, session: null };

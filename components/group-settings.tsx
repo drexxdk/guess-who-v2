@@ -1,27 +1,19 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, memo } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import toast from "react-hot-toast";
-import { getErrorMessage } from "@/lib/logger";
-import { sanitizeGroupName, validateLength } from "@/lib/security";
-import type { Group } from "@/lib/schemas";
+import { useState, useEffect, useCallback, memo } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/lib/logger';
+import { sanitizeGroupName, validateLength } from '@/lib/security';
+import type { Group } from '@/lib/schemas';
 
 interface GroupSettingsProps {
   groupId: string;
-  initialGroup: Pick<
-    Group,
-    "id" | "name" | "time_limit_seconds" | "options_count" | "enable_timer"
-  >;
+  initialGroup: Pick<Group, 'id' | 'name' | 'time_limit_seconds' | 'options_count' | 'enable_timer'>;
   peopleCount?: number;
-  onUpdate?: (
-    updatedGroup: Pick<
-      Group,
-      "name" | "time_limit_seconds" | "options_count" | "enable_timer"
-    >,
-  ) => void;
+  onUpdate?: (updatedGroup: Pick<Group, 'name' | 'time_limit_seconds' | 'options_count' | 'enable_timer'>) => void;
   isEditing?: boolean;
   onEditChange?: (isEditing: boolean) => void;
 }
@@ -36,18 +28,10 @@ export const GroupSettings = memo(function GroupSettings({
 }: GroupSettingsProps) {
   const [isEditing, setIsEditing] = useState(externalIsEditing);
   const [groupName, setGroupName] = useState<string>(initialGroup.name);
-  const [timeLimitSeconds, setTimeLimitSeconds] = useState<number>(
-    Number(initialGroup.time_limit_seconds) || 30,
-  );
-  const [optionsCount, setOptionsCount] = useState<number>(
-    Number(initialGroup.options_count) || 4,
-  );
-  const [enableTimer, setEnableTimer] = useState<boolean>(
-    initialGroup.enable_timer ?? true,
-  );
-  const [totalQuestions, setTotalQuestions] = useState<number>(
-    Math.min(peopleCount, 10),
-  );
+  const [timeLimitSeconds, setTimeLimitSeconds] = useState<number>(Number(initialGroup.time_limit_seconds) || 30);
+  const [optionsCount, setOptionsCount] = useState<number>(Number(initialGroup.options_count) || 4);
+  const [enableTimer, setEnableTimer] = useState<boolean>(initialGroup.enable_timer ?? true);
+  const [totalQuestions, setTotalQuestions] = useState<number>(Math.min(peopleCount, 10));
   const [isSaving, setIsSaving] = useState(false);
 
   // Sync external isEditing prop with local state
@@ -66,12 +50,12 @@ export const GroupSettings = memo(function GroupSettings({
     const sanitizedName = sanitizeGroupName(groupName);
 
     if (!sanitizedName) {
-      toast.error("Please enter a group name");
+      toast.error('Please enter a group name');
       return;
     }
 
     if (!validateLength(sanitizedName, 100, 1)) {
-      toast.error("Group name must be between 1 and 100 characters");
+      toast.error('Group name must be between 1 and 100 characters');
       return;
     }
 
@@ -81,20 +65,20 @@ export const GroupSettings = memo(function GroupSettings({
       const supabase = createClient();
 
       const { error: updateError } = await supabase
-        .from("groups")
+        .from('groups')
         .update({
           name: sanitizedName,
           time_limit_seconds: timeLimitSeconds,
           options_count: optionsCount,
           enable_timer: enableTimer,
         })
-        .eq("id", groupId);
+        .eq('id', groupId);
 
       if (updateError) throw updateError;
 
       // Update local state with sanitized name
       setGroupName(sanitizedName);
-      toast.success("Settings saved!");
+      toast.success('Settings saved!');
       setIsEditing(false);
 
       // Call the onUpdate callback to sync parent component
@@ -116,15 +100,7 @@ export const GroupSettings = memo(function GroupSettings({
     } finally {
       setIsSaving(false);
     }
-  }, [
-    groupName,
-    timeLimitSeconds,
-    optionsCount,
-    enableTimer,
-    groupId,
-    onUpdate,
-    onEditChange,
-  ]);
+  }, [groupName, timeLimitSeconds, optionsCount, enableTimer, groupId, onUpdate, onEditChange]);
 
   const handleCancel = useCallback(() => {
     setGroupName(initialGroup.name);
@@ -147,7 +123,7 @@ export const GroupSettings = memo(function GroupSettings({
             type="text"
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
-            className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm mt-1"
+            className="border-input bg-background mt-1 w-full rounded-md border px-3 py-2 text-sm"
           />
         </div>
 
@@ -157,22 +133,17 @@ export const GroupSettings = memo(function GroupSettings({
             type="checkbox"
             checked={enableTimer}
             onChange={(e) => setEnableTimer(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer"
+            className="text-primary focus:ring-primary h-4 w-4 cursor-pointer rounded border-gray-300 focus:ring-2 focus:ring-offset-2"
           />
-          <Label
-            htmlFor="enable-timer"
-            className="text-sm font-medium leading-none cursor-pointer"
-          >
+          <Label htmlFor="enable-timer" className="cursor-pointer text-sm leading-none font-medium">
             Enable countdown timer
           </Label>
         </div>
 
         <div>
-          <div className="flex justify-between items-center mb-3">
+          <div className="mb-3 flex items-center justify-between">
             <Label htmlFor="time-limit">Default time limit per question</Label>
-            <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
-              {timeLimitSeconds}s
-            </span>
+            <span className="bg-muted rounded px-3 py-1 text-sm font-medium">{timeLimitSeconds}s</span>
           </div>
           <input
             id="time-limit"
@@ -181,19 +152,15 @@ export const GroupSettings = memo(function GroupSettings({
             max="120"
             step="1"
             value={timeLimitSeconds}
-            onChange={(e) =>
-              setTimeLimitSeconds(parseInt(e.target.value) || 30)
-            }
-            className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+            onChange={(e) => setTimeLimitSeconds(parseInt(e.target.value) || 30)}
+            className="bg-secondary accent-primary h-2 w-full cursor-pointer appearance-none rounded-lg"
           />
         </div>
 
         <div>
-          <div className="flex justify-between items-center mb-3">
+          <div className="mb-3 flex items-center justify-between">
             <Label htmlFor="options-count">Default options per question</Label>
-            <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
-              {optionsCount}
-            </span>
+            <span className="bg-muted rounded px-3 py-1 text-sm font-medium">{optionsCount}</span>
           </div>
           <input
             id="options-count"
@@ -203,16 +170,14 @@ export const GroupSettings = memo(function GroupSettings({
             step="1"
             value={optionsCount}
             onChange={(e) => setOptionsCount(parseInt(e.target.value) || 4)}
-            className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+            className="bg-secondary accent-primary h-2 w-full cursor-pointer appearance-none rounded-lg"
           />
         </div>
 
         <div>
-          <div className="flex justify-between items-center mb-3">
+          <div className="mb-3 flex items-center justify-between">
             <Label htmlFor="total-questions">Default amount of questions</Label>
-            <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
-              {totalQuestions}
-            </span>
+            <span className="bg-muted rounded px-3 py-1 text-sm font-medium">{totalQuestions}</span>
           </div>
           <input
             id="total-questions"
@@ -222,20 +187,15 @@ export const GroupSettings = memo(function GroupSettings({
             step="1"
             value={totalQuestions}
             onChange={(e) => setTotalQuestions(parseInt(e.target.value) || 1)}
-            className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+            className="bg-secondary accent-primary h-2 w-full cursor-pointer appearance-none rounded-lg"
           />
         </div>
 
         <div className="flex gap-2">
           <Button onClick={handleSave} disabled={isSaving} className="flex-1">
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? 'Saving...' : 'Save'}
           </Button>
-          <Button
-            onClick={handleCancel}
-            variant="outline"
-            className="flex-1"
-            disabled={isSaving}
-          >
+          <Button onClick={handleCancel} variant="outline" className="flex-1" disabled={isSaving}>
             Cancel
           </Button>
         </div>
@@ -245,33 +205,21 @@ export const GroupSettings = memo(function GroupSettings({
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <span className="text-sm font-medium">Countdown timer</span>
-        <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
-          {enableTimer ? "Enabled" : "Disabled"}
-        </span>
+        <span className="bg-muted rounded px-3 py-1 text-sm font-medium">{enableTimer ? 'Enabled' : 'Disabled'}</span>
       </div>
-      <div className="flex justify-between items-center">
-        <span className="text-sm font-medium">
-          Default time limit per question
-        </span>
-        <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
-          {timeLimitSeconds}s
-        </span>
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">Default time limit per question</span>
+        <span className="bg-muted rounded px-3 py-1 text-sm font-medium">{timeLimitSeconds}s</span>
       </div>
-      <div className="flex justify-between items-center">
-        <span className="text-sm font-medium">
-          Default options per question
-        </span>
-        <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
-          {optionsCount}
-        </span>
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">Default options per question</span>
+        <span className="bg-muted rounded px-3 py-1 text-sm font-medium">{optionsCount}</span>
       </div>
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <span className="text-sm font-medium">Default amount of questions</span>
-        <span className="text-sm font-medium bg-muted px-3 py-1 rounded">
-          {totalQuestions}
-        </span>
+        <span className="bg-muted rounded px-3 py-1 text-sm font-medium">{totalQuestions}</span>
       </div>
     </div>
   );

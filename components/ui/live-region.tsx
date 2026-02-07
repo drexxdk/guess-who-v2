@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * A component that announces messages to screen readers using ARIA live regions
@@ -6,11 +6,11 @@ import { useEffect, useRef, useState } from "react";
  */
 export function LiveRegion({
   message,
-  politeness = "polite",
+  politeness = 'polite',
   clearOnUnmount = true,
 }: {
   message: string;
-  politeness?: "polite" | "assertive" | "off";
+  politeness?: 'polite' | 'assertive' | 'off';
   clearOnUnmount?: boolean;
 }) {
   const regionRef = useRef<HTMLDivElement>(null);
@@ -18,7 +18,7 @@ export function LiveRegion({
   useEffect(() => {
     return () => {
       if (clearOnUnmount && regionRef.current) {
-        regionRef.current.textContent = "";
+        regionRef.current.textContent = '';
       }
     };
   }, [clearOnUnmount]);
@@ -26,13 +26,7 @@ export function LiveRegion({
   if (!message) return null;
 
   return (
-    <div
-      ref={regionRef}
-      role="status"
-      aria-live={politeness}
-      aria-atomic="true"
-      className="sr-only"
-    >
+    <div ref={regionRef} role="status" aria-live={politeness} aria-atomic="true" className="sr-only">
       {message}
     </div>
   );
@@ -42,12 +36,12 @@ export function LiveRegion({
  * Hook to manage live region announcements
  * Returns a function to announce messages and the LiveRegion component
  */
-export function useLiveRegion(politeness: "polite" | "assertive" = "polite") {
-  const [message, setMessage] = useState("");
+export function useLiveRegion(politeness: 'polite' | 'assertive' = 'polite') {
+  const [message, setMessage] = useState('');
 
   const announce = (newMessage: string) => {
     // Clear first to ensure the announcement is made even if the message is the same
-    setMessage("");
+    setMessage('');
     setTimeout(() => setMessage(newMessage), 100);
   };
 

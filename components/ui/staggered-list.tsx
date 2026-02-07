@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { ReactNode } from "react";
+import { motion } from 'framer-motion';
+import { ReactNode } from 'react';
 
 interface StaggeredListProps {
   children: ReactNode[];
@@ -9,11 +9,7 @@ interface StaggeredListProps {
   staggerDelay?: number;
 }
 
-export function StaggeredList({
-  children,
-  className,
-  staggerDelay = 0.1,
-}: StaggeredListProps) {
+export function StaggeredList({ children, className, staggerDelay = 0.1 }: StaggeredListProps) {
   return (
     <motion.div
       className={className}
@@ -46,7 +42,7 @@ export function StaggeredItem({ children, className }: StaggeredItemProps) {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0 },
       }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
     >
       {children}
     </motion.div>
@@ -54,11 +50,7 @@ export function StaggeredItem({ children, className }: StaggeredItemProps) {
 }
 
 // Grid variant with scale effect
-export function StaggeredGrid({
-  children,
-  className,
-  staggerDelay = 0.05,
-}: StaggeredListProps) {
+export function StaggeredGrid({ children, className, staggerDelay = 0.05 }: StaggeredListProps) {
   return (
     <motion.div
       className={className}
@@ -85,7 +77,7 @@ export function StaggeredGridItem({ children, className }: StaggeredItemProps) {
         hidden: { opacity: 0, scale: 0.8 },
         visible: { opacity: 1, scale: 1 },
       }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
     >
       {children}
     </motion.div>

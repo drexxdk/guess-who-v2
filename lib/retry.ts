@@ -1,4 +1,4 @@
-import { logger } from "./logger";
+import { logger } from './logger';
 
 export interface RetryOptions {
   maxAttempts?: number;
@@ -11,16 +11,8 @@ export interface RetryOptions {
  * Retry a function with exponential backoff
  * Useful for handling temporary network failures or rate limits
  */
-export async function retryAsync<T>(
-  fn: () => Promise<T>,
-  options: RetryOptions = {},
-): Promise<T> {
-  const {
-    maxAttempts = 3,
-    delayMs = 1000,
-    backoffMultiplier = 2,
-    onRetry,
-  } = options;
+export async function retryAsync<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
+  const { maxAttempts = 3, delayMs = 1000, backoffMultiplier = 2, onRetry } = options;
 
   let lastError: Error | null = null;
   let currentDelay = delayMs;
@@ -30,14 +22,14 @@ export async function retryAsync<T>(
       return await fn();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      
+
       if (attempt === maxAttempts) {
         logger.error(`Failed after ${maxAttempts} attempts:`, lastError);
         throw lastError;
       }
 
       logger.warn(`Attempt ${attempt} failed, retrying in ${currentDelay}ms...`, lastError);
-      
+
       if (onRetry) {
         onRetry(attempt, lastError);
       }
@@ -48,7 +40,7 @@ export async function retryAsync<T>(
   }
 
   // This should never be reached, but TypeScript requires it
-  throw lastError || new Error("Retry failed");
+  throw lastError || new Error('Retry failed');
 }
 
 /**
@@ -58,11 +50,11 @@ export function isRetryableError(error: unknown): boolean {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
     return (
-      message.includes("network") ||
-      message.includes("timeout") ||
-      message.includes("fetch") ||
-      message.includes("econnrefused") ||
-      message.includes("enotfound")
+      message.includes('network') ||
+      message.includes('timeout') ||
+      message.includes('fetch') ||
+      message.includes('econnrefused') ||
+      message.includes('enotfound')
     );
   }
   return false;
@@ -71,18 +63,13 @@ export function isRetryableError(error: unknown): boolean {
 /**
  * Retry with automatic detection of retryable errors
  */
-export async function retryWithCheck<T>(
-  fn: () => Promise<T>,
-  options: RetryOptions = {},
-): Promise<T> {
+export async function retryWithCheck<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
   try {
     return await retryAsync(fn, options);
   } catch (error) {
     if (isRetryableError(error)) {
       // Already retried, but still failing
-      throw new Error(
-        "Operation failed after multiple retries. Please check your connection and try again.",
-      );
+      throw new Error('Operation failed after multiple retries. Please check your connection and try again.');
     }
     throw error;
   }

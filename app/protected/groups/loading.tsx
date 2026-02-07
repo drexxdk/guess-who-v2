@@ -1,14 +1,14 @@
-import { GroupCardSkeleton } from "@/components/ui/skeleton";
+import { GroupCardSkeleton } from '@/components/ui/skeleton';
 
 export default function Loading() {
   return (
     <>
-      <div className="flex justify-between items-center mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <div>
-          <div className="h-9 w-32 bg-muted rounded animate-pulse" />
-          <div className="h-5 w-64 bg-muted rounded animate-pulse mt-2" />
+          <div className="bg-muted h-9 w-32 animate-pulse rounded" />
+          <div className="bg-muted mt-2 h-5 w-64 animate-pulse rounded" />
         </div>
-        <div className="h-10 w-40 bg-muted rounded animate-pulse" />
+        <div className="bg-muted h-10 w-40 animate-pulse rounded" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

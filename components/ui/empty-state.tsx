@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { Card, CardContent } from "./card";
-import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import * as React from 'react';
+import { Card, CardContent } from './card';
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 interface EmptyStateProps {
   icon?: React.ReactNode;
@@ -14,27 +14,20 @@ interface EmptyStateProps {
   animated?: boolean;
 }
 
-export function EmptyState({
-  icon,
-  title,
-  description,
-  action,
-  className,
-  animated = true,
-}: EmptyStateProps) {
-  const Content = animated ? motion.div : "div";
-  
+export function EmptyState({ icon, title, description, action, className, animated = true }: EmptyStateProps) {
+  const Content = animated ? motion.div : 'div';
+
   return (
-    <Card className={cn("border-dashed", className)}>
-      <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
+    <Card className={cn('border-dashed', className)}>
+      <CardContent className="flex flex-col items-center justify-center space-y-4 py-12">
         {icon && (
           <Content
-            className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground"
+            className="bg-muted text-muted-foreground flex h-16 w-16 items-center justify-center rounded-full"
             {...(animated && {
               initial: { scale: 0, rotate: -180 },
               animate: { scale: 1, rotate: 0 },
               transition: {
-                type: "spring",
+                type: 'spring',
                 stiffness: 200,
                 damping: 15,
                 duration: 0.6,
@@ -45,7 +38,7 @@ export function EmptyState({
           </Content>
         )}
         <Content
-          className="text-center space-y-2"
+          className="space-y-2 text-center"
           {...(animated && {
             initial: { opacity: 0, y: 20 },
             animate: { opacity: 1, y: 0 },
@@ -53,11 +46,7 @@ export function EmptyState({
           })}
         >
           <h3 className="text-lg font-semibold">{title}</h3>
-          {description && (
-            <p className="text-sm text-muted-foreground max-w-sm">
-              {description}
-            </p>
-          )}
+          {description && <p className="text-muted-foreground max-w-sm text-sm">{description}</p>}
         </Content>
         {action && (
           <Content

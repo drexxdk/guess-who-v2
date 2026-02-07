@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 interface ConfettiProps {
   active?: boolean;
@@ -11,17 +11,17 @@ export function Confetti({ active = true, duration = 3000 }: ConfettiProps) {
   useEffect(() => {
     if (!active) return;
 
-    const canvas = document.createElement("canvas");
-    canvas.style.position = "fixed";
-    canvas.style.top = "0";
-    canvas.style.left = "0";
-    canvas.style.width = "100%";
-    canvas.style.height = "100%";
-    canvas.style.pointerEvents = "none";
-    canvas.style.zIndex = "9999";
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '9999';
     document.body.appendChild(canvas);
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     canvas.width = window.innerWidth;
@@ -39,11 +39,11 @@ export function Confetti({ active = true, duration = 3000 }: ConfettiProps) {
     }> = [];
 
     const colors = [
-      "hsl(262 83% 58%)", // purple
-      "hsl(217 91% 60%)", // blue
-      "hsl(340 82% 52%)", // pink
-      "hsl(142 76% 36%)", // green
-      "hsl(38 92% 50%)", // yellow
+      'hsl(262 83% 58%)', // purple
+      'hsl(217 91% 60%)', // blue
+      'hsl(340 82% 52%)', // pink
+      'hsl(142 76% 36%)', // green
+      'hsl(38 92% 50%)', // yellow
     ];
 
     // Create confetti particles

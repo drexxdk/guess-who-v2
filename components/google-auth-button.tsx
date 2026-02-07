@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { getErrorMessage } from "@/lib/logger";
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { getErrorMessage } from '@/lib/logger';
 
 interface GoogleAuthButtonProps {
   label?: string;
@@ -10,16 +10,12 @@ interface GoogleAuthButtonProps {
   onError?: (error: string) => void;
 }
 
-export function GoogleAuthButton({
-  label = "Sign in with Google",
-  disabled,
-  onError,
-}: GoogleAuthButtonProps) {
+export function GoogleAuthButton({ label = 'Sign in with Google', disabled, onError }: GoogleAuthButtonProps) {
   const handleGoogleAuth = async () => {
     const supabase = createClient();
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
+        provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
@@ -31,13 +27,7 @@ export function GoogleAuthButton({
   };
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      className="w-full"
-      onClick={handleGoogleAuth}
-      disabled={disabled}
-    >
+    <Button type="button" variant="outline" className="w-full" onClick={handleGoogleAuth} disabled={disabled}>
       <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
         <path
           fill="currentColor"

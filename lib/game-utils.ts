@@ -1,6 +1,6 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/lib/database.types";
-import { getErrorMessage } from "@/lib/logger";
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/lib/database.types';
+import { getErrorMessage } from '@/lib/logger';
 
 /**
  * Generate a random game code
@@ -8,8 +8,8 @@ import { getErrorMessage } from "@/lib/logger";
  * @returns A random alphanumeric code (excluding ambiguous characters)
  */
 export function generateGameCode(length = 6): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "";
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
   for (let i = 0; i < length; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -33,16 +33,14 @@ export async function deletePersonImage(
   try {
     // Extract filename from URL
     // URL format: https://{domain}/storage/v1/object/public/person-images/{filename}
-    const urlParts = imageUrl.split("/person-images/");
+    const urlParts = imageUrl.split('/person-images/');
 
     if (urlParts.length <= 1) {
-      return { success: false, error: "Could not extract filename from URL" };
+      return { success: false, error: 'Could not extract filename from URL' };
     }
 
     const filename = decodeURIComponent(urlParts[1]);
-    const { error } = await supabase.storage
-      .from("person-images")
-      .remove([filename]);
+    const { error } = await supabase.storage.from('person-images').remove([filename]);
 
     if (error) {
       return { success: false, error: error.message };
@@ -66,10 +64,7 @@ export async function endGameSession(
   supabase: SupabaseClient<Database>,
   sessionId: string,
 ): Promise<{ success: boolean; error?: string }> {
-  const { error } = await supabase
-    .from("game_sessions")
-    .update({ status: "completed" })
-    .eq("id", sessionId);
+  const { error } = await supabase.from('game_sessions').update({ status: 'completed' }).eq('id', sessionId);
 
   if (error) {
     return { success: false, error: error.message };
@@ -83,16 +78,16 @@ export async function endGameSession(
  * Tips to help groups get to know each other better
  */
 export const ICEBREAKER_TIPS = [
-  "Take turns sharing your favorite memory from this year",
+  'Take turns sharing your favorite memory from this year',
   "Go around and share one thing you're grateful for today",
-  "Each person shares their dream vacation destination",
-  "Share a fun fact about yourself that others might not know",
-  "Tell the group about your favorite hobby or pastime",
-  "Describe your perfect weekend in three words",
+  'Each person shares their dream vacation destination',
+  'Share a fun fact about yourself that others might not know',
+  'Tell the group about your favorite hobby or pastime',
+  'Describe your perfect weekend in three words',
   "Share the best piece of advice you've ever received",
   "Tell everyone about a skill you'd like to learn",
   "Describe your favorite meal and why it's special to you",
-  "Share a movie or book that changed your perspective",
+  'Share a movie or book that changed your perspective',
 ] as const;
 
 /**
@@ -108,14 +103,14 @@ export function getRandomIcebreakerTip(): string {
 export function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 /**
  * Format score as percentage
  */
 export function formatScorePercentage(score: number, total: number): string {
-  if (total === 0) return "0%";
+  if (total === 0) return '0%';
   return `${Math.round((score / total) * 100)}%`;
 }
 
@@ -124,17 +119,14 @@ export function formatScorePercentage(score: number, total: number): string {
  */
 export function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength - 3) + "...";
+  return text.slice(0, maxLength - 3) + '...';
 }
 
 /**
  * Get initials from first and last name
  */
-export function getInitials(
-  firstName: string | null | undefined,
-  lastName: string | null | undefined,
-): string {
-  const first = firstName?.charAt(0).toUpperCase() || "";
-  const last = lastName?.charAt(0).toUpperCase() || "";
-  return first + last || "?";
+export function getInitials(firstName: string | null | undefined, lastName: string | null | undefined): string {
+  const first = firstName?.charAt(0).toUpperCase() || '';
+  const last = lastName?.charAt(0).toUpperCase() || '';
+  return first + last || '?';
 }

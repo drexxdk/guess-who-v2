@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import Image, { ImageProps } from "next/image";
-import { useState, memo } from "react";
-import { cn } from "@/lib/utils";
+import Image, { ImageProps } from 'next/image';
+import { useState, memo } from 'react';
+import { cn } from '@/lib/utils';
 
-interface OptimizedImageProps extends Omit<ImageProps, "onError" | "onLoad"> {
+interface OptimizedImageProps extends Omit<ImageProps, 'onError' | 'onLoad'> {
   fallbackSrc?: string;
   showLoadingState?: boolean;
 }
 
 // Simple blur placeholder - a tiny gray SVG
 const blurDataUrl =
-  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PC9zdmc+";
+  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PC9zdmc+';
 
 /**
  * Optimized Image component with:
@@ -23,7 +23,7 @@ const blurDataUrl =
 export const OptimizedImage = memo(function OptimizedImage({
   src,
   alt,
-  fallbackSrc = "/placeholder-person.svg",
+  fallbackSrc = '/placeholder-person.svg',
   showLoadingState = true,
   className,
   ...props
@@ -45,24 +45,19 @@ export const OptimizedImage = memo(function OptimizedImage({
   };
 
   return (
-    <div className={cn("relative overflow-hidden", className)}>
+    <div className={cn('relative overflow-hidden', className)}>
       <Image
         {...props}
         src={error ? fallbackSrc : imageSrc}
         alt={alt}
-        className={cn(
-          "transition-opacity duration-300",
-          isLoading && showLoadingState ? "opacity-0" : "opacity-100",
-        )}
+        className={cn('transition-opacity duration-300', isLoading && showLoadingState ? 'opacity-0' : 'opacity-100')}
         placeholder="blur"
         blurDataURL={blurDataUrl}
         loading="lazy"
         onLoad={handleLoad}
         onError={handleError}
       />
-      {isLoading && showLoadingState && (
-        <div className="absolute inset-0 bg-muted animate-pulse" />
-      )}
+      {isLoading && showLoadingState && <div className="bg-muted absolute inset-0 animate-pulse" />}
     </div>
   );
 });
@@ -76,14 +71,14 @@ export const OptimizedAvatar = memo(function OptimizedAvatar({
   size = 48,
   className,
   ...props
-}: Omit<OptimizedImageProps, "width" | "height"> & { size?: number }) {
+}: Omit<OptimizedImageProps, 'width' | 'height'> & { size?: number }) {
   return (
     <OptimizedImage
       src={src}
       alt={alt}
       width={size}
       height={size}
-      className={cn("rounded-full", className)}
+      className={cn('rounded-full', className)}
       {...props}
     />
   );
@@ -95,20 +90,20 @@ export const OptimizedAvatar = memo(function OptimizedAvatar({
 export const OptimizedCardImage = memo(function OptimizedCardImage({
   src,
   alt,
-  aspectRatio = "square",
+  aspectRatio = 'square',
   className,
   ...props
-}: Omit<OptimizedImageProps, "fill"> & {
-  aspectRatio?: "square" | "video" | "portrait";
+}: Omit<OptimizedImageProps, 'fill'> & {
+  aspectRatio?: 'square' | 'video' | 'portrait';
 }) {
   const aspectClasses = {
-    square: "aspect-square",
-    video: "aspect-video",
-    portrait: "aspect-[3/4]",
+    square: 'aspect-square',
+    video: 'aspect-video',
+    portrait: 'aspect-[3/4]',
   };
 
   return (
-    <div className={cn("relative", aspectClasses[aspectRatio], className)}>
+    <div className={cn('relative', aspectClasses[aspectRatio], className)}>
       <OptimizedImage
         src={src}
         alt={alt}

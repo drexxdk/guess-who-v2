@@ -1,5 +1,5 @@
-import { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/lib/database.types";
+import { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/lib/database.types';
 import {
   gameSessionSchema,
   gameSessionWithGroupSchema,
@@ -7,13 +7,8 @@ import {
   personSchema,
   parseOrNull,
   parseArrayFiltered,
-} from "@/lib/schemas";
-import type {
-  GameSession,
-  GameSessionWithGroup,
-  Group,
-  Person,
-} from "@/lib/schemas";
+} from '@/lib/schemas';
+import type { GameSession, GameSessionWithGroup, Group, Person } from '@/lib/schemas';
 
 type TypedSupabaseClient = SupabaseClient<Database>;
 
@@ -29,10 +24,10 @@ export async function getActiveGameSessionByCode(
   gameCode: string,
 ): Promise<{ id: string; status: string | null } | null> {
   const { data } = await supabase
-    .from("game_sessions")
-    .select("id, status")
-    .eq("game_code", gameCode)
-    .eq("status", "active")
+    .from('game_sessions')
+    .select('id, status')
+    .eq('game_code', gameCode)
+    .eq('status', 'active')
     .limit(1)
     .single();
 
@@ -46,11 +41,7 @@ export async function getGameSessionByCode(
   supabase: TypedSupabaseClient,
   gameCode: string,
 ): Promise<GameSession | null> {
-  const { data } = await supabase
-    .from("game_sessions")
-    .select("*")
-    .eq("game_code", gameCode)
-    .single();
+  const { data } = await supabase.from('game_sessions').select('*').eq('game_code', gameCode).single();
 
   return parseOrNull(gameSessionSchema, data);
 }
@@ -62,11 +53,7 @@ export async function getGameSessionWithGroup(
   supabase: TypedSupabaseClient,
   sessionId: string,
 ): Promise<GameSessionWithGroup | null> {
-  const { data } = await supabase
-    .from("game_sessions")
-    .select("*, groups(id, name)")
-    .eq("id", sessionId)
-    .single();
+  const { data } = await supabase.from('game_sessions').select('*, groups(id, name)').eq('id', sessionId).single();
 
   // Return data directly without strict Zod validation
   // since the host play page needs to access it immediately
@@ -83,11 +70,11 @@ export async function getUserActiveGameSessions(
   limit = 3,
 ): Promise<GameSessionWithGroup[]> {
   const { data } = await supabase
-    .from("game_sessions")
-    .select("*, groups(id, name)")
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .order("started_at", { ascending: false })
+    .from('game_sessions')
+    .select('*, groups(id, name)')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .order('started_at', { ascending: false })
     .limit(limit);
 
   return parseArrayFiltered(gameSessionWithGroupSchema, data ?? []);
@@ -100,11 +87,7 @@ export async function getGameSessionStatus(
   supabase: TypedSupabaseClient,
   sessionId: string,
 ): Promise<{ status: string | null } | null> {
-  const { data } = await supabase
-    .from("game_sessions")
-    .select("status")
-    .eq("id", sessionId)
-    .single();
+  const { data } = await supabase.from('game_sessions').select('status').eq('id', sessionId).single();
 
   return data;
 }
@@ -116,15 +99,8 @@ export async function getGameSessionStatus(
 /**
  * Get a group by ID
  */
-export async function getGroupById(
-  supabase: TypedSupabaseClient,
-  groupId: string,
-): Promise<Group | null> {
-  const { data } = await supabase
-    .from("groups")
-    .select("*")
-    .eq("id", groupId)
-    .single();
+export async function getGroupById(supabase: TypedSupabaseClient, groupId: string): Promise<Group | null> {
+  const { data } = await supabase.from('groups').select('*').eq('id', groupId).single();
 
   return parseOrNull(groupSchema, data);
 }
@@ -137,10 +113,10 @@ export async function getUserGroupsWithCount(
   userId: string,
 ): Promise<Array<Group & { people: { count: number }[] }>> {
   const { data } = await supabase
-    .from("groups")
-    .select("*, people(count)")
-    .eq("creator_id", userId)
-    .order("created_at", { ascending: false });
+    .from('groups')
+    .select('*, people(count)')
+    .eq('creator_id', userId)
+    .order('created_at', { ascending: false });
 
   // Can't use parseArrayFiltered here due to the count aggregate
   return (data ?? []) as Array<Group & { people: { count: number }[] }>;
@@ -153,15 +129,8 @@ export async function getUserGroupsWithCount(
 /**
  * Get all people in a group
  */
-export async function getPeopleByGroupId(
-  supabase: TypedSupabaseClient,
-  groupId: string,
-): Promise<Person[]> {
-  const { data } = await supabase
-    .from("people")
-    .select("*")
-    .eq("group_id", groupId)
-    .order("first_name");
+export async function getPeopleByGroupId(supabase: TypedSupabaseClient, groupId: string): Promise<Person[]> {
+  const { data } = await supabase.from('people').select('*').eq('group_id', groupId).order('first_name');
 
   return parseArrayFiltered(personSchema, data ?? []);
 }
@@ -169,14 +138,8 @@ export async function getPeopleByGroupId(
 /**
  * Get people count for a group
  */
-export async function getPeopleCountByGroupId(
-  supabase: TypedSupabaseClient,
-  groupId: string,
-): Promise<number> {
-  const { count } = await supabase
-    .from("people")
-    .select("*", { count: "exact", head: true })
-    .eq("group_id", groupId);
+export async function getPeopleCountByGroupId(supabase: TypedSupabaseClient, groupId: string): Promise<number> {
+  const { count } = await supabase.from('people').select('*', { count: 'exact', head: true }).eq('group_id', groupId);
 
   return count ?? 0;
 }
@@ -188,14 +151,8 @@ export async function getPeopleCountByGroupId(
 /**
  * Get all answers for a game session
  */
-export async function getGameAnswers(
-  supabase: TypedSupabaseClient,
-  sessionId: string,
-) {
-  const { data } = await supabase
-    .from("game_answers")
-    .select("*")
-    .eq("session_id", sessionId);
+export async function getGameAnswers(supabase: TypedSupabaseClient, sessionId: string) {
+  const { data } = await supabase.from('game_answers').select('*').eq('session_id', sessionId);
 
   return data ?? [];
 }
@@ -209,12 +166,12 @@ export async function getPlayerJoinRecord(
   playerName: string,
 ): Promise<{ id: string } | null> {
   const { data } = await supabase
-    .from("game_answers")
-    .select("id")
-    .eq("session_id", sessionId)
-    .eq("player_name", playerName)
-    .is("correct_option_id", null)
-    .order("created_at", { ascending: false })
+    .from('game_answers')
+    .select('id')
+    .eq('session_id', sessionId)
+    .eq('player_name', playerName)
+    .is('correct_option_id', null)
+    .order('created_at', { ascending: false })
     .limit(1);
 
   const [record] = data ?? [];
@@ -230,12 +187,12 @@ export async function getExistingJoinRecords(
   playerName: string,
 ): Promise<Array<{ id: string }>> {
   const { data } = await supabase
-    .from("game_answers")
-    .select("id")
-    .eq("session_id", sessionId)
-    .eq("player_name", playerName)
-    .is("correct_option_id", null)
-    .order("created_at", { ascending: false })
+    .from('game_answers')
+    .select('id')
+    .eq('session_id', sessionId)
+    .eq('player_name', playerName)
+    .is('correct_option_id', null)
+    .order('created_at', { ascending: false })
     .limit(1);
 
   return data ?? [];

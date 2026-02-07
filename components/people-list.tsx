@@ -1,21 +1,18 @@
-"use client";
+'use client';
 
-import { useState, memo } from "react";
-import { FaTrash } from "react-icons/fa6";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ConfirmDialog } from "@/components/ui/dialog";
-import { EmptyState } from "@/components/ui/empty-state";
-import {
-  StaggeredGrid,
-  StaggeredGridItem,
-} from "@/components/ui/staggered-list";
-import { AvatarImage } from "@/components/ui/avatar-image";
-import toast from "react-hot-toast";
-import { deletePersonImage } from "@/lib/game-utils";
-import { getErrorMessage } from "@/lib/logger";
-import type { Person } from "@/lib/schemas";
+import { useState, memo } from 'react';
+import { FaTrash } from 'react-icons/fa6';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/dialog';
+import { EmptyState } from '@/components/ui/empty-state';
+import { StaggeredGrid, StaggeredGridItem } from '@/components/ui/staggered-list';
+import { AvatarImage } from '@/components/ui/avatar-image';
+import toast from 'react-hot-toast';
+import { deletePersonImage } from '@/lib/game-utils';
+import { getErrorMessage } from '@/lib/logger';
+import type { Person } from '@/lib/schemas';
 
 // Memoized person card to prevent unnecessary re-renders
 const PersonCard = memo(function PersonCard({
@@ -28,26 +25,19 @@ const PersonCard = memo(function PersonCard({
   onDeleteClick: (person: Person) => void;
 }) {
   return (
-    <Card
-      hover
-      className="p-4"
-      role="article"
-      aria-label={`Person: ${person.first_name} ${person.last_name}`}
-    >
+    <Card hover className="p-4" role="article" aria-label={`Person: ${person.first_name} ${person.last_name}`}>
       <div className="flex items-center gap-4">
         <AvatarImage
           src={person.image_url}
           alt={`Photo of ${person.first_name} ${person.last_name}`}
           fallbackName={`${person.first_name} ${person.last_name}`}
-          className="w-12 h-12"
+          className="h-12 w-12"
         />
         <div className="flex-1">
           <p className="font-medium" id={`person-name-${person.id}`}>
             {person.first_name} {person.last_name}
           </p>
-          <p className="text-sm text-muted-foreground capitalize">
-            {person.gender}
-          </p>
+          <p className="text-muted-foreground text-sm capitalize">{person.gender}</p>
         </div>
         <Button
           variant="destructive"
@@ -57,7 +47,7 @@ const PersonCard = memo(function PersonCard({
           size="icon"
           aria-label={`Delete ${person.first_name} ${person.last_name}`}
         >
-          <FaTrash className="w-4 h-4" />
+          <FaTrash className="h-4 w-4" />
         </Button>
       </div>
     </Card>
@@ -81,24 +71,18 @@ export function PeopleList({ people }: { people: Person[] }) {
 
       // Delete image from storage if it exists
       if (personToDelete.image_url) {
-        const result = await deletePersonImage(
-          supabase,
-          personToDelete.image_url,
-        );
+        const result = await deletePersonImage(supabase, personToDelete.image_url);
         if (!result.success) {
           // Continue with person deletion even if image deletion fails
         }
       }
 
       // Delete person from database
-      const { error } = await supabase
-        .from("people")
-        .delete()
-        .eq("id", personToDelete.id);
+      const { error } = await supabase.from('people').delete().eq('id', personToDelete.id);
 
       if (error) throw error;
 
-      toast.success("Person deleted successfully");
+      toast.success('Person deleted successfully');
       setPersonToDelete(null);
       // Let real-time subscription handle the removal
     } catch (err: unknown) {
@@ -112,12 +96,7 @@ export function PeopleList({ people }: { people: Person[] }) {
     return (
       <EmptyState
         icon={
-          <svg
-            className="w-8 h-8"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -137,11 +116,7 @@ export function PeopleList({ people }: { people: Person[] }) {
       <StaggeredGrid className="grid gap-3">
         {people.map((person) => (
           <StaggeredGridItem key={person.id}>
-            <PersonCard
-              person={person}
-              isDeleting={deleting === person.id}
-              onDeleteClick={handleDeleteClick}
-            />
+            <PersonCard person={person} isDeleting={deleting === person.id} onDeleteClick={handleDeleteClick} />
           </StaggeredGridItem>
         ))}
       </StaggeredGrid>

@@ -1,11 +1,5 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ReactNode } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ReactNode } from 'react';
 
 interface SectionCardProps {
   title: string;
@@ -18,12 +12,7 @@ interface SectionCardProps {
  * Reusable card component with consistent header spacing
  * Use for informational sections with title and content
  */
-export function SectionCard({
-  title,
-  description,
-  children,
-  className,
-}: SectionCardProps) {
+export function SectionCard({ title, description, children, className }: SectionCardProps) {
   return (
     <Card className={className}>
       <CardHeader>
@@ -47,21 +36,13 @@ interface InfoListCardProps {
  * Card component specifically for displaying lists
  * Enforces consistent list styling
  */
-export function InfoListCard({
-  title,
-  description,
-  items,
-  ordered = false,
-  className,
-}: InfoListCardProps) {
-  const ListComponent = ordered ? "ol" : "ul";
-  const listClass = ordered ? "list-decimal" : "list-disc";
+export function InfoListCard({ title, description, items, ordered = false, className }: InfoListCardProps) {
+  const ListComponent = ordered ? 'ol' : 'ul';
+  const listClass = ordered ? 'list-decimal' : 'list-disc';
 
   return (
     <SectionCard title={title} description={description} className={className}>
-      <ListComponent
-        className={`${listClass} list-inside space-y-2 text-sm text-muted-foreground`}
-      >
+      <ListComponent className={`${listClass} text-muted-foreground list-inside space-y-2 text-sm`}>
         {items.map((item, index) => (
           <li key={index}>{item}</li>
         ))}

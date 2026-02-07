@@ -1,16 +1,16 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Loading() {
   return (
-    <div className="rounded-lg border bg-card">
-      <div className="p-6 space-y-2">
+    <div className="bg-card rounded-lg border">
+      <div className="space-y-2 p-6">
         <Skeleton className="h-7 w-40" />
         <Skeleton className="h-5 w-32" />
       </div>
-      <div className="p-6 pt-0 space-y-6">
+      <div className="space-y-6 p-6 pt-0">
         {/* Game Mode Selection */}
         <div>
-          <Skeleton className="h-6 w-36 mb-4" />
+          <Skeleton className="mb-4 h-6 w-36" />
           <div className="grid grid-cols-2 gap-4">
             <Skeleton className="h-24" />
             <Skeleton className="h-24" />
@@ -20,15 +20,15 @@ export default function Loading() {
         {/* Settings Sliders */}
         <div className="space-y-4">
           <div>
-            <Skeleton className="h-5 w-32 mb-2" />
+            <Skeleton className="mb-2 h-5 w-32" />
             <Skeleton className="h-2 w-full" />
           </div>
           <div>
-            <Skeleton className="h-5 w-40 mb-2" />
+            <Skeleton className="mb-2 h-5 w-40" />
             <Skeleton className="h-2 w-full" />
           </div>
           <div>
-            <Skeleton className="h-5 w-36 mb-2" />
+            <Skeleton className="mb-2 h-5 w-36" />
             <Skeleton className="h-2 w-full" />
           </div>
         </div>

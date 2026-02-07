@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 interface UseGameTimerOptions {
   timeLeft: number;
@@ -14,13 +14,7 @@ interface UseGameTimerOptions {
  * Custom hook for managing game countdown timer
  * Automatically cleans up and handles pause/resume based on answer state
  */
-export function useGameTimer({
-  timeLeft,
-  answered,
-  timerEnabled,
-  onTick,
-  onTimeout,
-}: UseGameTimerOptions) {
+export function useGameTimer({ timeLeft, answered, timerEnabled, onTick, onTimeout }: UseGameTimerOptions) {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {

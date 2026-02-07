@@ -1,16 +1,16 @@
-"use client";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import { use } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { endGameSession } from "@/lib/game-utils";
-import { getGameSessionWithGroup } from "@/lib/queries";
-import { useLoading } from "@/lib/loading-context";
-import { LoadingLink } from "@/components/ui/loading-link";
+'use client';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { use } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { buttonVariants } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { endGameSession } from '@/lib/game-utils';
+import { getGameSessionWithGroup } from '@/lib/queries';
+import { useLoading } from '@/lib/loading-context';
+import { LoadingLink } from '@/components/ui/loading-link';
 
 export default function GameStartedPage({
   params: paramsPromise,
@@ -22,9 +22,7 @@ export default function GameStartedPage({
   const groupId = params.id;
   const sessionId = params.sessionId;
   const { setLoading } = useLoading();
-  const [gameSession, setGameSession] = useState<Awaited<
-    ReturnType<typeof getGameSessionWithGroup>
-  > | null>(null);
+  const [gameSession, setGameSession] = useState<Awaited<ReturnType<typeof getGameSessionWithGroup>> | null>(null);
   const [initialized, setInitialized] = useState(false);
 
   const loadGameSession = useCallback(async () => {
@@ -64,31 +62,24 @@ export default function GameStartedPage({
       <CardContent className="space-y-6">
         {/* Game started - show code */}
         <>
-          <div className="text-center space-y-4 py-8">
+          <div className="space-y-4 py-8 text-center">
             <h3 className="text-2xl font-bold">Game Started!</h3>
             <div>
-              <p className="text-sm text-muted-foreground mb-2">Game Code</p>
-              <Badge className="text-6xl px-12 py-6 font-mono">
-                {gameSession.game_code}
-              </Badge>
+              <p className="text-muted-foreground mb-2 text-sm">Game Code</p>
+              <Badge className="px-12 py-6 font-mono text-6xl">{gameSession.game_code}</Badge>
             </div>
             <p className="text-muted-foreground">
-              Share this code with players so they can join at{" "}
-              <span className="font-mono">/game/join</span>
+              Share this code with players so they can join at <span className="font-mono">/game/join</span>
             </p>
           </div>
 
           <div className="flex gap-4">
-            <Button
-              variant="destructive"
-              onClick={cancelGame}
-              className="flex-1"
-            >
+            <Button variant="destructive" onClick={cancelGame} className="flex-1">
               End Game
             </Button>
             <LoadingLink
               href={`/protected/groups/${groupId}/host/${sessionId}/play`}
-              className={buttonVariants({ className: "flex-1" })}
+              className={buttonVariants({ className: 'flex-1' })}
             >
               Go to Control Dashboard
             </LoadingLink>
