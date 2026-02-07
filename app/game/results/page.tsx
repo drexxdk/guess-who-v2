@@ -20,7 +20,7 @@ interface GameSessionStatus extends Record<string, unknown> {
 export default function GameResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [gameEnded, setGameEnded] = useState<boolean | null>(null);
+  const [gameEnded, setGameEnded] = useState<boolean>(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const { setLoading } = useLoading();
 
@@ -314,11 +314,7 @@ export default function GameResultsPage() {
           )}
 
           <div className="space-y-2">
-            {gameEnded === null ? (
-              <div className="bg-primary/10 border-primary/20 rounded-lg border p-3 text-center">
-                <p className="text-primary text-sm font-medium">Loading...</p>
-              </div>
-            ) : gameEnded ? (
+            {gameEnded ? (
               <>
                 <div className="mb-2 rounded-lg bg-orange-50 p-3 text-center text-black">
                   <p className="text-sm font-medium">Game has ended</p>
