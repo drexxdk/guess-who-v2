@@ -166,23 +166,50 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
         <CardContent className="space-y-6">
           {gameSession && gameCode ? (
             // Game started - show code
-            <>
-              <div className="space-y-4 py-8 text-center">
-                <h3 className="text-2xl font-bold">Game Started!</h3>
-                <div className="flex flex-col items-center gap-6">
-                  <div>
-                    <p className="text-muted-foreground mb-2 text-sm">Game Code</p>
-                    <Badge className="px-12 py-6 font-mono text-6xl">{gameCode}</Badge>
-                  </div>
-                  {gameCode && <GameQRCode gameCode={gameCode} />}
+            <div className="rounded-xl bg-linear-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10 p-6">
+              {/* Header */}
+              <div className="mb-6 text-center">
+                <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-green-500/10 px-4 py-2">
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+                  <span className="text-sm font-medium text-green-600 dark:text-green-400">Live</span>
                 </div>
-                <p className="text-muted-foreground">
-                  Share this code or QR code with players so they can join at <span className="font-mono">/game/join</span>
-                </p>
+                <h3 className="text-2xl font-bold">Game Started!</h3>
+                <p className="text-muted-foreground mt-2 text-sm">Players can join using either method below</p>
               </div>
 
-              <div className="flex gap-4">
-                <Button variant="destructive" onClick={cancelGame} className="flex-1">
+              {/* Code and QR Section */}
+              <div className="mb-6 grid gap-6 md:grid-cols-2">
+                {/* Game Code */}
+                <div className="bg-background/50 flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6">
+                  <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">Game Code</p>
+                  <Badge className="bg-primary hover:bg-primary mb-4 px-8 py-4 font-mono text-5xl shadow-lg">
+                    {gameCode}
+                  </Badge>
+                  <p className="text-muted-foreground text-center text-xs">
+                    Enter at <span className="text-foreground font-mono">/game/join</span>
+                  </p>
+                </div>
+
+                {/* QR Code */}
+                {gameCode && (
+                  <div className="bg-background/50 flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6">
+                    <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">
+                      Or Scan QR Code
+                    </p>
+                    <div className="rounded-lg bg-white p-2">
+                      <GameQRCode gameCode={gameCode} />
+                    </div>
+                    <p className="text-muted-foreground mt-4 text-center text-xs">Opens with code pre-filled</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button variant="outline" onClick={cancelGame} className="flex-1">
+                  <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                   End Game
                 </Button>
                 <Button
@@ -192,10 +219,13 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
                   }}
                   className="flex-1"
                 >
-                  Go to Control Dashboard
+                  <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                  Go to Dashboard
                 </Button>
               </div>
-            </>
+            </div>
           ) : (
             // Game not started - show setup
             <>
@@ -203,6 +233,7 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
                 <h3 className="mb-4 text-lg font-semibold">Select Game Mode</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <Card
+                    variant="compact"
                     className={`cursor-pointer transition-all ${
                       selectedGameType === 'guess_name' ? 'ring-primary ring-2' : 'hover:shadow-md'
                     }`}
@@ -217,6 +248,7 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
                   </Card>
 
                   <Card
+                    variant="compact"
                     className={`cursor-pointer transition-all ${
                       selectedGameType === 'guess_image' ? 'ring-primary ring-2' : 'hover:shadow-md'
                     }`}

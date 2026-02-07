@@ -1,26 +1,47 @@
 import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  hover?: boolean;
-  glass?: boolean;
+const cardVariants = cva(
+  'border-border/50 bg-gradient-card text-card-foreground relative flex flex-col rounded-xl border shadow-lg transition-all duration-300',
+  {
+    variants: {
+      variant: {
+        default: 'p-6 gap-4 backdrop-blur-sm',
+        compact: 'p-4 gap-3 backdrop-blur-sm',
+        flush: 'p-0 gap-0 overflow-hidden',
+        glass: 'p-6 gap-4 bg-card/70 backdrop-blur-md',
+      },
+      hover: {
+        true: 'hover:border-primary/30 cursor-pointer hover:scale-[1.02] hover:shadow-2xl',
+        false: '',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      hover: false,
+    },
+  },
+);
+
+interface CardProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof cardVariants> {
+  glass?: boolean; // Keep for backward compatibility
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, hover = false, glass = false, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        'border-border/50 bg-gradient-card text-card-foreground relative flex flex-col gap-4 rounded-xl border p-6 shadow-lg transition-all duration-30',
-        hover && 'hover:border-primary/30 cursor-pointer hover:scale-[1.02] hover:shadow-2xl',
-        glass && 'bg-card/70 backdrop-blur-md',
-        !glass && 'backdrop-blur-sm',
-        className,
-      )}
-      {...props}
-    />
-  ),
+  ({ className, variant, hover, glass, ...props }, ref) => {
+    // If glass prop is used, override variant
+    const effectiveVariant = glass ? 'glass' : variant;
+    
+    return (
+      <div
+        ref={ref}
+        className={cn(cardVariants({ variant: effectiveVariant, hover }), className)}
+        {...props}
+      />
+    );
+  },
 );
 Card.displayName = 'Card';
 
@@ -53,4 +74,4 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 );
 CardFooter.displayName = 'CardFooter';
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, cardVariants };
