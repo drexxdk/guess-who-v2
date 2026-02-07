@@ -28,16 +28,16 @@ const PersonCard = memo(function PersonCard({
   onDeleteClick: (person: Person) => void;
 }) {
   return (
-    <Card hover className="p-4">
+    <Card hover className="p-4" role="article" aria-label={`Person: ${person.first_name} ${person.last_name}`}>
       <div className="flex items-center gap-4">
         <AvatarImage
           src={person.image_url}
-          alt={`${person.first_name} ${person.last_name}`}
+          alt={`Photo of ${person.first_name} ${person.last_name}`}
           fallbackName={`${person.first_name} ${person.last_name}`}
           className="w-12 h-12"
         />
         <div className="flex-1">
-          <p className="font-medium">
+          <p className="font-medium" id={`person-name-${person.id}`}>
             {person.first_name} {person.last_name}
           </p>
           <p className="text-sm text-muted-foreground capitalize">
@@ -50,6 +50,7 @@ const PersonCard = memo(function PersonCard({
           disabled={isDeleting}
           loading={isDeleting}
           size="icon"
+          aria-label={`Delete ${person.first_name} ${person.last_name}`}
         >
           <FaTrash className="w-4 h-4" />
         </Button>

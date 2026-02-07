@@ -25,92 +25,163 @@ describe("logger", () => {
     consoleErrorSpy.mockRestore();
     consoleInfoSpy.mockRestore();
     consoleDebugSpy.mockRestore();
+    delete (process.env as { NODE_ENV?: string }).NODE_ENV;
     process.env.NODE_ENV = originalEnv;
     jest.resetModules();
   });
 
   describe("in development mode", () => {
-    beforeEach(() => {
-      process.env.NODE_ENV = "development";
-    });
-
     it("logs messages with logger.log", () => {
-      const { logger } = require("./logger");
-      logger.log("test message");
-      expect(consoleLogSpy).toHaveBeenCalledWith("test message");
+      let consoleLogSpy: jest.SpyInstance;
+      jest.isolateModules(() => {
+        consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
+        delete (process.env as { NODE_ENV?: string }).NODE_ENV;
+        process.env.NODE_ENV = "development";
+        const { logger } = require("./logger");
+        logger.log("test message");
+        expect(consoleLogSpy).toHaveBeenCalledWith("test message");
+        consoleLogSpy.mockRestore();
+      });
     });
 
     it("logs warnings with logger.warn", () => {
-      const { logger } = require("./logger");
-      logger.warn("warning message");
-      expect(consoleWarnSpy).toHaveBeenCalledWith("warning message");
+      let consoleWarnSpy: jest.SpyInstance;
+      jest.isolateModules(() => {
+        consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation();
+        delete (process.env as { NODE_ENV?: string }).NODE_ENV;
+        process.env.NODE_ENV = "development";
+        const { logger } = require("./logger");
+        logger.warn("warning message");
+        expect(consoleWarnSpy).toHaveBeenCalledWith("warning message");
+        consoleWarnSpy.mockRestore();
+      });
     });
 
     it("logs errors with logger.error", () => {
-      const { logger } = require("./logger");
-      logger.error("error message");
-      expect(consoleErrorSpy).toHaveBeenCalledWith("error message");
+      let consoleErrorSpy: jest.SpyInstance;
+      jest.isolateModules(() => {
+        consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+        delete (process.env as { NODE_ENV?: string }).NODE_ENV;
+        process.env.NODE_ENV = "development";
+        const { logger } = require("./logger");
+        logger.error("error message");
+        expect(consoleErrorSpy).toHaveBeenCalledWith("error message");
+        consoleErrorSpy.mockRestore();
+      });
     });
 
     it("logs info with logger.info", () => {
-      const { logger } = require("./logger");
-      logger.info("info message");
-      expect(consoleInfoSpy).toHaveBeenCalledWith("info message");
+      let consoleInfoSpy: jest.SpyInstance;
+      jest.isolateModules(() => {
+        consoleInfoSpy = jest.spyOn(console, "info").mockImplementation();
+        delete (process.env as { NODE_ENV?: string }).NODE_ENV;
+        process.env.NODE_ENV = "development";
+        const { logger } = require("./logger");
+        logger.info("info message");
+        expect(consoleInfoSpy).toHaveBeenCalledWith("info message");
+        consoleInfoSpy.mockRestore();
+      });
     });
 
     it("logs debug with logger.debug", () => {
-      const { logger } = require("./logger");
-      logger.debug("debug message");
-      expect(consoleDebugSpy).toHaveBeenCalledWith("debug message");
+      let consoleDebugSpy: jest.SpyInstance;
+      jest.isolateModules(() => {
+        consoleDebugSpy = jest.spyOn(console, "debug").mockImplementation();
+        delete (process.env as { NODE_ENV?: string }).NODE_ENV;
+        process.env.NODE_ENV = "development";
+        const { logger } = require("./logger");
+        logger.debug("debug message");
+        expect(consoleDebugSpy).toHaveBeenCalledWith("debug message");
+        consoleDebugSpy.mockRestore();
+      });
     });
 
     it("handles multiple arguments", () => {
-      const { logger } = require("./logger");
-      logger.log("message", 123, { key: "value" });
-      expect(consoleLogSpy).toHaveBeenCalledWith("message", 123, {
-        key: "value",
+      let consoleLogSpy: jest.SpyInstance;
+      jest.isolateModules(() => {
+        consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
+        delete (process.env as { NODE_ENV?: string }).NODE_ENV;
+        process.env.NODE_ENV = "development";
+        const { logger } = require("./logger");
+        logger.log("message", 123, { key: "value" });
+        expect(consoleLogSpy).toHaveBeenCalledWith("message", 123, {
+          key: "value",
+        });
+        consoleLogSpy.mockRestore();
       });
     });
   });
 
   describe("in production mode", () => {
-    beforeEach(() => {
-      process.env.NODE_ENV = "production";
-    });
-
     it("does not log with logger.log", () => {
-      const { logger } = require("./logger");
-      logger.log("test message");
-      expect(consoleLogSpy).not.toHaveBeenCalled();
+      let consoleLogSpy: jest.SpyInstance;
+      jest.isolateModules(() => {
+        consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
+        delete (process.env as { NODE_ENV?: string }).NODE_ENV;
+        process.env.NODE_ENV = "production";
+        const { logger } = require("./logger");
+        logger.log("test message");
+        expect(consoleLogSpy).not.toHaveBeenCalled();
+        consoleLogSpy.mockRestore();
+      });
     });
 
     it("does not log with logger.warn", () => {
-      const { logger } = require("./logger");
-      logger.warn("warning message");
-      expect(consoleWarnSpy).not.toHaveBeenCalled();
+      let consoleWarnSpy: jest.SpyInstance;
+      jest.isolateModules(() => {
+        consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation();
+        delete (process.env as { NODE_ENV?: string }).NODE_ENV;
+        process.env.NODE_ENV = "production";
+        const { logger } = require("./logger");
+        logger.warn("warning message");
+        expect(consoleWarnSpy).not.toHaveBeenCalled();
+        consoleWarnSpy.mockRestore();
+      });
     });
 
     it("does not log with logger.error", () => {
-      const { logger } = require("./logger");
-      logger.error("error message");
-      expect(consoleErrorSpy).not.toHaveBeenCalled();
+      let consoleErrorSpy: jest.SpyInstance;
+      jest.isolateModules(() => {
+        consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+        delete (process.env as { NODE_ENV?: string }).NODE_ENV;
+        process.env.NODE_ENV = "production";
+        const { logger } = require("./logger");
+        logger.error("error message");
+        expect(consoleErrorSpy).not.toHaveBeenCalled();
+        consoleErrorSpy.mockRestore();
+      });
     });
 
     it("does not log with logger.info", () => {
-      const { logger } = require("./logger");
-      logger.info("info message");
-      expect(consoleInfoSpy).not.toHaveBeenCalled();
+      let consoleInfoSpy: jest.SpyInstance;
+      jest.isolateModules(() => {
+        consoleInfoSpy = jest.spyOn(console, "info").mockImplementation();
+        delete (process.env as { NODE_ENV?: string }).NODE_ENV;
+        process.env.NODE_ENV = "production";
+        const { logger } = require("./logger");
+        logger.info("info message");
+        expect(consoleInfoSpy).not.toHaveBeenCalled();
+        consoleInfoSpy.mockRestore();
+      });
     });
 
     it("does not log with logger.debug", () => {
-      const { logger } = require("./logger");
-      logger.debug("debug message");
-      expect(consoleDebugSpy).not.toHaveBeenCalled();
+      let consoleDebugSpy: jest.SpyInstance;
+      jest.isolateModules(() => {
+        consoleDebugSpy = jest.spyOn(console, "debug").mockImplementation();
+        delete (process.env as { NODE_ENV?: string }).NODE_ENV;
+        process.env.NODE_ENV = "production";
+        const { logger } = require("./logger");
+        logger.debug("debug message");
+        expect(consoleDebugSpy).not.toHaveBeenCalled();
+        consoleDebugSpy.mockRestore();
+      });
     });
   });
 
   describe("logError", () => {
     it("always logs errors even in production", () => {
+      delete (process.env as { NODE_ENV?: string }).NODE_ENV;
       process.env.NODE_ENV = "production";
       logError("critical error");
       expect(consoleErrorSpy).toHaveBeenCalledWith("critical error");

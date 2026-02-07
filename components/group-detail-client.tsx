@@ -141,6 +141,7 @@ export function GroupDetailClient({
                 onClick={() => setIsEditingSettings(true)}
                 variant="outline"
                 size="icon"
+                aria-label="Edit group settings"
               >
                 <FaPencil className="w-4 h-4" />
               </Button>

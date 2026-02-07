@@ -426,7 +426,9 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
       <form onSubmit={handleSubmit} className="space-y-4 relative">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="first_name">First Name</Label>
+            <Label htmlFor="first_name">
+              First Name <span className="text-destructive" aria-label="required">*</span>
+            </Label>
             <Input
               id="first_name"
               value={formData.first_name}
@@ -437,10 +439,13 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
               data-1p-ignore
               data-lpignore="true"
               required
+              aria-required="true"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="last_name">Last Name</Label>
+            <Label htmlFor="last_name">
+              Last Name <span className="text-destructive" aria-label="required">*</span>
+            </Label>
             <Input
               id="last_name"
               value={formData.last_name}
@@ -451,12 +456,15 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
               data-1p-ignore
               data-lpignore="true"
               required
+              aria-required="true"
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="gender">Gender</Label>
+          <Label htmlFor="gender">
+            Gender <span className="text-destructive" aria-label="required">*</span>
+          </Label>
           <select
             id="gender"
             value={formData.gender}
@@ -468,6 +476,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
             }
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             required
+            aria-required="true"
           >
             <option value="male">Male</option>
             <option value="female">Female</option>
