@@ -26,7 +26,7 @@ describe("logger", () => {
     consoleInfoSpy.mockRestore();
     consoleDebugSpy.mockRestore();
     delete (process.env as { NODE_ENV?: string }).NODE_ENV;
-    process.env.NODE_ENV = originalEnv;
+    (process.env as { NODE_ENV?: string }).NODE_ENV = originalEnv;
     jest.resetModules();
   });
 
@@ -36,7 +36,7 @@ describe("logger", () => {
       jest.isolateModules(() => {
         consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
         delete (process.env as { NODE_ENV?: string }).NODE_ENV;
-        process.env.NODE_ENV = "development";
+        (process.env as { NODE_ENV?: string }).NODE_ENV = "development";
         const { logger } = require("./logger");
         logger.log("test message");
         expect(consoleLogSpy).toHaveBeenCalledWith("test message");
@@ -49,7 +49,7 @@ describe("logger", () => {
       jest.isolateModules(() => {
         consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation();
         delete (process.env as { NODE_ENV?: string }).NODE_ENV;
-        process.env.NODE_ENV = "development";
+        (process.env as { NODE_ENV?: string }).NODE_ENV = "development";
         const { logger } = require("./logger");
         logger.warn("warning message");
         expect(consoleWarnSpy).toHaveBeenCalledWith("warning message");
@@ -62,7 +62,7 @@ describe("logger", () => {
       jest.isolateModules(() => {
         consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
         delete (process.env as { NODE_ENV?: string }).NODE_ENV;
-        process.env.NODE_ENV = "development";
+        (process.env as { NODE_ENV?: string }).NODE_ENV = "development";
         const { logger } = require("./logger");
         logger.error("error message");
         expect(consoleErrorSpy).toHaveBeenCalledWith("error message");
@@ -75,7 +75,7 @@ describe("logger", () => {
       jest.isolateModules(() => {
         consoleInfoSpy = jest.spyOn(console, "info").mockImplementation();
         delete (process.env as { NODE_ENV?: string }).NODE_ENV;
-        process.env.NODE_ENV = "development";
+        (process.env as { NODE_ENV?: string }).NODE_ENV = "development";
         const { logger } = require("./logger");
         logger.info("info message");
         expect(consoleInfoSpy).toHaveBeenCalledWith("info message");
@@ -88,7 +88,7 @@ describe("logger", () => {
       jest.isolateModules(() => {
         consoleDebugSpy = jest.spyOn(console, "debug").mockImplementation();
         delete (process.env as { NODE_ENV?: string }).NODE_ENV;
-        process.env.NODE_ENV = "development";
+        (process.env as { NODE_ENV?: string }).NODE_ENV = "development";
         const { logger } = require("./logger");
         logger.debug("debug message");
         expect(consoleDebugSpy).toHaveBeenCalledWith("debug message");
@@ -101,7 +101,7 @@ describe("logger", () => {
       jest.isolateModules(() => {
         consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
         delete (process.env as { NODE_ENV?: string }).NODE_ENV;
-        process.env.NODE_ENV = "development";
+        (process.env as { NODE_ENV?: string }).NODE_ENV = "development";
         const { logger } = require("./logger");
         logger.log("message", 123, { key: "value" });
         expect(consoleLogSpy).toHaveBeenCalledWith("message", 123, {
@@ -118,7 +118,7 @@ describe("logger", () => {
       jest.isolateModules(() => {
         consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
         delete (process.env as { NODE_ENV?: string }).NODE_ENV;
-        process.env.NODE_ENV = "production";
+        (process.env as { NODE_ENV?: string }).NODE_ENV = "production";
         const { logger } = require("./logger");
         logger.log("test message");
         expect(consoleLogSpy).not.toHaveBeenCalled();
@@ -131,7 +131,7 @@ describe("logger", () => {
       jest.isolateModules(() => {
         consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation();
         delete (process.env as { NODE_ENV?: string }).NODE_ENV;
-        process.env.NODE_ENV = "production";
+        (process.env as { NODE_ENV?: string }).NODE_ENV = "production";
         const { logger } = require("./logger");
         logger.warn("warning message");
         expect(consoleWarnSpy).not.toHaveBeenCalled();
@@ -144,7 +144,7 @@ describe("logger", () => {
       jest.isolateModules(() => {
         consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
         delete (process.env as { NODE_ENV?: string }).NODE_ENV;
-        process.env.NODE_ENV = "production";
+        (process.env as { NODE_ENV?: string }).NODE_ENV = "production";
         const { logger } = require("./logger");
         logger.error("error message");
         expect(consoleErrorSpy).not.toHaveBeenCalled();
@@ -157,7 +157,7 @@ describe("logger", () => {
       jest.isolateModules(() => {
         consoleInfoSpy = jest.spyOn(console, "info").mockImplementation();
         delete (process.env as { NODE_ENV?: string }).NODE_ENV;
-        process.env.NODE_ENV = "production";
+        (process.env as { NODE_ENV?: string }).NODE_ENV = "production";
         const { logger } = require("./logger");
         logger.info("info message");
         expect(consoleInfoSpy).not.toHaveBeenCalled();
@@ -170,7 +170,7 @@ describe("logger", () => {
       jest.isolateModules(() => {
         consoleDebugSpy = jest.spyOn(console, "debug").mockImplementation();
         delete (process.env as { NODE_ENV?: string }).NODE_ENV;
-        process.env.NODE_ENV = "production";
+        (process.env as { NODE_ENV?: string }).NODE_ENV = "production";
         const { logger } = require("./logger");
         logger.debug("debug message");
         expect(consoleDebugSpy).not.toHaveBeenCalled();
@@ -182,7 +182,7 @@ describe("logger", () => {
   describe("logError", () => {
     it("always logs errors even in production", () => {
       delete (process.env as { NODE_ENV?: string }).NODE_ENV;
-      process.env.NODE_ENV = "production";
+      (process.env as { NODE_ENV?: string }).NODE_ENV = "production";
       logError("critical error");
       expect(consoleErrorSpy).toHaveBeenCalledWith("critical error");
     });

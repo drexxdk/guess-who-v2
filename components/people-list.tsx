@@ -28,7 +28,12 @@ const PersonCard = memo(function PersonCard({
   onDeleteClick: (person: Person) => void;
 }) {
   return (
-    <Card hover className="p-4" role="article" aria-label={`Person: ${person.first_name} ${person.last_name}`}>
+    <Card
+      hover
+      className="p-4"
+      role="article"
+      aria-label={`Person: ${person.first_name} ${person.last_name}`}
+    >
       <div className="flex items-center gap-4">
         <AvatarImage
           src={person.image_url}
