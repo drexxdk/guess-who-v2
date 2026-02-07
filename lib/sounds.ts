@@ -43,6 +43,9 @@ export class SoundManager {
   private playTone(frequency: number, duration: number, volume: number = 0.3) {
     if (!this.enabled) return;
 
+    // Don't play sounds if the page is not visible
+    if (typeof document !== 'undefined' && document.hidden) return;
+
     try {
       const ctx = this.getAudioContext();
       const oscillator = ctx.createOscillator();
