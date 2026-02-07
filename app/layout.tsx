@@ -7,6 +7,7 @@ import { SWRProvider } from '@/components/providers/swr-provider';
 import { ServiceWorkerRegistration } from '@/components/pwa/service-worker-registration';
 import { InstallPrompt } from '@/components/pwa/install-prompt';
 import { AuthStateListener } from '@/components/auth/auth-state-listener';
+import { OnlineStatus } from '@/components/online-status';
 
 const defaultUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
 
@@ -60,6 +61,7 @@ export default function RootLayout({
         </a>
         <ServiceWorkerRegistration />
         <AuthStateListener />
+        <OnlineStatus />
         <Toaster />
         <SWRProvider>
           <Suspense>

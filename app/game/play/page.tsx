@@ -17,6 +17,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import type { Person, GameSession, GameType } from '@/lib/schemas';
 import { useLoading } from '@/lib/loading-context';
+import { useGameImagePreload } from '@/lib/hooks/use-image-preload';
 
 interface Question {
   person: Person;
@@ -68,6 +69,9 @@ export default function GamePlayPage() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [answered, setAnswered] = useState(false);
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
+
+  // Preload next question images for better UX
+  useGameImagePreload(currentQuestion, questions);
 
   // Validate required search params and redirect if missing
   useEffect(() => {

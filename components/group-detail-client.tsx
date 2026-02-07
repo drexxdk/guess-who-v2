@@ -4,12 +4,14 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { FaPencil } from 'react-icons/fa6';
 import { PeopleList } from '@/components/people-list';
 import { AddPersonForm } from '@/components/add-person-form';
+import { BulkUploadPeople } from '@/components/bulk-upload-people';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SectionCard } from '@/components/ui/section-card';
 import { buttonVariants } from '@/components/ui/button';
 import { Button } from '@/components/ui/button';
 import { GroupSettings } from '@/components/group-settings';
 import { DeleteGroupButton } from '@/components/delete-group-button';
+import { DuplicateGroupButton } from '@/components/duplicate-group-button';
 import type { Group, Person } from '@/lib/schemas';
 import { logger } from '@/lib/logger';
 import { useMultiRealtimeSubscription, getPayloadNew, getPayloadOld } from '@/lib/hooks/use-realtime';
@@ -29,6 +31,7 @@ export function GroupDetailClient({
   const [updatedGroupData, setUpdatedGroupData] = useState<Group>(groupData);
   const [people, setPeople] = useState<Person[]>(initialPeople);
   const [isEditingSettings, setIsEditingSettings] = useState(false);
+  const [uploadMode, setUploadMode] = useState<'single' | 'bulk'>('single');
 
   // Reset loading state when component mounts
   useEffect(() => {
@@ -262,13 +265,36 @@ export function GroupDetailClient({
                   </p>
                 </div>
               )}
+              <DuplicateGroupButton groupId={groupId} />
               <DeleteGroupButton groupId={groupId} />
             </CardContent>
           </Card>
 
           {/* Add Person */}
-          <SectionCard title="Add Person" description="Add a new person to this group">
-            <AddPersonForm groupId={groupId} />
+          <SectionCard title="Add Person" description="Add new people to this group">
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Button
+                  variant={uploadMode === 'single' ? 'default' : 'outline'}
+                  onClick={() => setUploadMode('single')}
+                  className="flex-1"
+                >
+                  Single Person
+                </Button>
+                <Button
+                  variant={uploadMode === 'bulk' ? 'default' : 'outline'}
+                  onClick={() => setUploadMode('bulk')}
+                  className="flex-1"
+                >
+                  Bulk Upload (CSV)
+                </Button>
+              </div>
+              {uploadMode === 'single' ? (
+                <AddPersonForm groupId={groupId} />
+              ) : (
+                <BulkUploadPeople groupId={groupId} />
+              )}
+            </div>
           </SectionCard>
         </div>
 
