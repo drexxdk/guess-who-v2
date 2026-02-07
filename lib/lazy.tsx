@@ -19,7 +19,7 @@ function ComponentLoader() {
 function GameLoader() {
   return (
     <div className="flex min-h-100 flex-col items-center justify-center space-y-4">
-      <Skeleton className="h-48 w-48 rounded-lg" />
+      <Skeleton className="size-48 rounded-lg" />
       <Skeleton className="h-6 w-32" />
       <div className="grid w-full max-w-md grid-cols-2 gap-4">
         <Skeleton className="h-12" />

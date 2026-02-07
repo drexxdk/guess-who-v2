@@ -29,7 +29,7 @@ export function DuplicateGroupButton({ groupId }: { groupId: string }) {
 
   return (
     <Button variant="outline" onClick={handleDuplicate} disabled={loading} className="w-full gap-2">
-      <FaCopy className="h-5 w-5" />
+      <FaCopy className="size-5" />
       {loading ? 'Duplicating...' : 'Duplicate Group'}
     </Button>
   );

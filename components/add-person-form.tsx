@@ -370,9 +370,9 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="relative space-y-4">
+      <form onSubmit={handleSubmit} className="relative flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <Label htmlFor="first_name">
               First Name{' '}
               <span className="text-destructive" aria-label="required">
@@ -390,7 +390,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
               aria-required="true"
             />
           </div>
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <Label htmlFor="last_name">
               Last Name{' '}
               <span className="text-destructive" aria-label="required">
@@ -410,7 +410,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="gender">
             Gender{' '}
             <span className="text-destructive" aria-label="required">
@@ -436,11 +436,11 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
           </select>
         </div>
 
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <Label>Photo</Label>
 
           {showCropper ? (
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               <p className="text-sm text-gray-600">Drag to move • Drag corners to resize</p>
               <div
                 ref={cropContainerRef}
@@ -593,7 +593,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
                 className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
               />
               {preview ? (
-                <div className="pointer-events-none space-y-3">
+                <div className="pointer-events-none flex flex-col gap-3">
                   <div className="relative mx-auto">
                     <Image src={preview} alt="Preview" width={500} height={500} className="rounded-lg object-cover" />
                   </div>
@@ -601,7 +601,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
                   <p className="text-muted-foreground text-xs">Click or drag to replace</p>
                 </div>
               ) : (
-                <div className="space-y-2 py-8">
+                <div className="flex flex-col gap-2 py-8">
                   <p className="text-sm font-medium">Drag and drop an image here</p>
                   <p className="text-muted-foreground text-xs">or click to select from your device</p>
                 </div>

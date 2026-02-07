@@ -5,5 +5,12 @@
   "css.lint.unknownAtRules": "ignore",
   "diffEditor.maxComputationTime": 0,
   "diffEditor.ignoreTrimWhitespace": true,
-  "scm.diffDecorations": "none"
+  "scm.diffDecorations": "none",
+  "tailwindCSS.experimental.classRegex": [
+    // HeadlessUI Transition (React)
+    "(?:enter|leave)(?:From|To)?=\\s*(?:\"|')([^(?:\"|')]*)",
+
+    // clsv modified to cva https://github.com/paolotiu/tailwind-regex-list
+    ["cva\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ]
 }

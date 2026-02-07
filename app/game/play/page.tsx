@@ -802,7 +802,7 @@ function ActiveGameState({ state }: { state: ActiveState }) {
       <Container className="my-auto flex flex-col gap-6">
         {/* Header */}
         <div className="flex items-center justify-between gap-6">
-          <div className="space-y-1 text-white">
+          <div className="flex flex-col gap-1 text-white">
             <p className="text-2xl font-bold">
               Score: {state.score}/{state.questions.length}
             </p>
@@ -926,9 +926,9 @@ function ActiveGameState({ state }: { state: ActiveState }) {
                             </div>
                           )}
                           {state.answered && (isCorrect || isSelected) && (
-                            <span className="ml-3 flex h-6 w-6 shrink-0 items-center justify-center">
-                              {isCorrect && <FaCheck className="h-6 w-6" />}
-                              {isSelected && !isCorrect && <FaXmark className="h-6 w-6" />}
+                            <span className="flex size-6 shrink-0 items-center justify-center">
+                              {isCorrect && <FaCheck className="size-6" />}
+                              {isSelected && !isCorrect && <FaXmark className="size-6" />}
                             </span>
                           )}
                         </span>

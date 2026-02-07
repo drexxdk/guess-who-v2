@@ -164,7 +164,7 @@ export function PasswordStrengthMeter({ password, showFeedback = true }: Passwor
   if (!password) return null;
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col gap-2">
       {/* Strength bar */}
       <div className="flex gap-1">
         {[0, 1, 2, 3, 4].map((level) => (
@@ -191,7 +191,7 @@ export function PasswordStrengthMeter({ password, showFeedback = true }: Passwor
 
       {/* Feedback */}
       {showFeedback && strength.score < 3 && (
-        <ul className="text-muted-foreground space-y-0.5 text-xs">
+        <ul className="text-muted-foreground flex flex-col gap-0.5 text-xs">
           {strength.feedback.slice(0, 3).map((tip, i) => (
             <li key={i} className="flex items-center gap-1">
               <span className="text-muted-foreground">•</span>

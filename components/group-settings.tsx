@@ -115,7 +115,7 @@ export const GroupSettings = memo(function GroupSettings({
 
   if (isEditing) {
     return (
-      <div className="space-y-6">
+      <div className="flex flex-col gap-6">
         <div>
           <Label htmlFor="group-name">Group name</Label>
           <input
@@ -127,13 +127,13 @@ export const GroupSettings = memo(function GroupSettings({
           />
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <input
             id="enable-timer"
             type="checkbox"
             checked={enableTimer}
             onChange={(e) => setEnableTimer(e.target.checked)}
-            className="text-primary focus:ring-primary h-4 w-4 cursor-pointer rounded border-gray-300 focus:ring-2 focus:ring-offset-2"
+            className="text-primary focus:ring-primary size-4 cursor-pointer rounded border-gray-300 focus:ring-2 focus:ring-offset-2"
           />
           <Label htmlFor="enable-timer" className="cursor-pointer text-sm leading-none font-medium">
             Enable countdown timer
@@ -204,7 +204,7 @@ export const GroupSettings = memo(function GroupSettings({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium">Countdown timer</span>
         <span className="bg-muted rounded px-3 py-1 text-sm font-medium">{enableTimer ? 'Enabled' : 'Disabled'}</span>

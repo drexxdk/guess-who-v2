@@ -4,9 +4,9 @@ import { cn } from '@/lib/utils';
 const spinnerVariants = cva('animate-spin rounded-full border-t-transparent', {
   variants: {
     size: {
-      sm: 'w-8 h-8 border-2',
-      md: 'w-12 h-12 border-3',
-      lg: 'w-16 h-16 border-4',
+      sm: 'size-8 border-2',
+      md: 'size-12 border-3',
+      lg: 'size-16 border-4',
     },
     color: {
       white: 'border-white',

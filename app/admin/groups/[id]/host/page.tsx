@@ -186,18 +186,19 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
     );
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       {/* Hero Header */}
       <Card variant="flush">
         <div className="relative overflow-hidden">
           <div className="from-primary/10 absolute inset-0 bg-linear-to-br via-purple-500/10 to-pink-500/10" />
-          <div className="relative flex items-start gap-6 p-8">
-            <div className="from-primary flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br to-purple-600 shadow-lg">
-              <FaPlay className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <h1 className="mb-2 text-3xl font-bold">Start a New Game</h1>
-              <div className="flex items-center gap-2">
+          <div className="relative flex flex-col gap-2 p-8">
+            <div className="flex items-start gap-6">
+              <div className="from-primary flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br to-purple-600 shadow-lg">
+                <FaPlay className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">Start a New Game</h1>
+                <div className="flex items-center gap-2">
                 <FaUserGroup className="text-primary h-5 w-5" />
                 <p className="text-muted-foreground text-lg">
                   <span className="text-foreground font-semibold">{groupData.name}</span> • {people.length} people
@@ -206,10 +207,11 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
             </div>
           </div>
         </div>
+        </div>
       </Card>
 
       <Card variant="compact">
-        <CardContent className="space-y-6">{initializedContent}</CardContent>
+        <CardContent className="flex flex-col gap-6">{initializedContent}</CardContent>
       </Card>
 
       <Card variant="compact" className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
@@ -223,7 +225,7 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          <ul className="space-y-2 text-sm text-gray-900 dark:text-gray-100">
+          <ul className="flex flex-col gap-2 text-sm text-gray-900 dark:text-gray-100">
             {icebreakerTips.map((tip, index) => (
               <li key={index} className="flex gap-2">
                 <span className="font-bold text-gray-900 dark:text-gray-100">{index + 1}.</span>
@@ -253,23 +255,23 @@ function GameStartedContent({
   setLoading: (loading: boolean) => void;
 }) {
   return (
-    <div className="rounded-xl bg-linear-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10 p-6">
-      {/* Header */}
-      <div className="mb-6 text-center">
-        <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-green-500/10 px-4 py-2">
-          <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-          <span className="text-sm font-medium text-green-600 dark:text-green-400">Live</span>
+      <div className="flex flex-col gap-6 rounded-xl bg-linear-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10 p-6">
+        {/* Header */}
+        <div className="text-center">
+          <div className="inline-flex items-center gap-2 rounded-full bg-green-500/10 px-4 py-2">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+            <span className="text-sm font-medium text-green-600 dark:text-green-400">Live</span>
+          </div>
+          <h3 className="text-2xl font-bold">Game Started!</h3>
+          <p className="text-muted-foreground text-sm">Players can join using either method below</p>
         </div>
-        <h3 className="text-2xl font-bold">Game Started!</h3>
-        <p className="text-muted-foreground mt-2 text-sm">Players can join using either method below</p>
-      </div>
 
-      {/* Code and QR Section */}
-      <div className="mb-6 grid gap-6 md:grid-cols-2">
+        {/* Code and QR Section */}
+        <div className="grid gap-6 md:grid-cols-2">
         {/* Game Code */}
-        <div className="bg-background/50 flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6">
-          <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">Game Code</p>
-          <Badge className="bg-primary hover:bg-primary mb-4 px-8 py-4 font-mono text-5xl shadow-lg">{gameCode}</Badge>
+          <div className="bg-background/50 flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6">
+            <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Game Code</p>
+            <Badge className="bg-primary hover:bg-primary px-8 py-4 font-mono text-5xl shadow-lg">{gameCode}</Badge>
           <p className="text-muted-foreground text-center text-xs">
             Enter at <span className="text-foreground font-mono">/game/join</span>
           </p>
@@ -277,12 +279,12 @@ function GameStartedContent({
 
         {/* QR Code */}
         {gameCode && (
-          <div className="bg-background/50 flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6">
-            <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">Or Scan QR Code</p>
-            <div className="rounded-lg bg-white p-2">
-              <GameQRCode gameCode={gameCode} />
-            </div>
-            <p className="text-muted-foreground mt-4 text-center text-xs">Opens with code pre-filled</p>
+            <div className="bg-background/50 flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Or Scan QR Code</p>
+              <div className="rounded-lg bg-white p-2">
+                <GameQRCode gameCode={gameCode} />
+              </div>
+              <p className="text-muted-foreground text-center text-xs">Opens with code pre-filled</p>
           </div>
         )}
       </div>
@@ -358,7 +360,7 @@ function GameSetupContent({
             onClick={() => setSelectedGameType('guess_name')}
           >
             <div className="relative overflow-hidden bg-linear-to-br from-blue-500/10 to-cyan-500/10 p-6">
-              <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-500/20">
                     <FaUser className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -383,15 +385,15 @@ function GameSetupContent({
                   Example
                 </div>
                 {/* Question - Image shown */}
-                <div className="text-center">
+                <div className="flex flex-col gap-2 text-center">
                   <p className="text-muted-foreground mb-2 text-xs font-medium">QUESTION:</p>
                   <div className="bg-muted mx-auto flex h-20 w-20 items-center justify-center rounded-lg border-2">
                     <FaUser className="text-muted-foreground h-10 w-10" />
                   </div>
                 </div>
                 {/* Answer Options - Names */}
-                <div>
-                  <p className="text-muted-foreground mb-2 text-xs font-medium">PICK NAME:</p>
+                <div className="flex flex-col gap-2">
+                  <p className="text-muted-foreground text-xs font-medium">PICK NAME:</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-muted/50 rounded border px-2 py-1.5 text-center text-xs">John</div>
                     <div className="bg-muted/50 rounded border px-2 py-1.5 text-center text-xs">Sarah</div>
@@ -412,7 +414,7 @@ function GameSetupContent({
             onClick={() => setSelectedGameType('guess_image')}
           >
             <div className="relative overflow-hidden bg-linear-to-br from-purple-500/10 to-pink-500/10 p-6">
-              <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-purple-500/20">
                     <FaImage className="h-6 w-6 text-purple-600 dark:text-purple-400" />
@@ -437,14 +439,14 @@ function GameSetupContent({
                   Example
                 </div>
                 {/* Question - Name shown */}
-                <div className="text-center">
+                <div className="flex flex-col gap-2 text-center">
                   <p className="text-muted-foreground mb-2 text-xs font-medium">QUESTION:</p>
                   <div className="bg-primary/10 rounded-lg border px-3 py-2">
                     <p className="text-sm font-bold">John Smith</p>
                   </div>
                 </div>
                 {/* Answer Options - Photos */}
-                <div>
+                <div className="flex flex-col gap-2">
                   <p className="text-muted-foreground mb-2 text-xs font-medium">PICK PHOTO:</p>
                   <div className="grid grid-cols-4 gap-2">
                     <div className="bg-muted flex aspect-square items-center justify-center rounded-lg border-2">
@@ -468,12 +470,12 @@ function GameSetupContent({
       </div>
 
       <div>
-        <div className="mb-4 flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <FaGear className="text-primary h-5 w-5" />
           <h3 className="text-lg font-semibold">Game Settings</h3>
         </div>
-        <div className="space-y-6">
-          <div className="flex items-center space-x-2">
+        <div className="mt-4 flex flex-col gap-6">
+          <div className="flex items-center gap-2">
             <input
               id="enable-timer-host"
               type="checkbox"
@@ -486,8 +488,8 @@ function GameSetupContent({
             </label>
           </div>
           {enableTimer && (
-            <div>
-              <div className="mb-3 flex items-center justify-between">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
                 <label className="text-sm font-medium">Time per question (seconds)</label>
                 <span className="bg-muted rounded px-3 py-1 text-sm font-medium">{timeLimitSeconds}s</span>
               </div>
@@ -502,8 +504,8 @@ function GameSetupContent({
               />
             </div>
           )}
-          <div>
-            <div className="mb-3 flex items-center justify-between">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
               <label className="text-sm font-medium">Options per question</label>
               <span className="bg-muted rounded px-3 py-1 text-sm font-medium">{optionsCount}</span>
             </div>
@@ -517,8 +519,8 @@ function GameSetupContent({
               className="bg-secondary accent-primary h-2 w-full cursor-pointer appearance-none rounded-lg"
             />
           </div>
-          <div>
-            <div className="mb-3 flex items-center justify-between">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
               <label className="text-sm font-medium">Amount of questions</label>
               <span className="bg-muted rounded px-3 py-1 text-sm font-medium">{totalQuestions}</span>
             </div>

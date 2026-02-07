@@ -19,10 +19,10 @@ export function EmptyState({ icon, title, description, action, className, animat
 
   return (
     <Card className={cn('border-dashed', className)}>
-      <CardContent className="flex flex-col items-center justify-center space-y-4 py-12">
+      <CardContent className="flex flex-col items-center justify-center gap-4 py-12">
         {icon && (
           <Content
-            className="bg-muted text-muted-foreground flex h-16 w-16 items-center justify-center rounded-full"
+            className="bg-muted text-muted-foreground flex size-16 items-center justify-center rounded-full"
             {...(animated && {
               initial: { scale: 0, rotate: -180 },
               animate: { scale: 1, rotate: 0 },

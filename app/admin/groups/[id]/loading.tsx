@@ -9,7 +9,7 @@ export default function Loading() {
           <Skeleton className="mb-1 h-7 w-24" />
           <Skeleton className="h-5 w-48" />
         </div>
-        <div className="space-y-4 p-6 pt-2">
+        <div className="flex flex-col gap-4 p-6 pt-2">
           <PersonCardSkeleton />
           <PersonCardSkeleton />
           <PersonCardSkeleton />

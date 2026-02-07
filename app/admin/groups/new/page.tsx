@@ -86,8 +86,8 @@ export default function NewGroupPage() {
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
             <Label htmlFor="name">Group Name</Label>
             <Input
               id="name"

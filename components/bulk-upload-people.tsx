@@ -611,7 +611,7 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
   // Show person editor
   if (editingPerson) {
     return (
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Review Person</h3>
           <div className="text-muted-foreground text-sm">
@@ -620,7 +620,7 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
           </div>
         </div>
 
-        <div className="bg-muted/30 space-y-4 rounded-lg border p-4">
+        <div className="bg-muted/30 flex flex-col gap-4 rounded-lg border p-4">
           <div>
             <Label htmlFor="first-name">First Name</Label>
             <Input
@@ -683,7 +683,7 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
                 <div className="text-muted-foreground text-sm">Loading image...</div>
               </div>
             ) : showCropper && originalImage ? (
-              <div className="space-y-2">
+              <div className="flex flex-col gap-2">
                 <p className="text-sm text-gray-600">Drag to move • Drag corners to resize</p>
                 <div
                   ref={cropContainerRef}
@@ -908,7 +908,7 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
                     </p>
                   </div>
                 )}
-                <div className="pointer-events-none space-y-2 py-8">
+                <div className="pointer-events-none flex flex-col gap-2 py-8">
                   <p className="text-sm font-medium">Drag and drop an image here</p>
                   <p className="text-muted-foreground text-xs">or click to select from your device</p>
                 </div>
@@ -933,10 +933,10 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
 
   // Initial upload form
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <div>
         <Label htmlFor="csv-upload">Upload CSV File</Label>
-        <p className="text-muted-foreground mb-2 text-sm">
+        <p className="text-muted-foreground text-sm">
           Import multiple people at once. You&apos;ll review and crop each person&apos;s photo individually.
         </p>
         <input
@@ -949,8 +949,8 @@ export function BulkUploadPeople({ groupId, onComplete }: { groupId: string; onC
         />
       </div>
 
-      <Button variant="outline" onClick={downloadTemplate} className="w-full">
-        <FaDownload className="mr-2 h-4 w-4" />
+      <Button variant="outline" onClick={downloadTemplate} className="flex w-full items-center gap-2">
+        <FaDownload className="size-4" />
         Download CSV Template
       </Button>
     </div>

@@ -3,11 +3,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function Loading() {
   return (
     <div className="bg-card mx-auto w-full max-w-md rounded-lg border">
-      <div className="space-y-2 p-6">
+      <div className="flex flex-col gap-2 p-6">
         <Skeleton className="mx-auto h-7 w-32" />
         <Skeleton className="mx-auto h-5 w-48" />
       </div>
-      <div className="space-y-6 p-6 pt-0">
+      <div className="flex flex-col gap-6 p-6 pt-0">
         {/* Score */}
         <div className="text-center">
           <Skeleton className="mx-auto h-16 w-24" />

@@ -43,7 +43,7 @@ const PersonCard = memo(function PersonCard({
           src={person.image_url}
           alt={`Photo of ${person.first_name} ${person.last_name}`}
           fallbackName={`${person.first_name} ${person.last_name}`}
-          className="h-12 w-12"
+          className="size-12"
         />
         <div className="flex-1">
           <p className="font-medium" id={`person-name-${person.id}`}>
@@ -58,7 +58,7 @@ const PersonCard = memo(function PersonCard({
           size="icon"
           aria-label={`Delete ${person.first_name} ${person.last_name}`}
         >
-          <FaTrash className="h-4 w-4" />
+          <FaTrash className="size-4" />
         </Button>
       </div>
 
@@ -66,7 +66,7 @@ const PersonCard = memo(function PersonCard({
       {isConfirming && (
         <div className="absolute inset-0 flex items-center justify-end gap-2 rounded-lg bg-black/60 px-4">
           <Button variant="outline" onClick={onCancelDelete} disabled={isDeleting} size="icon" aria-label="Cancel">
-            <FaXmark className="h-4 w-4" />
+            <FaXmark className="size-4" />
           </Button>
           <Button
             onClick={() => onConfirmDelete(person)}
@@ -75,7 +75,7 @@ const PersonCard = memo(function PersonCard({
             aria-label="Confirm delete"
             className="bg-green-600 text-white hover:bg-green-700"
           >
-            {isDeleting ? <FaSpinner className="h-4 w-4 animate-spin" /> : <FaCheck className="h-4 w-4" />}
+            {isDeleting ? <FaSpinner className="size-4 animate-spin" /> : <FaCheck className="size-4" />}
           </Button>
         </div>
       )}
@@ -126,7 +126,7 @@ export function PeopleList({ people }: { people: Person[] }) {
   if (people.length === 0) {
     return (
       <EmptyState
-        icon={<FaUser className="h-8 w-8" />}
+        icon={<FaUser className="size-8" />}
         title="No people yet"
         description="Add your first person to get started with this group"
       />

@@ -87,7 +87,7 @@ export function DialogContent({ children, className }: DialogContentProps) {
     >
       <div
         className={cn(
-          'bg-card border-border relative w-full max-w-lg space-y-4 rounded-xl border p-6 shadow-2xl',
+          'bg-card border-border relative flex w-full max-w-lg flex-col gap-4 rounded-xl border p-6 shadow-2xl',
           'animate-in fade-in-0 zoom-in-95 duration-200',
           className,
         )}
@@ -100,7 +100,7 @@ export function DialogContent({ children, className }: DialogContentProps) {
 }
 
 export function DialogHeader({ children, className }: DialogHeaderProps) {
-  return <div className={cn('space-y-2 text-center sm:text-left', className)}>{children}</div>;
+  return <div className={cn('flex flex-col gap-2 text-center sm:text-left', className)}>{children}</div>;
 }
 
 export function DialogFooter({ children, className }: DialogFooterProps) {

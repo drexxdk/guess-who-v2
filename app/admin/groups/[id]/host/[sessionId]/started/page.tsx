@@ -62,15 +62,15 @@ export default function GameStartedPage({
   return (
     <div className="mx-auto w-full max-w-3xl">
       <Card variant="flush" className="bg-linear-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10">
-        <CardContent className="space-y-8 p-8">
+        <CardContent className="flex flex-col gap-8 p-8">
           {/* Header */}
           <div className="text-center">
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-green-500/10 px-4 py-2">
+            <div className="inline-flex items-center gap-2 rounded-full bg-green-500/10 px-4 py-2">
               <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
               <span className="text-sm font-medium text-green-600 dark:text-green-400">Live</span>
             </div>
-            <h3 className="text-3xl font-bold">Game Started!</h3>
-            <p className="text-muted-foreground mt-2 text-sm">Players can join using either method below</p>
+            <h3 className="text-2xl font-bold">Game Started!</h3>
+            <p className="text-muted-foreground text-sm">Players can join using either method below</p>
           </div>
 
           {/* Code and QR Section */}
@@ -88,29 +88,29 @@ export default function GameStartedPage({
 
             {/* QR Code */}
             {gameSession.game_code && (
-              <div className="bg-background/50 flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6">
-                <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">
+              <div className="bg-background/50 flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6">
+                <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                   Or Scan QR Code
                 </p>
                 <div className="rounded-lg bg-white p-2">
                   <GameQRCode gameCode={gameSession.game_code} />
                 </div>
-                <p className="text-muted-foreground mt-4 text-center text-xs">Opens with code pre-filled</p>
+                <p className="text-muted-foreground text-center text-xs">Opens with code pre-filled</p>
               </div>
             )}
           </div>
 
           {/* Actions */}
           <div className="flex flex-col gap-3 pt-4 sm:flex-row">
-            <Button variant="outline" onClick={cancelGame} className="flex-1">
-              <FaXmark className="mr-2 h-4 w-4" />
+            <Button variant="outline" onClick={cancelGame} className="flex flex-1 items-center gap-2">
+              <FaXmark className="h-4 w-4" />
               End Game
             </Button>
             <LoadingLink
               href={`/admin/groups/${groupId}/host/${sessionId}/play`}
-              className={buttonVariants({ className: 'flex-1' })}
+              className={buttonVariants({ className: 'flex flex-1 items-center gap-2' })}
             >
-              <FaArrowRight className="mr-2 h-4 w-4" />
+              <FaArrowRight className="h-4 w-4" />
               Go to Dashboard
             </LoadingLink>
           </div>

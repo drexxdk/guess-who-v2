@@ -13,12 +13,12 @@ export function Logo({ className, showText = true, href = '/' }: LogoProps) {
       {/* Logo Icon - Stylized Question Mark */}
       <div className="relative flex items-center justify-center">
         <div className="bg-gradient-primary absolute inset-0 rounded-xl opacity-50 blur-md" />
-        <div className="bg-gradient-primary relative flex h-10 w-10 items-center justify-center rounded-xl p-2">
+        <div className="bg-gradient-primary relative flex size-10 items-center justify-center rounded-xl p-2">
           <svg
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            className="h-6 w-6 text-white"
+            className="size-6 text-white"
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"

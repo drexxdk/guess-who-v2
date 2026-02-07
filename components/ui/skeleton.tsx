@@ -52,12 +52,12 @@ export function GroupCardSkeleton() {
 export function PersonCardSkeleton() {
   return (
     <div className="bg-card flex items-center gap-4 rounded-lg border p-4">
-      <Skeleton className="h-16 w-16 rounded-full" />
+      <Skeleton className="size-16 rounded-full" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-5 w-1/2" />
         <Skeleton className="h-4 w-1/4" />
       </div>
-      <Skeleton className="h-8 w-8" />
+      <Skeleton className="size-8" />
     </div>
   );
 }
@@ -106,7 +106,7 @@ export function PlayerListSkeleton() {
       {[1, 2, 3].map((i) => (
         <div key={i} className="bg-muted flex items-center justify-between gap-3 rounded-lg p-3">
           <div className="flex items-center gap-3">
-            <Skeleton className="h-3 w-3 shrink-0 rounded-full" />
+            <Skeleton className="size-3 shrink-0 rounded-full" />
             <Skeleton className="h-5 w-32" />
           </div>
           <div className="flex shrink-0 gap-2">

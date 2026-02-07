@@ -28,8 +28,8 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
       <Card variant="flush" className="relative overflow-hidden">
         <div className="from-primary/10 absolute inset-0 bg-linear-to-br via-purple-500/10 to-pink-500/10" />
         <div className="relative flex items-start gap-6 p-8">
-          <div className="from-primary flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br to-purple-600 shadow-lg">
-            <FaUserGroup className="h-10 w-10 text-white" />
+          <div className="from-primary flex size-20 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br to-purple-600 shadow-lg">
+            <FaUserGroup className="size-10 text-white" />
           </div>
           <div className="flex grow flex-col gap-4">
             <div>
@@ -43,14 +43,14 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
             </div>
             <div className="flex flex-wrap gap-3">
               <LoadingLink href="/game/join" className={buttonVariants({ size: 'lg', className: 'gap-2' })}>
-                <FaRightToBracket className="h-5 w-5" />
+                <FaRightToBracket className="size-5" />
                 Join Game
               </LoadingLink>
               <LoadingLink
                 href="/admin/groups"
                 className={buttonVariants({ variant: 'secondary', size: 'lg', className: 'gap-2' })}
               >
-                <FaFolder className="h-5 w-5" />
+                <FaFolder className="size-5" />
                 My Groups
               </LoadingLink>
             </div>
@@ -62,8 +62,8 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
       {activeSessions.length > 0 && (
         <div>
           <div className="mb-6 flex items-center gap-3">
-            <div className="bg-primary/20 flex h-10 w-10 items-center justify-center rounded-lg">
-              <FaPlay className="text-primary h-6 w-6" />
+            <div className="bg-primary/20 flex size-10 items-center justify-center rounded-lg">
+              <FaPlay className="text-primary size-6" />
             </div>
             <div>
               <h2 className="text-2xl font-semibold">Your Active Games</h2>
@@ -77,16 +77,16 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {session.game_type === 'guess_name' ? (
-                        <FaUser className="text-primary h-5 w-5" />
+                        <FaUser className="text-primary size-5" />
                       ) : (
-                        <FaImage className="text-primary h-5 w-5" />
+                        <FaImage className="text-primary size-5" />
                       )}
                       <CardTitle className="text-base">{session.groups?.name || 'Unknown'}</CardTitle>
                     </div>
                     <Badge className="font-mono text-xs">{session.game_code}</Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="flex flex-col space-y-3">
+                <CardContent className="flex flex-col gap-3">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-primary/5 border-primary/10 flex flex-col gap-1 rounded-lg border p-2.5">
                       <p className="text-muted-foreground text-xs font-medium">Type</p>
@@ -110,7 +110,7 @@ export const AdminPageClient = memo(function AdminPageClient({ activeSessions }:
                     href={`/admin/groups/${session.groups?.id}/host/${session.id}/play`}
                     className={buttonVariants({ className: 'w-full gap-2 group-hover:shadow-lg' })}
                   >
-                    <FaArrowUpRightFromSquare className="h-4 w-4" />
+                    <FaArrowUpRightFromSquare className="size-4" />
                     Open Game
                   </LoadingLink>
                 </CardContent>

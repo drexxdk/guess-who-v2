@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { FaCircleExclamation, FaTriangleExclamation, FaCircleInfo, FaCircleCheck } from 'react-icons/fa6';
+import { Icon } from './icon';
 
 const messageVariants = cva(
   'flex items-start gap-3 rounded-lg border transition-all duration-200',
@@ -41,14 +42,14 @@ interface ErrorMessageProps extends VariantProps<typeof messageVariants> {
 export function ErrorMessage({ message, className, size, severity, suggestion }: ErrorMessageProps) {
   if (!message) return null;
 
-  const Icon = iconMap[severity || 'error'];
+  const IconComponent = iconMap[severity || 'error'];
 
   return (
     <div className={cn(messageVariants({ severity, size }), className)} role="alert">
-      <Icon className="mt-0.5 h-5 w-5 shrink-0" />
-      <div className="flex-1">
+      <Icon icon={IconComponent} size="md" className="self-start" />
+      <div className="flex flex-1 flex-col gap-1">
         <p className="font-medium">{message}</p>
-        {suggestion && <p className="mt-1 text-xs opacity-80">{suggestion}</p>}
+        {suggestion && <p className="text-xs opacity-80">{suggestion}</p>}
       </div>
     </div>
   );

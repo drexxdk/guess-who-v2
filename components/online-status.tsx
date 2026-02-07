@@ -47,7 +47,7 @@ export function OnlineStatus() {
             color: 'white',
           }}
         >
-          <div className={`h-2 w-2 rounded-full ${isOnline ? 'bg-green-200' : 'bg-red-200'} animate-pulse`} />
+          <div className={`size-2 rounded-full ${isOnline ? 'bg-green-200' : 'bg-red-200'} animate-pulse`} />
           <span className="text-sm font-medium">{isOnline ? 'Back online' : 'No internet connection'}</span>
         </motion.div>
       )}

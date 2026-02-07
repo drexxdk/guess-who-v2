@@ -127,13 +127,13 @@ export function GroupDetailClient({
           <div className="from-primary/10 absolute inset-0 bg-linear-to-br via-purple-500/10 to-pink-500/10" />
           <div className="relative flex items-start justify-between gap-6 p-8">
             <div className="flex items-start gap-6">
-              <div className="from-primary flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br to-purple-600 shadow-lg">
-                <FaUserGroup className="h-8 w-8 text-white" />
+              <div className="from-primary flex size-16 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br to-purple-600 shadow-lg">
+                <FaUserGroup className="size-8 text-white" />
               </div>
               <div>
                 <h1 className="mb-2 text-3xl font-bold">{updatedGroupData.name}</h1>
                 <div className="flex items-center gap-2">
-                  <FaUserGroup className="text-primary h-5 w-5" />
+                  <FaUserGroup className="text-primary size-5" />
                   <p className="text-muted-foreground text-lg">
                     <span className="text-foreground font-semibold">{people.length}</span> people in this group
                   </p>
@@ -147,19 +147,19 @@ export function GroupDetailClient({
               aria-label="Edit group settings"
               className="shrink-0"
             >
-              <FaPencil className="h-4 w-4" />
+              <FaPencil className="size-4" />
             </Button>
           </div>
         </div>
       </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           {/* Group Settings */}
           <Card variant="compact">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <FaGear className="text-primary h-5 w-5" />
+                <FaGear className="text-primary size-5" />
                 <CardTitle>Game Settings</CardTitle>
               </div>
               <CardDescription>Configure how games will be played in this group</CardDescription>
@@ -180,24 +180,24 @@ export function GroupDetailClient({
           <Card variant="compact">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <FaPlay className="text-primary h-5 w-5" />
+                <FaPlay className="text-primary size-5" />
                 <CardTitle>Actions</CardTitle>
               </div>
               <CardDescription>Start a game or manage this group</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="flex flex-col gap-3">
               <LoadingLink
                 href={`/admin/groups/${updatedGroupData.id}/host`}
                 className={buttonVariants({
                   className: `w-full gap-2 ${!hasEnoughPeople ? 'pointer-events-none opacity-50' : ''}`,
                 })}
               >
-                <FaPlay className="h-5 w-5" />
+                <FaPlay className="size-5" />
                 Start Game
               </LoadingLink>
               {!hasEnoughPeople && (
                 <div className="bg-destructive/10 border-destructive/20 flex items-start gap-2 rounded-lg border p-3">
-                  <FaTriangleExclamation className="text-destructive h-5 w-5 shrink-0" />
+                  <FaTriangleExclamation className="text-destructive size-5 shrink-0" />
                   <p className="text-destructive text-sm">
                     You need at least {updatedGroupData.options_count} people to start a game
                   </p>
@@ -210,7 +210,7 @@ export function GroupDetailClient({
 
           {/* Add Person */}
           <SectionCard title="Add Person" description="Add new people to this group">
-            <div className="space-y-4">
+            <div className="flex flex-col gap-4">
               <div className="flex gap-2">
                 <Button
                   variant={uploadMode === 'single' ? 'default' : 'outline'}

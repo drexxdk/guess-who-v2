@@ -260,7 +260,7 @@ export default function GameResultsPage() {
             You know {score} out of {total} people
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="flex flex-col gap-6">
           <div className="text-center">
             <div className="mb-2 text-6xl font-bold">{percentage}%</div>
             <p className="text-muted-foreground">Accuracy</p>
@@ -291,7 +291,7 @@ export default function GameResultsPage() {
                 Great opportunity to connect with {total - score > 1 ? 'the people' : 'the person'} you didn&apos;t
                 recognize:
               </p>
-              <ul className="space-y-1 text-xs text-gray-700">
+              <ul className="flex flex-col gap-1 text-xs text-gray-700">
                 <li>• Introduce yourself and share something interesting about you</li>
                 <li>• Ask about their hobbies or background</li>
                 <li>• Find common interests or connections</li>
@@ -313,7 +313,7 @@ export default function GameResultsPage() {
             </div>
           )}
 
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             {gameEnded ? (
               <>
                 <div className="mb-2 rounded-lg bg-orange-50 p-3 text-center text-black">

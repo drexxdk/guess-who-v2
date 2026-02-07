@@ -25,7 +25,7 @@ export const GameHeader = memo(function GameHeader({
 }: GameHeaderProps) {
   return (
     <div className="flex items-center justify-between">
-      <div className="space-y-1 text-white">
+      <div className="flex flex-col gap-1 text-white">
         <p className="text-sm opacity-80">{playerName}</p>
         <p className="text-2xl font-bold">
           Score: {score}/{totalQuestions}

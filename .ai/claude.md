@@ -68,3 +68,70 @@
     - ✅ Good: `<p>Don&apos;t forget</p>` or `<p>{"Don't forget"}</p>`
     - ❌ Bad: `<p>She said "hello"</p>`
     - ✅ Good: `<p>She said &quot;hello&quot;</p>` or `<p>{'She said "hello"'}</p>`
+
+## CSS & Styling
+
+- **Use flex/grid `gap` instead of margin-based spacing:**
+  - Prefer `gap` utilities for spacing between elements
+  - Use `flex flex-col gap-4` instead of `space-y-4`
+  - Use `flex gap-2` instead of `space-x-2`
+  - Use `flex items-center gap-2` instead of individual `mr-*` or `ml-*` on child elements
+  - **Examples:**
+    - ❌ Bad: `<div className="space-y-4"><h1>Title</h1><p>Text</p></div>`
+    - ✅ Good: `<div className="flex flex-col gap-4"><h1>Title</h1><p>Text</p></div>`
+    - ❌ Bad: `<button><FaIcon className="mr-2" />Label</button>`
+    - ✅ Good: `<button className="flex items-center gap-2"><FaIcon />Label</button>`
+    - ❌ Bad: `<div><h1 className="mb-4">Title</h1><p className="mb-8">Text</p></div>`
+    - ✅ Good: `<div className="flex flex-col gap-4"><h1>Title</h1><p>Text</p></div>`
+  - **Benefits:**
+    - More maintainable and predictable spacing
+    - Easier to adjust spacing globally
+    - Cleaner markup without margin utilities on every child element
+    - Better for responsive design with consistent gaps
+
+- **Use `size-*` utility for square elements:**
+  - Use `size-*` instead of `h-* w-*` when width and height are the same
+  - **Examples:**
+    - ❌ Bad: `<div className="h-16 w-16">`
+    - ✅ Good: `<div className="size-16">`
+    - ❌ Bad: `<FaIcon className="h-4 w-4" />`
+    - ✅ Good: `<FaIcon className="size-4" />`
+    - ❌ Bad: `<button className="h-12 w-12">`
+    - ✅ Good: `<button className="size-12">`
+  - **Benefits:**
+    - More concise and readable
+    - Easier to maintain (one utility instead of two)
+    - Clearer intent that the element is square
+
+- **Use the `<Icon>` component for all icons:**
+  - Import the Icon component: `import { Icon } from '@/components/ui/icon';`
+  - Pass the icon as a prop instead of using it directly
+  - Use CVA size variants instead of manual width/height classes
+  - Use CVA color variants for consistent theming
+  - **Size Variants:**
+    - `xs` = 12px (size-3)
+    - `sm` = 16px (size-4) - default
+    - `md` = 20px (size-5)
+    - `lg` = 24px (size-6)
+    - `xl` = 32px (size-8)
+    - `2xl` = 40px (size-10)
+    - `3xl` = 48px (size-12)
+    - `4xl` = 64px (size-16)
+  - **Color Variants:**
+    - `default` - inherits current text color
+    - `primary`, `secondary`, `accent`
+    - `success`, `error`, `warning`, `info`
+    - `muted`, `white`, `inherit`
+  - **Examples:**
+    - ❌ Bad: `<FaUser className="size-4 text-primary" />`
+    - ✅ Good: `<Icon icon={FaUser} size="sm" color="primary" />`
+    - ❌ Bad: `<FaTrophy className="size-8 text-white" />`
+    - ✅ Good: `<Icon icon={FaTrophy} size="xl" color="white" />`
+    - ❌ Bad: `<FaSpinner className="size-5 animate-spin" />`
+    - ✅ Good: `<Icon icon={FaSpinner} size="md" className="animate-spin" />`
+  - **Benefits:**
+    - Consistent sizing across the application
+    - Easier to maintain and update icon styles globally
+    - Better TypeScript support with proper typing
+    - Reduced duplication of size/color utilities
+    - Can still override with className for special cases
