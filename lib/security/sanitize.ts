@@ -44,8 +44,8 @@ export function sanitizeString(str: string): string {
  * Allows letters, spaces, hyphens, and apostrophes
  */
 export function sanitizeName(str: string): string {
-  // Remove anything that's not a letter, space, hyphen, or apostrophe
-  const sanitized = str.replace(/[^a-zA-Z\s\-'À-ÿ]/g, '');
+  // Remove anything that's not a letter, number, space, hyphen, or apostrophe
+  const sanitized = str.replace(/[^a-zA-Z0-9\s\-'À-ÿ]/g, '');
 
   // Collapse multiple spaces into one
   return sanitized.replace(/\s+/g, ' ').trim();

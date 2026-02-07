@@ -77,7 +77,7 @@ export function GroupsList({ groups }: GroupsListProps) {
               <StaggeredGridItem key={group.id}>
                 <Card variant="flush" hover className="group flex h-full flex-col overflow-hidden">
                   {/* Visual Header with Gradient */}
-                  <div className="relative h-32 bg-linear-to-br from-primary/20 via-purple-500/20 to-pink-500/20">
+                  <div className="from-primary/20 relative h-32 bg-linear-to-br via-purple-500/20 to-pink-500/20">
                     <div className="absolute inset-0 flex items-center justify-center">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -95,7 +95,7 @@ export function GroupsList({ groups }: GroupsListProps) {
                       </svg>
                     </div>
                     {/* People Count Badge */}
-                    <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 shadow-lg backdrop-blur-sm dark:bg-gray-900/90">
+                    <div className="absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 shadow-lg backdrop-blur-sm dark:bg-gray-900/90">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -138,6 +138,26 @@ export function GroupsList({ groups }: GroupsListProps) {
                     </CardHeader>
                     <CardContent className="mt-auto flex gap-2 p-0">
                       <LoadingLink
+                        href={`/admin/groups/${group.id}/host`}
+                        className={buttonVariants({ className: 'flex-1 gap-2 group-hover:shadow-md' })}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2}
+                          stroke="currentColor"
+                          className="h-4 w-4"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"
+                          />
+                        </svg>
+                        Start Game
+                      </LoadingLink>
+                      <LoadingLink
                         href={`/admin/groups/${group.id}`}
                         className={buttonVariants({
                           variant: 'outline',
@@ -160,26 +180,6 @@ export function GroupsList({ groups }: GroupsListProps) {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         Manage
-                      </LoadingLink>
-                      <LoadingLink
-                        href={`/admin/groups/${group.id}/host`}
-                        className={buttonVariants({ className: 'flex-1 gap-2 group-hover:shadow-md' })}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={2}
-                          stroke="currentColor"
-                          className="h-4 w-4"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"
-                          />
-                        </svg>
-                        Start Game
                       </LoadingLink>
                     </CardContent>
                   </div>

@@ -14,7 +14,7 @@ export function DuplicateGroupButton({ groupId }: { groupId: string }) {
     setLoading(true);
     try {
       const result = await duplicateGroup(groupId);
-      
+
       if (result.success && result.newGroupId) {
         toast.success('Group duplicated successfully!');
         router.push(`/admin/groups/${result.newGroupId}`);
@@ -27,12 +27,7 @@ export function DuplicateGroupButton({ groupId }: { groupId: string }) {
   };
 
   return (
-    <Button
-      variant="outline"
-      onClick={handleDuplicate}
-      disabled={loading}
-      className="w-full gap-2"
-    >
+    <Button variant="outline" onClick={handleDuplicate} disabled={loading} className="w-full gap-2">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

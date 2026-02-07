@@ -154,43 +154,44 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
     return <p>Group not found</p>;
   }
 
-  const initializedContent = gameSession && gameCode ? (
-    <GameStartedContent 
-      gameCode={gameCode} 
-      gameSession={gameSession} 
-      groupId={groupId} 
-      cancelGame={cancelGame} 
-      router={router} 
-      setLoading={setLoading} 
-    />
-  ) : (
-    <GameSetupContent 
-      selectedGameType={selectedGameType}
-      setSelectedGameType={setSelectedGameType}
-      enableTimer={enableTimer}
-      setEnableTimer={setEnableTimer}
-      timeLimitSeconds={timeLimitSeconds}
-      setTimeLimitSeconds={setTimeLimitSeconds}
-      optionsCount={optionsCount}
-      setOptionsCount={setOptionsCount}
-      totalQuestions={totalQuestions}
-      setTotalQuestions={setTotalQuestions}
-      people={people}
-      router={router}
-      startGame={startGame}
-      groupData={groupData}
-      error={error}
-    />
-  );
+  const initializedContent =
+    gameSession && gameCode ? (
+      <GameStartedContent
+        gameCode={gameCode}
+        gameSession={gameSession}
+        groupId={groupId}
+        cancelGame={cancelGame}
+        router={router}
+        setLoading={setLoading}
+      />
+    ) : (
+      <GameSetupContent
+        selectedGameType={selectedGameType}
+        setSelectedGameType={setSelectedGameType}
+        enableTimer={enableTimer}
+        setEnableTimer={setEnableTimer}
+        timeLimitSeconds={timeLimitSeconds}
+        setTimeLimitSeconds={setTimeLimitSeconds}
+        optionsCount={optionsCount}
+        setOptionsCount={setOptionsCount}
+        totalQuestions={totalQuestions}
+        setTotalQuestions={setTotalQuestions}
+        people={people}
+        router={router}
+        startGame={startGame}
+        groupData={groupData}
+        error={error}
+      />
+    );
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
       {/* Hero Header */}
       <Card variant="flush">
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-purple-500/10 to-pink-500/10" />
+          <div className="from-primary/10 absolute inset-0 bg-linear-to-br via-purple-500/10 to-pink-500/10" />
           <div className="relative flex items-start gap-6 p-8">
-            <div className="bg-linear-to-br from-primary to-purple-600 flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl shadow-lg">
+            <div className="from-primary flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br to-purple-600 shadow-lg">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -233,10 +234,9 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
       </Card>
 
       <Card variant="compact">
-        <CardContent className="space-y-6">{initializedContent}
-        </CardContent>
+        <CardContent className="space-y-6">{initializedContent}</CardContent>
       </Card>
-      
+
       <Card variant="compact" className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
@@ -262,13 +262,20 @@ export default function GameHostPage({ params }: { params: Promise<{ id: string 
   );
 }
 
-function GameStartedContent({ gameCode, gameSession, groupId, cancelGame, router, setLoading }: { 
-  gameCode: string; 
-  gameSession: GameSession; 
-  groupId: string; 
-  cancelGame: () => Promise<void>; 
-  router: ReturnType<typeof useRouter>; 
-  setLoading: (loading: boolean) => void; 
+function GameStartedContent({
+  gameCode,
+  gameSession,
+  groupId,
+  cancelGame,
+  router,
+  setLoading,
+}: {
+  gameCode: string;
+  gameSession: GameSession;
+  groupId: string;
+  cancelGame: () => Promise<void>;
+  router: ReturnType<typeof useRouter>;
+  setLoading: (loading: boolean) => void;
 }) {
   return (
     <div className="rounded-xl bg-linear-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10 p-6">
@@ -287,9 +294,7 @@ function GameStartedContent({ gameCode, gameSession, groupId, cancelGame, router
         {/* Game Code */}
         <div className="bg-background/50 flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6">
           <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">Game Code</p>
-          <Badge className="bg-primary hover:bg-primary mb-4 px-8 py-4 font-mono text-5xl shadow-lg">
-            {gameCode}
-          </Badge>
+          <Badge className="bg-primary hover:bg-primary mb-4 px-8 py-4 font-mono text-5xl shadow-lg">{gameCode}</Badge>
           <p className="text-muted-foreground text-center text-xs">
             Enter at <span className="text-foreground font-mono">/game/join</span>
           </p>
@@ -298,9 +303,7 @@ function GameStartedContent({ gameCode, gameSession, groupId, cancelGame, router
         {/* QR Code */}
         {gameCode && (
           <div className="bg-background/50 flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6">
-            <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">
-              Or Scan QR Code
-            </p>
+            <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">Or Scan QR Code</p>
             <div className="rounded-lg bg-white p-2">
               <GameQRCode gameCode={gameCode} />
             </div>
@@ -334,38 +337,38 @@ function GameStartedContent({ gameCode, gameSession, groupId, cancelGame, router
   );
 }
 
-function GameSetupContent({ 
-  selectedGameType, 
-  setSelectedGameType, 
-  enableTimer, 
-  setEnableTimer, 
-  timeLimitSeconds, 
-  setTimeLimitSeconds, 
-  optionsCount, 
-  setOptionsCount, 
-  totalQuestions, 
-  setTotalQuestions, 
-  people, 
-  router, 
-  startGame, 
-  groupData, 
-  error 
-}: { 
-  selectedGameType: GameType; 
-  setSelectedGameType: (type: GameType) => void; 
-  enableTimer: boolean; 
-  setEnableTimer: (value: boolean) => void; 
-  timeLimitSeconds: number; 
-  setTimeLimitSeconds: (value: number) => void; 
-  optionsCount: number; 
-  setOptionsCount: (value: number) => void; 
-  totalQuestions: number; 
-  setTotalQuestions: (value: number) => void; 
-  people: Person[]; 
-  router: ReturnType<typeof useRouter>; 
-  startGame: () => Promise<void>; 
-  groupData: Group | null; 
-  error: string | null; 
+function GameSetupContent({
+  selectedGameType,
+  setSelectedGameType,
+  enableTimer,
+  setEnableTimer,
+  timeLimitSeconds,
+  setTimeLimitSeconds,
+  optionsCount,
+  setOptionsCount,
+  totalQuestions,
+  setTotalQuestions,
+  people,
+  router,
+  startGame,
+  groupData,
+  error,
+}: {
+  selectedGameType: GameType;
+  setSelectedGameType: (type: GameType) => void;
+  enableTimer: boolean;
+  setEnableTimer: (value: boolean) => void;
+  timeLimitSeconds: number;
+  setTimeLimitSeconds: (value: number) => void;
+  optionsCount: number;
+  setOptionsCount: (value: number) => void;
+  totalQuestions: number;
+  setTotalQuestions: (value: number) => void;
+  people: Person[];
+  router: ReturnType<typeof useRouter>;
+  startGame: () => Promise<void>;
+  groupData: Group | null;
+  error: string | null;
 }) {
   return (
     <>
@@ -399,7 +402,7 @@ function GameSetupContent({
             <div className="relative overflow-hidden bg-linear-to-br from-blue-500/10 to-cyan-500/10 p-6">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="bg-blue-500/20 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-500/20">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -420,9 +423,11 @@ function GameSetupContent({
                     <p className="text-muted-foreground text-sm">Show a photo, players pick the correct name</p>
                   </div>
                 </div>
-                <div className={`bg-primary flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-opacity ${
-                  selectedGameType === 'guess_name' ? 'opacity-100' : 'opacity-0'
-                }`}>
+                <div
+                  className={`bg-primary flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-opacity ${
+                    selectedGameType === 'guess_name' ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
                   <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
@@ -432,10 +437,10 @@ function GameSetupContent({
                   </svg>
                 </div>
               </div>
-              
+
               {/* Visual Example */}
               <div className="bg-background/50 relative space-y-3 rounded-lg border p-4">
-                <div className="absolute -right-1 -top-1 rotate-12 rounded-lg bg-yellow-400 px-2 py-1 text-xs font-bold text-yellow-900 shadow-sm">
+                <div className="absolute -top-1 -right-1 rotate-12 rounded-lg bg-yellow-400 px-2 py-1 text-xs font-bold text-yellow-900 shadow-sm">
                   Example
                 </div>
                 {/* Question - Image shown */}
@@ -476,7 +481,7 @@ function GameSetupContent({
             <div className="relative overflow-hidden bg-linear-to-br from-purple-500/10 to-pink-500/10 p-6">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="bg-purple-500/20 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-purple-500/20">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -497,9 +502,11 @@ function GameSetupContent({
                     <p className="text-muted-foreground text-sm">Show a name, players pick the correct photo</p>
                   </div>
                 </div>
-                <div className={`bg-primary flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-opacity ${
-                  selectedGameType === 'guess_image' ? 'opacity-100' : 'opacity-0'
-                }`}>
+                <div
+                  className={`bg-primary flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-opacity ${
+                    selectedGameType === 'guess_image' ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
                   <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
@@ -509,10 +516,10 @@ function GameSetupContent({
                   </svg>
                 </div>
               </div>
-              
+
               {/* Visual Example */}
               <div className="bg-background/50 relative space-y-3 rounded-lg border p-4">
-                <div className="absolute -right-1 -top-1 rotate-12 rounded-lg bg-yellow-400 px-2 py-1 text-xs font-bold text-yellow-900 shadow-sm">
+                <div className="absolute -top-1 -right-1 rotate-12 rounded-lg bg-yellow-400 px-2 py-1 text-xs font-bold text-yellow-900 shadow-sm">
                   Example
                 </div>
                 {/* Question - Name shown */}
@@ -528,22 +535,38 @@ function GameSetupContent({
                   <div className="grid grid-cols-4 gap-2">
                     <div className="bg-muted flex aspect-square items-center justify-center rounded-lg border-2">
                       <svg className="text-muted-foreground h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        <path
+                          fillRule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                     <div className="bg-muted flex aspect-square items-center justify-center rounded-lg border-2">
                       <svg className="text-muted-foreground h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        <path
+                          fillRule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                     <div className="bg-muted flex aspect-square items-center justify-center rounded-lg border-2">
                       <svg className="text-muted-foreground h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        <path
+                          fillRule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                     <div className="bg-muted flex aspect-square items-center justify-center rounded-lg border-2">
                       <svg className="text-muted-foreground h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        <path
+                          fillRule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                   </div>
@@ -674,9 +697,7 @@ function GameSetupContent({
               d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
             />
           </svg>
-          <p className="text-destructive text-sm">
-            You need at least {optionsCount} people to start a game
-          </p>
+          <p className="text-destructive text-sm">You need at least {optionsCount} people to start a game</p>
         </div>
       )}
     </>

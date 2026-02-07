@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 export function useImagePreload(urls: (string | null | undefined)[]) {
   useEffect(() => {
     const validUrls = urls.filter((url): url is string => Boolean(url));
-    
+
     if (validUrls.length === 0) return;
 
     const images: HTMLImageElement[] = [];
@@ -32,10 +32,9 @@ export function useImagePreload(urls: (string | null | undefined)[]) {
  * @param currentIndex Current question index
  * @param questions Array of questions
  */
-export function useGameImagePreload<T extends { person: { image_url?: string | null }, options: Array<{ image_url?: string | null }> }>(
-  currentIndex: number,
-  questions: T[]
-) {
+export function useGameImagePreload<
+  T extends { person: { image_url?: string | null }; options: Array<{ image_url?: string | null }> },
+>(currentIndex: number, questions: T[]) {
   useEffect(() => {
     const nextIndex = currentIndex + 1;
     if (nextIndex >= questions.length) return;
@@ -43,11 +42,11 @@ export function useGameImagePreload<T extends { person: { image_url?: string | n
     const nextQuestion = questions[nextIndex];
     const imagesToPreload: (string | null | undefined)[] = [
       nextQuestion.person.image_url,
-      ...nextQuestion.options.map(opt => opt.image_url),
+      ...nextQuestion.options.map((opt) => opt.image_url),
     ];
 
     const validUrls = imagesToPreload.filter((url): url is string => Boolean(url));
-    
+
     if (validUrls.length === 0) return;
 
     const images: HTMLImageElement[] = [];

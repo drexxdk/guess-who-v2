@@ -39,7 +39,7 @@ export function OnlineStatus() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="fixed right-4 top-4 z-50 flex items-center gap-2 rounded-lg border px-4 py-2 shadow-lg"
+          className="fixed top-4 right-4 z-50 flex items-center gap-2 rounded-lg border px-4 py-2 shadow-lg"
           style={{
             background: isOnline
               ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
@@ -47,14 +47,8 @@ export function OnlineStatus() {
             color: 'white',
           }}
         >
-          <div
-            className={`h-2 w-2 rounded-full ${
-              isOnline ? 'bg-green-200' : 'bg-red-200'
-            } animate-pulse`}
-          />
-          <span className="text-sm font-medium">
-            {isOnline ? 'Back online' : 'No internet connection'}
-          </span>
+          <div className={`h-2 w-2 rounded-full ${isOnline ? 'bg-green-200' : 'bg-red-200'} animate-pulse`} />
+          <span className="text-sm font-medium">{isOnline ? 'Back online' : 'No internet connection'}</span>
         </motion.div>
       )}
     </AnimatePresence>

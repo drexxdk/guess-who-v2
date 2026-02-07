@@ -17,6 +17,7 @@ import { logger } from '@/lib/logger';
 import { useMultiRealtimeSubscription, getPayloadNew, getPayloadOld } from '@/lib/hooks/use-realtime';
 import { useLoading } from '@/lib/loading-context';
 import { LoadingLink } from '@/components/ui/loading-link';
+import { createClient } from '@/lib/supabase/client';
 
 export function GroupDetailClient({
   groupData,
@@ -50,7 +51,13 @@ export function GroupDetailClient({
     const newPerson = getPayloadNew<Person>(payload);
     if (!newPerson?.id) return;
     logger.log('INSERT event received:', newPerson);
-    setPeople((prev) => [...prev, newPerson].sort((a, b) => a.first_name.localeCompare(b.first_name)));
+    setPeople((prev) => {
+      // Prevent duplicates
+      if (prev.some((p) => p.id === newPerson.id)) {
+        return prev;
+      }
+      return [...prev, newPerson].sort((a, b) => a.first_name.localeCompare(b.first_name));
+    });
   }, []);
 
   const handleUpdate = useCallback((payload: Parameters<typeof getPayloadNew<Person>>[0]) => {
@@ -93,6 +100,16 @@ export function GroupDetailClient({
 
   useMultiRealtimeSubscription<Person>(realtimeConfig);
 
+  // Refresh people list after bulk upload to ensure consistency with database
+  const handleBulkUploadComplete = useCallback(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('people').select('*').eq('group_id', groupId).order('first_name');
+
+    if (!error && data) {
+      setPeople(data);
+    }
+  }, [groupId]);
+
   const hasEnoughPeople = people.length >= (updatedGroupData.options_count ?? 4);
 
   const handleGroupUpdate = (updated: Pick<Group, 'name' | 'time_limit_seconds' | 'options_count'>) => {
@@ -107,10 +124,10 @@ export function GroupDetailClient({
       {/* Hero Header */}
       <Card variant="flush">
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-purple-500/10 to-pink-500/10" />
+          <div className="from-primary/10 absolute inset-0 bg-linear-to-br via-purple-500/10 to-pink-500/10" />
           <div className="relative flex items-start justify-between gap-6 p-8">
             <div className="flex items-start gap-6">
-              <div className="bg-linear-to-br from-primary to-purple-600 flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl shadow-lg">
+              <div className="from-primary flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br to-purple-600 shadow-lg">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -144,7 +161,7 @@ export function GroupDetailClient({
                     />
                   </svg>
                   <p className="text-muted-foreground text-lg">
-                    <span className="font-semibold text-foreground">{people.length}</span> people in this group
+                    <span className="text-foreground font-semibold">{people.length}</span> people in this group
                   </p>
                 </div>
               </div>
@@ -292,7 +309,7 @@ export function GroupDetailClient({
               {uploadMode === 'single' ? (
                 <AddPersonForm groupId={groupId} />
               ) : (
-                <BulkUploadPeople groupId={groupId} />
+                <BulkUploadPeople groupId={groupId} onComplete={handleBulkUploadComplete} />
               )}
             </div>
           </SectionCard>

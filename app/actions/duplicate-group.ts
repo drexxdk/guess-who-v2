@@ -3,7 +3,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { logError, getErrorMessage } from '@/lib/logger';
 
-export async function duplicateGroup(groupId: string): Promise<{ success: boolean; newGroupId?: string; error?: string }> {
+export async function duplicateGroup(
+  groupId: string,
+): Promise<{ success: boolean; newGroupId?: string; error?: string }> {
   try {
     const supabase = await createClient();
 
@@ -41,27 +43,20 @@ export async function duplicateGroup(groupId: string): Promise<{ success: boolea
       time_limit_seconds: originalGroup.time_limit_seconds,
       options_count: originalGroup.options_count,
     };
-    
+
     // Add enable_timer if it exists (for backward compatibility)
     if ('enable_timer' in originalGroup) {
       insertData.enable_timer = originalGroup.enable_timer as boolean | null;
     }
 
-    const { data: newGroup, error: createError } = await supabase
-      .from('groups')
-      .insert(insertData)
-      .select()
-      .single();
+    const { data: newGroup, error: createError } = await supabase.from('groups').insert(insertData).select().single();
 
     if (createError || !newGroup) {
       return { success: false, error: getErrorMessage(createError) };
     }
 
     // Get all people from the original group
-    const { data: people, error: peopleError } = await supabase
-      .from('people')
-      .select('*')
-      .eq('group_id', groupId);
+    const { data: people, error: peopleError } = await supabase.from('people').select('*').eq('group_id', groupId);
 
     if (peopleError) {
       logError('Failed to fetch people for duplication', peopleError);

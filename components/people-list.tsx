@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, memo } from 'react';
-import { FaTrash } from 'react-icons/fa6';
+import { FaTrash, FaSpinner, FaCheck, FaXmark } from 'react-icons/fa6';
+import { AnimatePresence } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ConfirmDialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StaggeredGrid, StaggeredGridItem } from '@/components/ui/staggered-list';
 import { AvatarImage } from '@/components/ui/avatar-image';
@@ -18,14 +18,26 @@ import type { Person } from '@/lib/schemas';
 const PersonCard = memo(function PersonCard({
   person,
   isDeleting,
+  isConfirming,
   onDeleteClick,
+  onConfirmDelete,
+  onCancelDelete,
 }: {
   person: Person;
   isDeleting: boolean;
+  isConfirming: boolean;
   onDeleteClick: (person: Person) => void;
+  onConfirmDelete: (person: Person) => void;
+  onCancelDelete: () => void;
 }) {
   return (
-    <Card hover variant="compact" role="article" aria-label={`Person: ${person.first_name} ${person.last_name}`}>
+    <Card
+      hover
+      variant="compact"
+      role="article"
+      aria-label={`Person: ${person.first_name} ${person.last_name}`}
+      className="relative"
+    >
       <div className="flex items-center gap-4">
         <AvatarImage
           src={person.image_url}
@@ -43,47 +55,66 @@ const PersonCard = memo(function PersonCard({
           variant="destructive"
           onClick={() => onDeleteClick(person)}
           disabled={isDeleting}
-          loading={isDeleting}
           size="icon"
           aria-label={`Delete ${person.first_name} ${person.last_name}`}
         >
           <FaTrash className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Confirmation overlay */}
+      {isConfirming && (
+        <div className="absolute inset-0 flex items-center justify-end gap-2 rounded-lg bg-black/60 px-4">
+          <Button variant="outline" onClick={onCancelDelete} disabled={isDeleting} size="icon" aria-label="Cancel">
+            <FaXmark className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={() => onConfirmDelete(person)}
+            disabled={isDeleting}
+            size="icon"
+            aria-label="Confirm delete"
+            className="bg-green-600 text-white hover:bg-green-700"
+          >
+            {isDeleting ? <FaSpinner className="h-4 w-4 animate-spin" /> : <FaCheck className="h-4 w-4" />}
+          </Button>
+        </div>
+      )}
     </Card>
   );
 });
 
 export function PeopleList({ people }: { people: Person[] }) {
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [personToDelete, setPersonToDelete] = useState<Person | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
 
   const handleDeleteClick = (person: Person) => {
-    setPersonToDelete(person);
+    setConfirmingDelete(person.id);
   };
 
-  const handleDelete = async () => {
-    if (!personToDelete) return;
+  const handleCancelDelete = () => {
+    setConfirmingDelete(null);
+  };
 
-    setDeleting(personToDelete.id);
+  const handleConfirmDelete = async (person: Person) => {
+    setDeleting(person.id);
     try {
       const supabase = createClient();
 
       // Delete image from storage if it exists
-      if (personToDelete.image_url) {
-        const result = await deletePersonImage(supabase, personToDelete.image_url);
+      if (person.image_url) {
+        const result = await deletePersonImage(supabase, person.image_url);
         if (!result.success) {
           // Continue with person deletion even if image deletion fails
         }
       }
 
       // Delete person from database
-      const { error } = await supabase.from('people').delete().eq('id', personToDelete.id);
+      const { error } = await supabase.from('people').delete().eq('id', person.id);
 
       if (error) throw error;
 
       toast.success('Person deleted successfully');
-      setPersonToDelete(null);
+      setConfirmingDelete(null);
       // Let real-time subscription handle the removal
     } catch (err: unknown) {
       toast.error(getErrorMessage(err));
@@ -112,24 +143,21 @@ export function PeopleList({ people }: { people: Person[] }) {
   }
 
   return (
-    <>
-      <StaggeredGrid className="grid gap-3">
+    <StaggeredGrid className="grid gap-3">
+      <AnimatePresence mode="popLayout">
         {people.map((person) => (
           <StaggeredGridItem key={person.id}>
-            <PersonCard person={person} isDeleting={deleting === person.id} onDeleteClick={handleDeleteClick} />
+            <PersonCard
+              person={person}
+              isDeleting={deleting === person.id}
+              isConfirming={confirmingDelete === person.id}
+              onDeleteClick={handleDeleteClick}
+              onConfirmDelete={handleConfirmDelete}
+              onCancelDelete={handleCancelDelete}
+            />
           </StaggeredGridItem>
         ))}
-      </StaggeredGrid>
-      <ConfirmDialog
-        open={!!personToDelete}
-        onOpenChange={(open) => !open && setPersonToDelete(null)}
-        title="Delete Person"
-        description={`Are you sure you want to delete ${personToDelete?.first_name} ${personToDelete?.last_name}? This action cannot be undone.`}
-        onConfirm={handleDelete}
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="destructive"
-      />
-    </>
+      </AnimatePresence>
+    </StaggeredGrid>
   );
 }

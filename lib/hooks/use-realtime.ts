@@ -90,7 +90,7 @@ export function useRealtimeSubscription<T extends Record<string, unknown>>(confi
       )
       .subscribe((status) => {
         if (isCleaningUpRef.current) return;
-        
+
         if (status === 'SUBSCRIBED') {
           setStatus('connected');
           logger.log(`Realtime subscription connected: ${channelName}`);
@@ -105,7 +105,7 @@ export function useRealtimeSubscription<T extends Record<string, unknown>>(confi
     return () => {
       isCleaningUpRef.current = true;
       setStatus('disconnected');
-      
+
       if (channelRef.current) {
         logger.log(`Cleaning up realtime subscription: ${channelName}`);
         supabase.removeChannel(channelRef.current).then(() => {
@@ -113,7 +113,7 @@ export function useRealtimeSubscription<T extends Record<string, unknown>>(confi
         });
         channelRef.current = null;
       }
-      
+
       isCleaningUpRef.current = false;
     };
   }, [config]);
@@ -185,7 +185,7 @@ export function useMultiRealtimeSubscription<T extends Record<string, unknown>>(
 
     channel.subscribe((subscribeStatus) => {
       if (isCleaningUpRef.current) return;
-      
+
       if (subscribeStatus === 'SUBSCRIBED') {
         setStatus('connected');
         logger.log(`Multi-realtime subscription connected: ${channelName}`);
@@ -194,13 +194,13 @@ export function useMultiRealtimeSubscription<T extends Record<string, unknown>>(
         logger.error(`Multi-realtime subscription error: ${channelName}`, { status: subscribeStatus });
       }
     });
-    
+
     channelRef.current = channel;
 
     return () => {
       isCleaningUpRef.current = true;
       setStatus('disconnected');
-      
+
       if (channelRef.current) {
         logger.log(`Cleaning up multi-realtime subscription: ${channelName}`);
         supabase.removeChannel(channelRef.current).then(() => {
@@ -208,7 +208,7 @@ export function useMultiRealtimeSubscription<T extends Record<string, unknown>>(
         });
         channelRef.current = null;
       }
-      
+
       isCleaningUpRef.current = false;
     };
   }, [config]);

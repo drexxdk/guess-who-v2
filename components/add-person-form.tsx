@@ -565,11 +565,11 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
               </div>
 
               <div className="mt-3 flex gap-2">
-                <Button type="button" onClick={applyCrop} className="flex-1">
-                  ✓ Use This Crop
-                </Button>
                 <Button type="button" onClick={cancelCrop} variant="outline" className="flex-1">
                   ✕ Change Image
+                </Button>
+                <Button type="button" onClick={applyCrop} className="flex-1">
+                  ✓ Use This Crop
                 </Button>
               </div>
             </div>
@@ -593,7 +593,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
                 className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
               />
               {preview ? (
-                <div className="space-y-3">
+                <div className="pointer-events-none space-y-3">
                   <div className="relative mx-auto">
                     <Image src={preview} alt="Preview" width={500} height={500} className="rounded-lg object-cover" />
                   </div>
@@ -610,18 +610,20 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
           )}
         </div>
 
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" onClick={handleReset} disabled={loading} className="flex-1">
-            Reset
-          </Button>
-          <Button
-            type="submit"
-            disabled={loading || !formData.first_name.trim() || !formData.last_name.trim() || !selectedFile}
-            className="flex-1"
-          >
-            {loading ? 'Adding...' : 'Add Person'}
-          </Button>
-        </div>
+        {!showCropper && (
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={handleReset} disabled={loading} className="flex-1">
+              Reset
+            </Button>
+            <Button
+              type="submit"
+              disabled={loading || !formData.first_name.trim() || !formData.last_name.trim() || !selectedFile}
+              className="flex-1"
+            >
+              {loading ? 'Adding...' : 'Add Person'}
+            </Button>
+          </div>
+        )}
       </form>
     </>
   );
