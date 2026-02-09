@@ -2,9 +2,9 @@
  * Performance monitoring utilities for development
  */
 
-import { logger } from "@/lib/logger";
+import { logger } from '@/lib/logger';
 
-const isProduction = process.env.NODE_ENV === "production";
+const isProduction = process.env.NODE_ENV === 'production';
 
 interface PerformanceMark {
   name: string;
@@ -47,10 +47,7 @@ export function perfEnd(name: string): number | null {
 /**
  * Measure a function's execution time
  */
-export async function perfMeasure<T>(
-  name: string,
-  fn: () => T | Promise<T>,
-): Promise<T> {
+export async function perfMeasure<T>(name: string, fn: () => T | Promise<T>): Promise<T> {
   if (isProduction) {
     return fn();
   }
@@ -70,12 +67,7 @@ export async function perfMeasure<T>(
  * Report Web Vitals metrics
  * Use with Next.js web-vitals reporting
  */
-export function reportWebVitals(metric: {
-  id: string;
-  name: string;
-  value: number;
-  label: string;
-}): void {
+export function reportWebVitals(metric: { id: string; name: string; value: number; label: string }): void {
   if (isProduction) {
     // In production, send to analytics service
     // Example: Send to Google Analytics, Vercel Analytics, etc.
@@ -99,9 +91,7 @@ export function useRenderTime(componentName: string): void {
     const duration = performance.now() - startTime;
     if (duration > 16) {
       // Longer than one frame (60fps)
-      logger.log(
-        `🐢 Slow render: ${componentName} took ${duration.toFixed(2)}ms`,
-      );
+      logger.log(`🐢 Slow render: ${componentName} took ${duration.toFixed(2)}ms`);
     }
   }, 0);
 }
@@ -110,7 +100,7 @@ export function useRenderTime(componentName: string): void {
  * Log memory usage (development only)
  */
 export function logMemoryUsage(): void {
-  if (isProduction || typeof window === "undefined") return;
+  if (isProduction || typeof window === 'undefined') return;
 
   const memory = (
     performance as Performance & {

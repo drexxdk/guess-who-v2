@@ -1,26 +1,25 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useState, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import toast from "react-hot-toast";
-import type { PersonInsert, GenderType } from "@/lib/schemas";
-import { logError, getErrorMessage } from "@/lib/logger";
-import { useLoading } from "@/lib/loading-context";
-import { sanitizeName, validateLength } from "@/lib/security";
+import Image from 'next/image';
+import { useState, useRef } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import toast from 'react-hot-toast';
+import type { PersonInsert, GenderType } from '@/lib/schemas';
+import { logError, getErrorMessage } from '@/lib/logger';
+import { sanitizeName, validateLength } from '@/lib/security';
 
 export function AddPersonForm({ groupId }: { groupId: string }) {
   const cropContainerRef = useRef<HTMLDivElement>(null);
-  const { setLoading: setGlobalLoading } = useLoading();
   const [loading, setLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const [preview, setPreview] = useState<string>("");
+  const [preview, setPreview] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showCropper, setShowCropper] = useState(false);
-  const [originalImage, setOriginalImage] = useState<string>("");
+  const [originalImage, setOriginalImage] = useState<string>('');
   const [imageDimensions, setImageDimensions] = useState({
     width: 0,
     height: 0,
@@ -42,25 +41,28 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
     last_name: string;
     gender: GenderType;
   }>({
-    first_name: "",
-    last_name: "",
-    gender: "other",
+    first_name: '',
+    last_name: '',
+    gender: 'other',
   });
 
   const handleImageSelect = (file: File) => {
     // Check file type
-    const validTypes = ["image/jpeg", "image/png"];
+    const validTypes = ['image/jpeg', 'image/png'];
     if (!validTypes.includes(file.type)) {
-      toast.error("Please select a JPEG or PNG image");
+      toast.error('Please select a JPEG or PNG image');
       return;
     }
 
     // Check file size (max 1 MB)
     const maxSize = 1024 * 1024; // 1 MB in bytes
     if (file.size > maxSize) {
-      toast.error("File size must be less than 1 MB");
+      toast.error('File size must be less than 1 MB');
       return;
     }
+
+    // Set loading state while processing image
+    setImageLoading(true);
 
     // Read image and show cropper
     const reader = new FileReader();
@@ -77,6 +79,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
         setCropX(Math.max(0, (img.width - minDimension) / 2));
         setCropY(Math.max(0, (img.height - minDimension) / 2));
         setCropSize(minDimension);
+        setImageLoading(false);
       };
       img.src = imageData;
     };
@@ -86,37 +89,27 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
   const applyCrop = async () => {
     const img = new window.Image();
     img.onload = () => {
-      const canvas = document.createElement("canvas");
+      const canvas = document.createElement('canvas');
       canvas.width = cropSize;
       canvas.height = cropSize;
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.drawImage(
-          img,
-          cropX,
-          cropY,
-          cropSize,
-          cropSize,
-          0,
-          0,
-          cropSize,
-          cropSize,
-        );
-        const croppedImage = canvas.toDataURL("image/jpeg", 0.85);
+        ctx.drawImage(img, cropX, cropY, cropSize, cropSize, 0, 0, cropSize, cropSize);
+        const croppedImage = canvas.toDataURL('image/jpeg', 0.85);
         setPreview(croppedImage);
 
         // Convert cropped canvas to File - use JPEG with compression to keep file size down
         canvas.toBlob(
           (blob) => {
             if (blob) {
-              const croppedFile = new File([blob], "cropped-image.jpg", {
-                type: "image/jpeg",
+              const croppedFile = new File([blob], 'cropped-image.jpg', {
+                type: 'image/jpeg',
               });
               setSelectedFile(croppedFile);
               setShowCropper(false);
             }
           },
-          "image/jpeg",
+          'image/jpeg',
           0.85,
         );
       }
@@ -126,8 +119,9 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
 
   const cancelCrop = () => {
     setShowCropper(false);
-    setOriginalImage("");
-    setPreview("");
+    setOriginalImage('');
+    setPreview('');
+    setImageLoading(false);
   };
 
   const handleCropBoxMouseDown = (e: React.MouseEvent) => {
@@ -182,20 +176,8 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
       const scaleX = imageDimensions.width / rect.width;
       const scaleY = imageDimensions.height / rect.height;
 
-      const newX = Math.max(
-        0,
-        Math.min(
-          startCropState.x + deltaX * scaleX,
-          imageDimensions.width - cropSize,
-        ),
-      );
-      const newY = Math.max(
-        0,
-        Math.min(
-          startCropState.y + deltaY * scaleY,
-          imageDimensions.height - cropSize,
-        ),
-      );
+      const newX = Math.max(0, Math.min(startCropState.x + deltaX * scaleX, imageDimensions.width - cropSize));
+      const newY = Math.max(0, Math.min(startCropState.y + deltaY * scaleY, imageDimensions.height - cropSize));
 
       setCropX(newX);
       setCropY(newY);
@@ -213,60 +195,33 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
 
       // Use the appropriate delta based on corner
       let delta = 0;
-      if (resizingCorner === "tl") {
+      if (resizingCorner === 'tl') {
         delta = Math.max(-deltaX * scaleX, -deltaY * scaleY);
-      } else if (resizingCorner === "tr") {
+      } else if (resizingCorner === 'tr') {
         delta = Math.max(deltaX * scaleX, -deltaY * scaleY);
-      } else if (resizingCorner === "bl") {
+      } else if (resizingCorner === 'bl') {
         delta = Math.max(-deltaX * scaleX, deltaY * scaleY);
-      } else if (resizingCorner === "br") {
+      } else if (resizingCorner === 'br') {
         delta = Math.max(deltaX * scaleX, deltaY * scaleY);
       }
 
       newSize = Math.max(
         50,
-        Math.min(
-          startCropState.size + delta,
-          Math.min(imageDimensions.width, imageDimensions.height),
-        ),
+        Math.min(startCropState.size + delta, Math.min(imageDimensions.width, imageDimensions.height)),
       );
       const sizeDiff = newSize - startCropState.size;
 
       // Adjust position based on corner to keep the opposite corner fixed
-      if (resizingCorner === "tl") {
-        newX = Math.max(
-          0,
-          Math.min(
-            startCropState.x - sizeDiff,
-            imageDimensions.width - newSize,
-          ),
-        );
-        newY = Math.max(
-          0,
-          Math.min(
-            startCropState.y - sizeDiff,
-            imageDimensions.height - newSize,
-          ),
-        );
-      } else if (resizingCorner === "tr") {
+      if (resizingCorner === 'tl') {
+        newX = Math.max(0, Math.min(startCropState.x - sizeDiff, imageDimensions.width - newSize));
+        newY = Math.max(0, Math.min(startCropState.y - sizeDiff, imageDimensions.height - newSize));
+      } else if (resizingCorner === 'tr') {
         newX = startCropState.x;
-        newY = Math.max(
-          0,
-          Math.min(
-            startCropState.y - sizeDiff,
-            imageDimensions.height - newSize,
-          ),
-        );
-      } else if (resizingCorner === "bl") {
-        newX = Math.max(
-          0,
-          Math.min(
-            startCropState.x - sizeDiff,
-            imageDimensions.width - newSize,
-          ),
-        );
+        newY = Math.max(0, Math.min(startCropState.y - sizeDiff, imageDimensions.height - newSize));
+      } else if (resizingCorner === 'bl') {
+        newX = Math.max(0, Math.min(startCropState.x - sizeDiff, imageDimensions.width - newSize));
         newY = startCropState.y;
-      } else if (resizingCorner === "br") {
+      } else if (resizingCorner === 'br') {
         newX = startCropState.x;
         newY = startCropState.y;
       }
@@ -288,22 +243,22 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
 
   const handleReset = () => {
     setFormData({
-      first_name: "",
-      last_name: "",
-      gender: "other",
+      first_name: '',
+      last_name: '',
+      gender: 'other',
     });
-    setPreview("");
+    setPreview('');
     setSelectedFile(null);
-    setOriginalImage("");
+    setOriginalImage('');
     setShowCropper(false);
   };
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
+    if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
-    } else if (e.type === "dragleave") {
+    } else if (e.type === 'dragleave') {
       setDragActive(false);
     }
   };
@@ -332,21 +287,20 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
     const lastName = sanitizeName(formData.last_name);
 
     if (!firstName || !lastName) {
-      toast.error("Please enter first and last name");
+      toast.error('Please enter first and last name');
       return;
     }
 
     if (!validateLength(firstName, 50, 1) || !validateLength(lastName, 50, 1)) {
-      toast.error("Names must be between 1 and 50 characters");
+      toast.error('Names must be between 1 and 50 characters');
       return;
     }
 
     setLoading(true);
-    setGlobalLoading(true);
 
     try {
       const supabase = createClient();
-      let imageUrl = "";
+      let imageUrl = '';
 
       // Upload image if one was selected
       if (selectedFile) {
@@ -354,12 +308,10 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
         const randomString = Math.random().toString(36).substring(2, 8);
         const filename = `${timestamp}-${randomString}-${selectedFile.name}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from("person-images")
-          .upload(filename, selectedFile);
+        const { error: uploadError } = await supabase.storage.from('person-images').upload(filename, selectedFile);
 
         if (uploadError) {
-          if (uploadError.message.includes("Bucket not found")) {
+          if (uploadError.message.includes('Bucket not found')) {
             throw new Error(
               "The 'person-images' storage bucket does not exist. Please create it in your Supabase dashboard: Storage → Create new bucket → Name it 'person-images' → Enable Public bucket → Create.",
             );
@@ -368,9 +320,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
         }
 
         // Get public URL
-        const { data: publicUrlData } = supabase.storage
-          .from("person-images")
-          .getPublicUrl(filename);
+        const { data: publicUrlData } = supabase.storage.from('person-images').getPublicUrl(filename);
 
         imageUrl = publicUrlData.publicUrl;
       }
@@ -388,12 +338,12 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
         personData.image_url = imageUrl;
       }
 
-      const { error } = await supabase.from("people").insert(personData);
+      const { error } = await supabase.from('people').insert(personData);
 
       if (error) {
-        if (error.message.includes("row-level security")) {
+        if (error.message.includes('row-level security')) {
           throw new Error(
-            "Permission denied: RLS policy prevents adding people. In Supabase: Database → Tables → people → RLS toggle OFF (or create INSERT policy).",
+            'Permission denied: RLS policy prevents adding people. In Supabase: Database → Tables → people → RLS toggle OFF (or create INSERT policy).',
           );
         }
         throw error;
@@ -401,73 +351,89 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
 
       // Reset form
       setFormData({
-        first_name: "",
-        last_name: "",
-        gender: "other",
+        first_name: '',
+        last_name: '',
+        gender: 'other',
       });
-      setPreview("");
+      setPreview('');
       setSelectedFile(null);
-      setOriginalImage("");
+      setOriginalImage('');
       setShowCropper(false);
 
       toast.success(`${formData.first_name} ${formData.last_name} added!`);
       // Let real-time subscription handle the update
     } catch (err: unknown) {
       logError(err);
-      toast.error("Error adding person: " + getErrorMessage(err));
+      toast.error('Error adding person: ' + getErrorMessage(err));
     } finally {
       setLoading(false);
-      setGlobalLoading(false);
     }
   };
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-4 relative">
+      <form onSubmit={handleSubmit} className="relative flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="first_name">First Name</Label>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="first_name">
+              First Name{' '}
+              <span className="text-destructive" aria-label="required">
+                *
+              </span>
+            </Label>
             <Input
               id="first_name"
               value={formData.first_name}
-              onChange={(e) =>
-                setFormData({ ...formData, first_name: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
               autoComplete="one-time-code"
               data-1p-ignore
               data-lpignore="true"
               required
+              aria-required="true"
+              disabled={loading}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="last_name">Last Name</Label>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="last_name">
+              Last Name{' '}
+              <span className="text-destructive" aria-label="required">
+                *
+              </span>
+            </Label>
             <Input
               id="last_name"
               value={formData.last_name}
-              onChange={(e) =>
-                setFormData({ ...formData, last_name: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
               autoComplete="one-time-code"
               data-1p-ignore
               data-lpignore="true"
               required
+              aria-required="true"
+              disabled={loading}
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="gender">Gender</Label>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="gender">
+            Gender{' '}
+            <span className="text-destructive" aria-label="required">
+              *
+            </span>
+          </Label>
           <select
             id="gender"
             value={formData.gender}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                gender: e.target.value as "male" | "female" | "other",
+                gender: e.target.value as 'male' | 'female' | 'other',
               })
             }
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="border-input bg-background focus-visible:ring-ring focus-visible:ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
             required
+            aria-required="true"
+            disabled={loading}
           >
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -475,32 +441,25 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
           </select>
         </div>
 
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <Label>Photo</Label>
 
           {showCropper ? (
-            <div className="space-y-2">
-              <p className="text-sm text-gray-600">
-                Drag to move • Drag corners to resize
-              </p>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-gray-600">Drag to move • Drag corners to resize</p>
               <div
                 ref={cropContainerRef}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
                 style={{
-                  position: "relative",
-                  width: "100%",
-                  aspectRatio:
-                    imageDimensions.width / imageDimensions.height || "1",
-                  overflow: "hidden",
-                  backgroundColor: "#f0f0f0",
-                  borderRadius: "8px",
-                  cursor: resizingCorner
-                    ? "pointer"
-                    : draggingBox
-                      ? "grabbing"
-                      : "grab",
+                  position: 'relative',
+                  width: '100%',
+                  aspectRatio: imageDimensions.width / imageDimensions.height || '1',
+                  overflow: 'hidden',
+                  backgroundColor: '#f0f0f0',
+                  borderRadius: '8px',
+                  cursor: resizingCorner ? 'pointer' : draggingBox ? 'grabbing' : 'grab',
                 }}
               >
                 <Image
@@ -508,7 +467,7 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
                   alt="Crop"
                   fill
                   style={{
-                    objectFit: "contain",
+                    objectFit: 'contain',
                   }}
                 />
 
@@ -516,49 +475,49 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
                 {/* Top */}
                 <div
                   style={{
-                    position: "absolute",
+                    position: 'absolute',
                     top: 0,
                     left: 0,
                     right: 0,
                     height: `${(cropY / imageDimensions.height) * 100}%`,
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    pointerEvents: "none",
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    pointerEvents: 'none',
                   }}
                 />
                 {/* Bottom */}
                 <div
                   style={{
-                    position: "absolute",
+                    position: 'absolute',
                     bottom: 0,
                     left: 0,
                     right: 0,
                     height: `${((imageDimensions.height - cropY - cropSize) / imageDimensions.height) * 100}%`,
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    pointerEvents: "none",
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    pointerEvents: 'none',
                   }}
                 />
                 {/* Left */}
                 <div
                   style={{
-                    position: "absolute",
+                    position: 'absolute',
                     left: 0,
                     top: `${(cropY / imageDimensions.height) * 100}%`,
                     bottom: `${((imageDimensions.height - cropY - cropSize) / imageDimensions.height) * 100}%`,
                     width: `${(cropX / imageDimensions.width) * 100}%`,
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    pointerEvents: "none",
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    pointerEvents: 'none',
                   }}
                 />
                 {/* Right */}
                 <div
                   style={{
-                    position: "absolute",
+                    position: 'absolute',
                     right: 0,
                     top: `${(cropY / imageDimensions.height) * 100}%`,
                     bottom: `${((imageDimensions.height - cropY - cropSize) / imageDimensions.height) * 100}%`,
                     width: `${((imageDimensions.width - cropX - cropSize) / imageDimensions.width) * 100}%`,
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    pointerEvents: "none",
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    pointerEvents: 'none',
                   }}
                 />
 
@@ -566,46 +525,43 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
                 <div
                   onMouseDown={handleCropBoxMouseDown}
                   style={{
-                    position: "absolute",
+                    position: 'absolute',
                     left: `${(cropX / imageDimensions.width) * 100}%`,
                     top: `${(cropY / imageDimensions.height) * 100}%`,
                     width: `${(cropSize / imageDimensions.width) * 100}%`,
                     height: `${(cropSize / imageDimensions.height) * 100}%`,
-                    border: "2px solid white",
-                    boxSizing: "border-box",
+                    border: '2px solid white',
+                    boxSizing: 'border-box',
                   }}
                 >
                   {/* Corner resize handles */}
-                  {["tl", "tr", "bl", "br"].map((corner) => (
+                  {['tl', 'tr', 'bl', 'br'].map((corner) => (
                     <div
                       key={corner}
                       onMouseDown={(e) => handleResizeMouseDown(e, corner)}
                       style={{
-                        position: "absolute",
-                        width: "14px",
-                        height: "14px",
-                        backgroundColor: "white",
-                        border: "2px solid #333",
-                        borderRadius: "50%",
-                        cursor:
-                          corner === "tl" || corner === "br"
-                            ? "nwse-resize"
-                            : "nesw-resize",
-                        ...(corner === "tl" && {
-                          top: "-7px",
-                          left: "-7px",
+                        position: 'absolute',
+                        width: '14px',
+                        height: '14px',
+                        backgroundColor: 'white',
+                        border: '2px solid #333',
+                        borderRadius: '50%',
+                        cursor: corner === 'tl' || corner === 'br' ? 'nwse-resize' : 'nesw-resize',
+                        ...(corner === 'tl' && {
+                          top: '-7px',
+                          left: '-7px',
                         }),
-                        ...(corner === "tr" && {
-                          top: "-7px",
-                          right: "-7px",
+                        ...(corner === 'tr' && {
+                          top: '-7px',
+                          right: '-7px',
                         }),
-                        ...(corner === "bl" && {
-                          bottom: "-7px",
-                          left: "-7px",
+                        ...(corner === 'bl' && {
+                          bottom: '-7px',
+                          left: '-7px',
                         }),
-                        ...(corner === "br" && {
-                          bottom: "-7px",
-                          right: "-7px",
+                        ...(corner === 'br' && {
+                          bottom: '-7px',
+                          right: '-7px',
                         }),
                       }}
                     />
@@ -613,17 +569,12 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
                 </div>
               </div>
 
-              <div className="flex gap-2 mt-3">
+              <div className="mt-3 flex gap-2">
+                <Button type="button" onClick={cancelCrop} variant="outline" className="flex-1">
+                  ✕ Change Image
+                </Button>
                 <Button type="button" onClick={applyCrop} className="flex-1">
                   ✓ Use This Crop
-                </Button>
-                <Button
-                  type="button"
-                  onClick={cancelCrop}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  ✕ Change Image
                 </Button>
               </div>
             </div>
@@ -633,10 +584,10 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
-              className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+              className={`relative cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
                 dragActive
-                  ? "border-primary bg-primary/5"
-                  : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                  ? 'border-primary bg-primary/5'
+                  : 'border-muted-foreground/25 hover:border-muted-foreground/50'
               }`}
             >
               <input
@@ -644,61 +595,47 @@ export function AddPersonForm({ groupId }: { groupId: string }) {
                 accept="image/jpeg,image/png"
                 onChange={handleFileInputChange}
                 disabled={loading}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
               />
-              {preview ? (
-                <div className="space-y-3">
+              {imageLoading ? (
+                <div className="pointer-events-none flex flex-col gap-3 py-8">
+                  <div className="border-t-primary border-r-primary mx-auto h-12 w-12 animate-spin rounded-full border-4 border-transparent"></div>
+                  <p className="text-sm font-medium">Processing image...</p>
+                </div>
+              ) : preview ? (
+                <div className="pointer-events-none flex flex-col gap-3">
                   <div className="relative mx-auto">
-                    <Image
-                      src={preview}
-                      alt="Preview"
-                      width={500}
-                      height={500}
-                      className="object-cover rounded-lg"
-                    />
+                    <Image src={preview} alt="Preview" width={500} height={500} className="rounded-lg object-cover" />
                   </div>
                   <p className="text-sm font-medium">Image ready</p>
-                  <p className="text-xs text-muted-foreground">
-                    Click or drag to replace
-                  </p>
+                  <p className="text-muted-foreground text-xs">Click or drag to replace</p>
                 </div>
               ) : (
-                <div className="space-y-2 py-8">
-                  <p className="text-sm font-medium">
-                    Drag and drop an image here
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    or click to select from your device
-                  </p>
+                <div className="flex flex-col gap-2 py-8">
+                  <p className="text-sm font-medium">Drag and drop an image here</p>
+                  <p className="text-muted-foreground text-xs">or click to select from your device</p>
                 </div>
               )}
             </div>
           )}
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleReset}
-            disabled={loading}
-            className="flex-1"
-          >
-            Reset
-          </Button>
-          <Button
-            type="submit"
-            disabled={
-              loading ||
-              !formData.first_name.trim() ||
-              !formData.last_name.trim() ||
-              !selectedFile
-            }
-            className="flex-1"
-          >
-            {loading ? "Adding..." : "Add Person"}
-          </Button>
-        </div>
+        {!showCropper && (
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={handleReset} disabled={loading} className="flex-1">
+              Reset
+            </Button>
+            <Button
+              type="submit"
+              disabled={!formData.first_name.trim() || !formData.last_name.trim() || !selectedFile}
+              loading={loading}
+              loadingText="Adding..."
+              className="flex-1"
+            >
+              Add Person
+            </Button>
+          </div>
+        )}
       </form>
     </>
   );

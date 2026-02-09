@@ -9,7 +9,7 @@ export {
   sanitizeObject,
   validateLength,
   truncate,
-} from "./sanitize";
+} from './sanitize';
 
 export {
   checkRateLimit,
@@ -18,6 +18,6 @@ export {
   RATE_LIMITS,
   type RateLimitConfig,
   type RateLimitResult,
-} from "./rate-limit";
+} from './rate-limit';
 
 // CSRF utilities are server-only - import directly from "@/lib/security/csrf"

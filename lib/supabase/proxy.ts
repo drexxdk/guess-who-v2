@@ -1,8 +1,8 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
-import { hasEnvVars } from "../utils";
-import { checkRateLimit, getRateLimitHeaders, RATE_LIMITS } from "../security";
-import type { Database } from "@/lib/database.types";
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
+import { hasEnvVars } from '../utils';
+import { checkRateLimit, getRateLimitHeaders, RATE_LIMITS } from '../security';
+import type { Database } from '@/lib/database.types';
 
 /**
  * Get client identifier for rate limiting
@@ -10,19 +10,19 @@ import type { Database } from "@/lib/database.types";
  */
 function getClientIdentifier(request: NextRequest): string {
   // Try various headers for the real IP (when behind proxy/CDN)
-  const forwardedFor = request.headers.get("x-forwarded-for");
+  const forwardedFor = request.headers.get('x-forwarded-for');
   if (forwardedFor) {
     // x-forwarded-for can contain multiple IPs, take the first one
-    return forwardedFor.split(",")[0].trim();
+    return forwardedFor.split(',')[0].trim();
   }
 
-  const realIp = request.headers.get("x-real-ip");
+  const realIp = request.headers.get('x-real-ip');
   if (realIp) {
     return realIp;
   }
 
   // Fallback - in development or when no proxy
-  return request.headers.get("x-vercel-ip") || "anonymous";
+  return request.headers.get('x-vercel-ip') || 'anonymous';
 }
 
 export async function updateSession(request: NextRequest) {
@@ -38,9 +38,9 @@ export async function updateSession(request: NextRequest) {
 
   // Apply rate limiting to API routes
   const pathname = request.nextUrl.pathname;
-  if (pathname.startsWith("/api/") || pathname.startsWith("/auth/")) {
+  if (pathname.startsWith('/api/') || pathname.startsWith('/auth/')) {
     const clientId = getClientIdentifier(request);
-    const isAuthRoute = pathname.startsWith("/auth/");
+    const isAuthRoute = pathname.startsWith('/auth/');
     const rateLimitConfig = isAuthRoute ? RATE_LIMITS.auth : RATE_LIMITS.api;
 
     const rateLimitResult = checkRateLimit(clientId, rateLimitConfig);
@@ -48,13 +48,13 @@ export async function updateSession(request: NextRequest) {
     if (!rateLimitResult.success) {
       return new NextResponse(
         JSON.stringify({
-          error: "Too many requests",
+          error: 'Too many requests',
           retryAfter: rateLimitResult.resetInSeconds,
         }),
         {
           status: 429,
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             ...getRateLimitHeaders(rateLimitResult),
           },
         },
@@ -79,15 +79,11 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          );
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({
             request,
           });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
-          );
+          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options));
         },
       },
     },
@@ -103,15 +99,15 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims;
 
   if (
-    request.nextUrl.pathname !== "/" &&
+    request.nextUrl.pathname !== '/' &&
     !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/game")
+    !request.nextUrl.pathname.startsWith('/login') &&
+    !request.nextUrl.pathname.startsWith('/auth') &&
+    !request.nextUrl.pathname.startsWith('/game')
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
+    url.pathname = '/auth/login';
     return NextResponse.redirect(url);
   }
 

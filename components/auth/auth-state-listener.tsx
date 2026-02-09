@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { logger } from "@/lib/logger";
-import toast from "react-hot-toast";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { logger } from '@/lib/logger';
+import toast from 'react-hot-toast';
 
 /**
  * Component that listens for auth state changes and handles session expiration
@@ -27,26 +27,26 @@ export function AuthStateListener() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event) => {
-      if (event === "TOKEN_REFRESHED") {
+      if (event === 'TOKEN_REFRESHED') {
         // Token was successfully refreshed
-        logger.log("Auth token refreshed");
+        logger.log('Auth token refreshed');
       }
 
-      if (event === "SIGNED_OUT") {
+      if (event === 'SIGNED_OUT') {
         // Check if this was an intentional logout
-        const wasIntentional = sessionStorage.getItem("intentional_logout");
-        sessionStorage.removeItem("intentional_logout");
+        const wasIntentional = sessionStorage.getItem('intentional_logout');
+        sessionStorage.removeItem('intentional_logout');
 
         // Only show session expired message if not intentional
-        // and on a protected route
+        // and on a admin route
         const pathname = window.location.pathname;
-        if (!wasIntentional && pathname?.startsWith("/protected")) {
-          toast.error("Your session has expired. Please log in again.");
-          router.push("/auth/login");
+        if (!wasIntentional && pathname?.startsWith('/admin')) {
+          toast.error('Your session has expired. Please log in again.');
+          router.push('/auth/login');
         }
       }
 
-      if (event === "USER_UPDATED") {
+      if (event === 'USER_UPDATED') {
         // Refresh the page to get updated user data
         router.refresh();
       }
@@ -57,16 +57,13 @@ export function AuthStateListener() {
       const pathname = window.location.pathname;
       const { error } = await supabase.auth.getSession();
 
-      if (
-        error?.message?.includes("expired") ||
-        error?.message?.includes("Invalid")
-      ) {
+      if (error?.message?.includes('expired') || error?.message?.includes('Invalid')) {
         // Session is invalid, try to refresh
         const { error: refreshError } = await supabase.auth.refreshSession();
 
-        if (refreshError && pathname?.startsWith("/protected")) {
-          toast.error("Your session has expired. Please log in again.");
-          router.push("/auth/login");
+        if (refreshError && pathname?.startsWith('/admin')) {
+          toast.error('Your session has expired. Please log in again.');
+          router.push('/auth/login');
         }
       }
     };

@@ -3,26 +3,26 @@
  * Uses the double-submit cookie pattern with signed tokens
  */
 
-import { cookies } from "next/headers";
-import { createHmac, randomBytes } from "crypto";
+import { cookies } from 'next/headers';
+import { createHmac, randomBytes } from 'crypto';
 
-const CSRF_COOKIE_NAME = "__Host-csrf";
-const CSRF_SECRET = process.env.CSRF_SECRET || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "default-dev-secret";
+const CSRF_COOKIE_NAME = '__Host-csrf';
+const CSRF_SECRET = process.env.CSRF_SECRET || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'default-dev-secret';
 
 /**
  * Generate a CSRF token and set it as a cookie
  */
 export async function generateCsrfToken(): Promise<string> {
-  const token = randomBytes(32).toString("hex");
-  const signature = createHmac("sha256", CSRF_SECRET).update(token).digest("hex");
+  const token = randomBytes(32).toString('hex');
+  const signature = createHmac('sha256', CSRF_SECRET).update(token).digest('hex');
   const signedToken = `${token}.${signature}`;
 
   const cookieStore = await cookies();
   cookieStore.set(CSRF_COOKIE_NAME, signedToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    path: "/",
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
     maxAge: 60 * 60, // 1 hour
   });
 
@@ -41,14 +41,14 @@ export async function verifyCsrfToken(token: string): Promise<boolean> {
   if (!cookieToken) return false;
 
   // Verify signature
-  const [rawToken, signature] = token.split(".");
+  const [rawToken, signature] = token.split('.');
   if (!rawToken || !signature) return false;
 
-  const expectedSignature = createHmac("sha256", CSRF_SECRET).update(rawToken).digest("hex");
-  
+  const expectedSignature = createHmac('sha256', CSRF_SECRET).update(rawToken).digest('hex');
+
   // Timing-safe comparison
   if (signature.length !== expectedSignature.length) return false;
-  
+
   let mismatch = 0;
   for (let i = 0; i < signature.length; i++) {
     mismatch |= signature.charCodeAt(i) ^ expectedSignature.charCodeAt(i);
@@ -64,12 +64,12 @@ export async function verifyCsrfToken(token: string): Promise<boolean> {
  * Server action wrapper that validates CSRF token
  */
 export function withCsrfProtection<T extends unknown[], R>(
-  action: (...args: T) => Promise<R>
+  action: (...args: T) => Promise<R>,
 ): (csrfToken: string, ...args: T) => Promise<R> {
   return async (csrfToken: string, ...args: T) => {
     const isValid = await verifyCsrfToken(csrfToken);
     if (!isValid) {
-      throw new Error("Invalid CSRF token");
+      throw new Error('Invalid CSRF token');
     }
     return action(...args);
   };

@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { buttonVariants } from "./ui/button";
-import { createClient } from "@/lib/supabase/server";
-import { LogoutButton } from "./logout-button";
-import { Suspense } from "react";
+import Link from 'next/link';
+import { buttonVariants } from './ui/button';
+import { createClient } from '@/lib/supabase/server';
+import { LogoutButton } from './logout-button';
+import { Suspense } from 'react';
 
 export async function AuthButton() {
   const supabase = await createClient();
@@ -22,16 +22,10 @@ export async function AuthButton() {
         </div>
       ) : (
         <div className="flex gap-2">
-          <Link
-            href="/auth/login"
-            className={buttonVariants({ variant: "outline" })}
-          >
+          <Link href="/auth/login" className={buttonVariants({ variant: 'outline' })}>
             Sign in
           </Link>
-          <Link
-            href="/auth/sign-up"
-            className={buttonVariants({ variant: "default" })}
-          >
+          <Link href="/auth/sign-up" className={buttonVariants({ variant: 'default' })}>
             Sign up
           </Link>
         </div>

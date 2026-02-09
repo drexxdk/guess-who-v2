@@ -1,7 +1,7 @@
 {
   "name": "Guess Who",
   "short_name": "Guess Who",
-  "description": "A fun multiplayer guessing game",
+  "description": "An icebreaker game to help people learn names and faces",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",

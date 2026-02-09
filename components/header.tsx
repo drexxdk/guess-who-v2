@@ -1,5 +1,5 @@
-import { AuthButton } from "@/components/auth-button";
-import Link from "next/link";
+import { AuthButton } from '@/components/auth-button';
+import { Logo, LogoCompact } from '@/components/ui/logo';
 
 interface HeaderProps {
   showAuth?: boolean;
@@ -7,9 +7,15 @@ interface HeaderProps {
 
 export function Header({ showAuth = true }: HeaderProps) {
   return (
-    <header className="bg-black h-header px-8 flex justify-center items-center sticky top-0 z-10">
-      <div className="flex justify-between gap-2 items-center max-w-screen-lg w-full">
-        <Link href="/">Guess Who</Link>
+    <header className="h-header border-border/50 via-card sticky top-0 z-50 flex items-center justify-center border-b bg-linear-to-r from-[hsl(240_10%_4%)] to-[hsl(240_10%_4%)] px-4 backdrop-blur-sm md:px-8">
+      <div className="flex w-full max-w-5xl items-center justify-between gap-4">
+        {/* Show compact logo on mobile, full logo on desktop */}
+        <div className="md:hidden">
+          <LogoCompact />
+        </div>
+        <div className="hidden md:block">
+          <Logo />
+        </div>
         {showAuth && <AuthButton />}
       </div>
     </header>

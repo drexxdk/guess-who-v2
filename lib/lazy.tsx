@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import dynamic from "next/dynamic";
-import { ComponentType, ReactElement } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import dynamic from 'next/dynamic';
+import { ComponentType, ReactElement } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Loading fallback component
 function ComponentLoader() {
@@ -18,10 +18,10 @@ function ComponentLoader() {
 // Game loading fallback
 function GameLoader() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-      <Skeleton className="h-48 w-48 rounded-lg" />
+    <div className="flex min-h-100 flex-col items-center justify-center space-y-4">
+      <Skeleton className="size-48 rounded-lg" />
       <Skeleton className="h-6 w-32" />
-      <div className="grid grid-cols-2 gap-4 w-full max-w-md">
+      <div className="grid w-full max-w-md grid-cols-2 gap-4">
         <Skeleton className="h-12" />
         <Skeleton className="h-12" />
         <Skeleton className="h-12" />

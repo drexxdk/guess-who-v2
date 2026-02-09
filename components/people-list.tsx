@@ -1,91 +1,125 @@
-"use client";
+'use client';
 
-import { useState, memo } from "react";
-import { FaTrash } from "react-icons/fa6";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { OptimizedAvatar } from "@/components/ui/optimized-image";
-import toast from "react-hot-toast";
-import { deletePersonImage } from "@/lib/game-utils";
-import { getErrorMessage } from "@/lib/logger";
-import type { Person } from "@/lib/schemas";
+import { useState, memo } from 'react';
+import { FaTrash, FaSpinner, FaCheck, FaXmark, FaUser } from 'react-icons/fa6';
+import { AnimatePresence } from 'framer-motion';
+import { createClient } from '@/lib/supabase/client';
+import { Icon } from '@/components/ui/icon';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+import { StaggeredGrid, StaggeredGridItem } from '@/components/ui/staggered-list';
+import { AvatarImage } from '@/components/ui/avatar-image';
+import toast from 'react-hot-toast';
+import { deletePersonImage } from '@/lib/game-utils';
+import { getErrorMessage } from '@/lib/logger';
+import type { Person } from '@/lib/schemas';
 
 // Memoized person card to prevent unnecessary re-renders
 const PersonCard = memo(function PersonCard({
   person,
   isDeleting,
-  onDelete,
+  isConfirming,
+  onDeleteClick,
+  onConfirmDelete,
+  onCancelDelete,
 }: {
   person: Person;
   isDeleting: boolean;
-  onDelete: (personId: string, imageUrl: string | null) => void;
+  isConfirming: boolean;
+  onDeleteClick: (person: Person) => void;
+  onConfirmDelete: (person: Person) => void;
+  onCancelDelete: () => void;
 }) {
   return (
-    <Card className="p-4">
+    <Card
+      hover
+      variant="compact"
+      role="article"
+      aria-label={`Person: ${person.first_name} ${person.last_name}`}
+      className="relative"
+    >
       <div className="flex items-center gap-4">
-        {person.image_url ? (
-          <OptimizedAvatar
-            src={person.image_url}
-            alt={`${person.first_name} ${person.last_name}`}
-            size={48}
-          />
-        ) : (
-          <div className="w-12 h-12 bg-muted flex items-center justify-center rounded-full">
-            <span className="text-lg font-semibold">
-              {person.first_name[0]}
-              {person.last_name[0]}
-            </span>
-          </div>
-        )}
+        <AvatarImage
+          src={person.image_url}
+          alt={`Photo of ${person.first_name} ${person.last_name}`}
+          fallbackName={`${person.first_name} ${person.last_name}`}
+          className="size-12"
+        />
         <div className="flex-1">
-          <p className="font-medium">
+          <p className="font-medium" id={`person-name-${person.id}`}>
             {person.first_name} {person.last_name}
           </p>
-          <p className="text-sm text-muted-foreground capitalize">
-            {person.gender}
-          </p>
+          <p className="text-muted-foreground text-sm capitalize">{person.gender}</p>
         </div>
         <Button
           variant="destructive"
-          onClick={() => onDelete(person.id, person.image_url)}
+          onClick={() => onDeleteClick(person)}
           disabled={isDeleting}
           size="icon"
+          aria-label={`Delete ${person.first_name} ${person.last_name}`}
         >
-          <FaTrash className="w-4 h-4" />
+          <Icon icon={FaTrash} size="sm" />
         </Button>
       </div>
+
+      {/* Confirmation overlay */}
+      {isConfirming && (
+        <div className="absolute inset-0 flex items-center justify-end gap-2 rounded-lg bg-black/60 px-4">
+          <Button variant="outline" onClick={onCancelDelete} disabled={isDeleting} size="icon" aria-label="Cancel">
+            <Icon icon={FaXmark} size="sm" />
+          </Button>
+          <Button
+            onClick={() => onConfirmDelete(person)}
+            disabled={isDeleting}
+            size="icon"
+            aria-label="Confirm delete"
+            className="bg-green-600 text-white hover:bg-green-700"
+          >
+            {isDeleting ? (
+              <Icon icon={FaSpinner} size="sm" className="animate-spin" />
+            ) : (
+              <Icon icon={FaCheck} size="sm" />
+            )}
+          </Button>
+        </div>
+      )}
     </Card>
   );
 });
 
 export function PeopleList({ people }: { people: Person[] }) {
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
 
-  const handleDelete = async (personId: string, imageUrl: string | null) => {
-    if (!confirm("Are you sure you want to delete this person?")) return;
+  const handleDeleteClick = (person: Person) => {
+    setConfirmingDelete(person.id);
+  };
 
-    setDeleting(personId);
+  const handleCancelDelete = () => {
+    setConfirmingDelete(null);
+  };
+
+  const handleConfirmDelete = async (person: Person) => {
+    setDeleting(person.id);
     try {
       const supabase = createClient();
 
       // Delete image from storage if it exists
-      if (imageUrl) {
-        const result = await deletePersonImage(supabase, imageUrl);
+      if (person.image_url) {
+        const result = await deletePersonImage(supabase, person.image_url);
         if (!result.success) {
           // Continue with person deletion even if image deletion fails
         }
       }
 
       // Delete person from database
-      const { error } = await supabase
-        .from("people")
-        .delete()
-        .eq("id", personId);
+      const { error } = await supabase.from('people').delete().eq('id', person.id);
 
       if (error) throw error;
 
-      toast.success("Person deleted");
+      toast.success('Person deleted successfully');
+      setConfirmingDelete(null);
       // Let real-time subscription handle the removal
     } catch (err: unknown) {
       toast.error(getErrorMessage(err));
@@ -96,24 +130,30 @@ export function PeopleList({ people }: { people: Person[] }) {
 
   if (people.length === 0) {
     return (
-      <p className="text-center text-muted-foreground py-8">
-        No people added yet. Add your first person to get started!
-      </p>
+      <EmptyState
+        icon={<Icon icon={FaUser} size="xl" />}
+        title="No people yet"
+        description="Add your first person to get started with this group"
+      />
     );
   }
 
   return (
-    <>
-      <div className="space-y-3">
+    <StaggeredGrid className="grid gap-3">
+      <AnimatePresence mode="popLayout">
         {people.map((person) => (
-          <PersonCard
-            key={person.id}
-            person={person}
-            isDeleting={deleting === person.id}
-            onDelete={handleDelete}
-          />
+          <StaggeredGridItem key={person.id}>
+            <PersonCard
+              person={person}
+              isDeleting={deleting === person.id}
+              isConfirming={confirmingDelete === person.id}
+              onDeleteClick={handleDeleteClick}
+              onConfirmDelete={handleConfirmDelete}
+              onCancelDelete={handleCancelDelete}
+            />
+          </StaggeredGridItem>
         ))}
-      </div>
-    </>
+      </AnimatePresence>
+    </StaggeredGrid>
   );
 }

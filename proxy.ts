@@ -1,5 +1,5 @@
-import { updateSession } from "@/lib/supabase/proxy";
-import { type NextRequest } from "next/server";
+import { updateSession } from '@/lib/supabase/proxy';
+import { type NextRequest } from 'next/server';
 
 export async function proxy(request: NextRequest) {
   return await updateSession(request);
@@ -18,6 +18,6 @@ export const config = {
      * - images - .svg, .png, .jpg, .jpeg, .gif, .webp
      * Feel free to modify this pattern to include more paths.
      */
-    "/((?!_next/static|_next/image|favicon\\.ico|favicon\\.png|manifest\\.json|sw\\.js|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    '/((?!_next/static|_next/image|favicon\\.ico|favicon\\.png|manifest\\.json|sw\\.js|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

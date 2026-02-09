@@ -7,14 +7,14 @@
  */
 export function escapeHtml(str: string): string {
   const htmlEscapes: Record<string, string> = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#x27;",
-    "/": "&#x2F;",
-    "`": "&#x60;",
-    "=": "&#x3D;",
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '/': '&#x2F;',
+    '`': '&#x60;',
+    '=': '&#x3D;',
   };
 
   return str.replace(/[&<>"'`=/]/g, (char) => htmlEscapes[char]);
@@ -24,7 +24,7 @@ export function escapeHtml(str: string): string {
  * Strips HTML tags from a string
  */
 export function stripHtml(str: string): string {
-  return str.replace(/<[^>]*>/g, "");
+  return str.replace(/<[^>]*>/g, '');
 }
 
 /**
@@ -33,7 +33,7 @@ export function stripHtml(str: string): string {
  */
 export function sanitizeString(str: string): string {
   // Remove null bytes and control characters (except newlines and tabs)
-  const cleaned = str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+  const cleaned = str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
 
   // Trim whitespace
   return cleaned.trim();
@@ -44,11 +44,11 @@ export function sanitizeString(str: string): string {
  * Allows letters, spaces, hyphens, and apostrophes
  */
 export function sanitizeName(str: string): string {
-  // Remove anything that's not a letter, space, hyphen, or apostrophe
-  const sanitized = str.replace(/[^a-zA-Z\s\-'À-ÿ]/g, "");
+  // Remove anything that's not a letter, number, space, hyphen, or apostrophe
+  const sanitized = str.replace(/[^a-zA-Z0-9\s\-'À-ÿ]/g, '');
 
   // Collapse multiple spaces into one
-  return sanitized.replace(/\s+/g, " ").trim();
+  return sanitized.replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -57,10 +57,10 @@ export function sanitizeName(str: string): string {
  */
 export function sanitizeGroupName(str: string): string {
   // Allow alphanumeric, spaces, and basic punctuation
-  const sanitized = str.replace(/[^a-zA-Z0-9\s\-_'.!&]/g, "");
+  const sanitized = str.replace(/[^a-zA-Z0-9\s\-_'.!&]/g, '');
 
   // Collapse multiple spaces into one
-  return sanitized.replace(/\s+/g, " ").trim();
+  return sanitized.replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -68,15 +68,14 @@ export function sanitizeGroupName(str: string): string {
  * Allows only uppercase letters and numbers
  */
 export function sanitizeGameCode(str: string): string {
-  return str.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  return str.toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
 
 /**
  * Validates a UUID format
  */
 export function isValidUUID(str: string): boolean {
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(str);
 }
 
@@ -95,7 +94,7 @@ export function sanitizeObject<T extends Record<string, unknown>>(
   for (const key in result) {
     const value = result[key];
 
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
       let sanitized = sanitizeString(value);
       if (options.stripHtml) {
         sanitized = stripHtml(sanitized);
@@ -104,15 +103,8 @@ export function sanitizeObject<T extends Record<string, unknown>>(
         sanitized = escapeHtml(sanitized);
       }
       (result as Record<string, unknown>)[key] = sanitized;
-    } else if (
-      typeof value === "object" &&
-      value !== null &&
-      !Array.isArray(value)
-    ) {
-      (result as Record<string, unknown>)[key] = sanitizeObject(
-        value as Record<string, unknown>,
-        options,
-      );
+    } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      (result as Record<string, unknown>)[key] = sanitizeObject(value as Record<string, unknown>, options);
     }
   }
 
@@ -122,11 +114,7 @@ export function sanitizeObject<T extends Record<string, unknown>>(
 /**
  * Validates that a string doesn't exceed a maximum length
  */
-export function validateLength(
-  str: string,
-  maxLength: number,
-  minLength = 0,
-): boolean {
+export function validateLength(str: string, maxLength: number, minLength = 0): boolean {
   const length = str.length;
   return length >= minLength && length <= maxLength;
 }
@@ -136,5 +124,5 @@ export function validateLength(
  */
 export function truncate(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
-  return str.slice(0, maxLength - 3) + "...";
+  return str.slice(0, maxLength - 3) + '...';
 }

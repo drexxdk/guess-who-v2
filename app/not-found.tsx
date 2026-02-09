@@ -1,16 +1,15 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import Link from "next/link";
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import Link from 'next/link';
 
 const NotFound = () => {
   return (
-    <div className="p-2 flex justify-center items-center min-h-screen">
+    <div className="flex min-h-screen items-center justify-center p-2">
       <Card className="max-w-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Page not found</CardTitle>
         </CardHeader>
-        <CardContent>
-          The requested page could not be found.{" "}
-          <Link href="/">Go back home</Link>
+        <CardContent className="pt-6">
+          The requested page could not be found. <Link href="/">Go back home</Link>
         </CardContent>
       </Card>
     </div>

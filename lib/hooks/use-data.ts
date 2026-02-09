@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import useSWR, { SWRConfiguration, mutate } from "swr";
-import { createClient } from "@/lib/supabase/client";
-import type { Group, Person } from "@/lib/schemas";
+import useSWR, { SWRConfiguration, mutate } from 'swr';
+import { createClient } from '@/lib/supabase/client';
+import type { Group, Person } from '@/lib/schemas';
 
 // Global SWR configuration
 export const swrConfig: SWRConfiguration = {
@@ -10,6 +10,18 @@ export const swrConfig: SWRConfiguration = {
   revalidateOnReconnect: true,
   dedupingInterval: 5000,
   errorRetryCount: 3,
+  errorRetryInterval: 1000,
+  // Exponential backoff for retries
+  onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+    // Never retry on 404
+    if (error.code === 'PGRST116') return;
+
+    // Only retry up to 3 times
+    if (retryCount >= 3) return;
+
+    // Exponential backoff: 1s, 2s, 4s
+    setTimeout(() => revalidate({ retryCount }), 1000 * Math.pow(2, retryCount));
+  },
 };
 
 // Fetcher functions
@@ -22,37 +34,35 @@ async function fetchGroups(): Promise<Group[]> {
   if (!user) return [];
 
   const { data, error } = await supabase
-    .from("groups")
-    .select("*")
-    .eq("owner_id", user.id)
-    .order("created_at", { ascending: false });
+    .from('groups')
+    .select('*')
+    .eq('owner_id', user.id)
+    .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+  // Cast to Group[] to include enable_timer field (for backward compatibility with DB)
+  return (data || []) as unknown as Group[];
 }
 
 async function fetchGroup(id: string): Promise<Group | null> {
   const supabase = createClient();
-  const { data, error } = await supabase
-    .from("groups")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data, error } = await supabase.from('groups').select('*').eq('id', id).single();
 
   if (error) {
-    if (error.code === "PGRST116") return null;
+    if (error.code === 'PGRST116') return null;
     throw error;
   }
-  return data;
+  // Cast to Group to include enable_timer field (for backward compatibility with DB)
+  return data as unknown as Group;
 }
 
 async function fetchPeopleByGroup(groupId: string): Promise<Person[]> {
   const supabase = createClient();
   const { data, error } = await supabase
-    .from("people")
-    .select("*")
-    .eq("group_id", groupId)
-    .order("created_at", { ascending: false });
+    .from('people')
+    .select('*')
+    .eq('group_id', groupId)
+    .order('created_at', { ascending: false });
 
   if (error) throw error;
   return data || [];
@@ -60,11 +70,7 @@ async function fetchPeopleByGroup(groupId: string): Promise<Person[]> {
 
 // Hook: Fetch all groups for the current user
 export function useGroups() {
-  const { data, error, isLoading, isValidating, mutate } = useSWR<Group[]>(
-    "groups",
-    fetchGroups,
-    swrConfig,
-  );
+  const { data, error, isLoading, isValidating, mutate } = useSWR<Group[]>('groups', fetchGroups, swrConfig);
 
   return {
     groups: data || [],
@@ -115,7 +121,7 @@ export function usePeople(groupId: string | null) {
 
 // Utility: Invalidate and refetch groups
 export function invalidateGroups() {
-  return mutate("groups");
+  return mutate('groups');
 }
 
 // Utility: Invalidate and refetch a specific group
@@ -129,28 +135,22 @@ export function invalidatePeople(groupId: string) {
 }
 
 // Utility: Optimistically update a group in the cache
-export function optimisticUpdateGroup(
-  id: string,
-  updater: (current: Group | null | undefined) => Group | null,
-) {
+export function optimisticUpdateGroup(id: string, updater: (current: Group | null | undefined) => Group | null) {
   return mutate(`group:${id}`, updater, { revalidate: false });
 }
 
 // Utility: Optimistically add a person to the cache
 export function optimisticAddPerson(groupId: string, person: Person) {
-  return mutate(
-    `people:${groupId}`,
-    (current: Person[] | undefined) => [person, ...(current || [])],
-    { revalidate: false },
-  );
+  return mutate(`people:${groupId}`, (current: Person[] | undefined) => [person, ...(current || [])], {
+    revalidate: false,
+  });
 }
 
 // Utility: Optimistically remove a person from the cache
 export function optimisticRemovePerson(groupId: string, personId: string) {
   return mutate(
     `people:${groupId}`,
-    (current: Person[] | undefined) =>
-      (current || []).filter((p) => p.id !== personId),
+    (current: Person[] | undefined) => (current || []).filter((p) => p.id !== personId),
     { revalidate: false },
   );
 }

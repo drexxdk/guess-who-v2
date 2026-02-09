@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useEffect, useRef } from "react";
-import { getErrorMessage } from "@/lib/logger";
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { getErrorMessage } from '@/lib/logger';
 
 interface UseAsyncState<T> {
   data: T | null;

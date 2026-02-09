@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useCallback } from "react";
-import { useLoading } from "@/lib/loading-context";
+import { useRouter } from 'next/navigation';
+import { useCallback } from 'react';
+import { useLoading } from '@/lib/loading-context';
 
 /**
  * Custom hook that wraps Next.js router with automatic loading state management.
